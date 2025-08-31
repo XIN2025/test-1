@@ -1,8 +1,14 @@
-import { useTheme } from '@/context/ThemeContext';
-import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
-import { ScrollView, ScrollViewProps, Text, View, ViewStyle } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from "@/context/ThemeContext";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import {
+  ScrollView,
+  ScrollViewProps,
+  Text,
+  View,
+  ViewStyle,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -30,7 +36,9 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const { isDarkMode } = useTheme();
 
-  const defaultGradientColors = gradientColors || (isDarkMode ? ['#111827', '#1f2937'] : ['#f0f9f6', '#e6f4f1']);
+  const defaultGradientColors =
+    gradientColors ||
+    (isDarkMode ? ["#111827", "#1f2937"] : ["#f0f9f6", "#e6f4f1"]);
 
   const defaultContentStyle: ViewStyle = {
     paddingHorizontal: 16,
@@ -53,7 +61,7 @@ export function DashboardLayout({
             style={{ flex: 1 }}
             contentContainerStyle={defaultContentStyle}
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps='handled'
+            keyboardShouldPersistTaps="handled"
             {...scrollViewProps}
           >
             {children}
@@ -87,20 +95,20 @@ export function DashboardHeader({
   const { isDarkMode } = useTheme();
 
   const headerStyle: ViewStyle = {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: backgroundColor || (isDarkMode ? '#111827' : '#ffffff'),
+    backgroundColor: backgroundColor || (isDarkMode ? "#111827" : "#ffffff"),
     ...(showBorder && {
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: isDarkMode ? 0.3 : 0.1,
       shadowRadius: 4,
       elevation: 3,
       borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
+      borderBottomColor: isDarkMode ? "#374151" : "#e5e7eb",
     }),
     ...style,
   };
@@ -110,8 +118,8 @@ export function DashboardHeader({
       <Text
         style={{
           fontSize: 24,
-          fontWeight: 'bold',
-          color: isDarkMode ? '#ffffff' : '#1f2937',
+          fontWeight: "bold",
+          color: isDarkMode ? "#ffffff" : "#1f2937",
         }}
       >
         {title}
