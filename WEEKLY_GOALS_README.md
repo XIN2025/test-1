@@ -120,8 +120,8 @@ interface Goal {
   id: string;
   title: string;
   description: string;
-  priority: "high" | "medium" | "low";
-  category: "health" | "fitness" | "nutrition" | "mental" | "personal";
+  priority: 'high' | 'medium' | 'low';
+  category: 'health' | 'fitness' | 'nutrition' | 'mental' | 'personal';
   targetValue?: number;
   currentValue?: number;
   unit?: string;
