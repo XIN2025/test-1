@@ -18,6 +18,7 @@ function TabsNavigator() {
         tabBarActiveTintColor: isDarkMode ? '#34d399' : '#059669',
         tabBarInactiveTintColor: isDarkMode ? '#9ca3af' : '#64748b',
       }}
+      initialRouteName="chat"
     >
       <Tabs.Screen
         name="main"
@@ -46,8 +47,8 @@ function TabsNavigator() {
       <Tabs.Screen
         name="orders"
         options={{
-          title: 'Orders',
-          tabBarLabel: 'Orders',
+          title: 'Bookings',
+          tabBarLabel: 'Bookings',
           tabBarIcon: ({ color, size }) => <ShoppingBag color={color} size={size ?? 22} />,
         }}
       />

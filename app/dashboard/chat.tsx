@@ -17,7 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 // @ts-ignore
-import { MessageCircle, Send } from 'lucide-react-native';
+import { MessageCircle, Mic, Send } from 'lucide-react-native';
 // Removed file upload related imports
 
 interface Message {
@@ -128,9 +128,9 @@ export default function ChatPage() {
   const { isDarkMode } = useTheme();
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
-        <View>
+        <View style={{ flex: 1 }}>
           {/* Header */}
           <View
             style={{
@@ -198,7 +198,7 @@ export default function ChatPage() {
             ref={scrollViewRef}
             style={{
               backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
-              height: '90%',
+              flex: 1,
             }}
             contentContainerStyle={{
               flexGrow: 1,
@@ -441,6 +441,31 @@ export default function ChatPage() {
                   enablesReturnKeyAutomatically={false}
                 />
               </View>
+
+              {/* Microphone Button */}
+              <TouchableOpacity
+                onPress={() => {
+                  // Placeholder for future voice recording functionality
+                  console.log('Microphone pressed');
+                }}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
+                  marginRight: 8,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 2,
+                  elevation: 2,
+                }}
+                activeOpacity={0.7}
+              >
+                <Mic size={20} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+              </TouchableOpacity>
 
               {/* Send Button */}
               <TouchableOpacity
