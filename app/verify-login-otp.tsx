@@ -25,12 +25,13 @@ export default function VerifyLoginOtpScreen() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { login, isAuthenticated, isLoading, isFirstTimeUser } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace('/dashboard/main');
+      // Navigate to dashboard - the tab navigator will handle the initial route
+      router.replace('/dashboard');
     }
   }, [isAuthenticated, isLoading, router]);
 
@@ -89,7 +90,7 @@ export default function VerifyLoginOtpScreen() {
         // Store walkthrough trigger for login flow
         await AsyncStorage.setItem(`showWalkthrough:${normalizedEmail}`, 'login');
         router.push({
-          pathname: '/dashboard/main',
+          pathname: '/dashboard',
           params: { email: normalizedEmail, name: userName },
         });
       } else {

@@ -37,12 +37,13 @@ export default function LoginScreen() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isFirstTimeUser } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace('/dashboard/main');
+      // Navigate to dashboard - the tab navigator will handle the initial route
+      router.replace('/dashboard');
     }
   }, [isAuthenticated, isLoading, router]);
 

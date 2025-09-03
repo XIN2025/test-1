@@ -22,11 +22,12 @@ const PermissionsPage = () => {
 
     if (email && name) {
       try {
-        await login(email, name);
+        // Mark as first-time user for new registrations
+        await login(email, name, true);
         console.log('authenticated');
-        // Only redirect after successful authentication
+        // Only redirect after successful authentication - navigate to dashboard
         router.replace({
-          pathname: '/dashboard/main',
+          pathname: '/dashboard',
           params,
         });
       } catch (err) {

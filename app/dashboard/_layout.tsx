@@ -3,9 +3,13 @@ import { Globe, Heart, MessageCircle, ShoppingBag, Target, User, Users } from 'l
 import React from 'react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { ThemeProvider, useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 function TabsNavigator() {
   const { isDarkMode } = useTheme();
+  const { isFirstTimeUser } = useAuth();
+
+  const initialRoute = isFirstTimeUser ? 'main' : 'chat';
 
   return (
     <Tabs
@@ -18,7 +22,7 @@ function TabsNavigator() {
         tabBarActiveTintColor: isDarkMode ? '#34d399' : '#059669',
         tabBarInactiveTintColor: isDarkMode ? '#9ca3af' : '#64748b',
       }}
-      initialRouteName="chat"
+      initialRouteName={initialRoute}
     >
       <Tabs.Screen
         name="main"

@@ -291,7 +291,7 @@ export default function ProfileDashboard() {
   const healthStats = [
     {
       label: 'Health Score',
-      value: '85',
+      value: '45',
       icon: Heart,
       color: 'text-green-700',
     },

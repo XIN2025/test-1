@@ -40,6 +40,14 @@ export default {
           backgroundColor: '#ffffff',
         },
       ],
+      [
+        'expo-build-properties',
+        {
+          ios: {
+            useFrameworks: 'static',
+          },
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,

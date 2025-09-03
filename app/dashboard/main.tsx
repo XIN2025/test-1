@@ -1,4 +1,5 @@
 import { CircularProgressRing } from '@/components/CircularProgressRing';
+import { LiquidGauge } from 'react-native-liquid-gauge';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useActionCompletions } from '@/hooks/useActionCompletions';
@@ -10,7 +11,6 @@ import { Bell, Calendar, Flame, Heart, MessageCircle, Settings, Target } from 'l
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Circle } from 'react-native-svg';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { goalsApi } from '../../services/goalsApi';
 
@@ -100,7 +100,7 @@ function renderStreakAchievements(streak: number | null, isDarkMode: boolean) {
 }
 
 export default function MainDashboard() {
-  const { user } = useAuth();
+  const { user, markAsReturningUser } = useAuth();
   const userEmail = user?.email || '';
   const userName = user?.name || '';
 
@@ -271,6 +271,10 @@ export default function MainDashboard() {
     try {
       await AsyncStorage.setItem(walkthroughStorageKey, 'true');
       console.log('💾 Walkthrough completion saved to storage');
+
+      // Mark user as returning user after completing onboarding
+      await markAsReturningUser();
+      console.log('👤 User marked as returning user');
     } catch (error) {
       console.log('❌ Error saving walkthrough completion:', error);
     }
@@ -579,6 +583,25 @@ export default function MainDashboard() {
 
     return () => clearInterval(cleanup);
   }, []);
+
+  // Health score calculation (currently using hardcoded value for testing)
+  // const healthScore = useMemo(() => {
+  //   if (!goals || goals.length === 0) return 0;
+  //
+  //   // Calculate average completion percentage across all goals
+  //   const totalGoals = (goals as any[]).length;
+  //   const totalCompletion = (goals as any[]).reduce((sum, goal) => {
+  //     return sum + getGoalCompletionPercentage(goal.id);
+  //   }, 0);
+  //
+  //   const averageCompletion = totalCompletion / totalGoals;
+  //
+  //   // Add bonus points for streak
+  //   const streakBonus = Math.min((streak || 0) * 2, 20); // Up to 20 bonus points for streak
+  //
+  //   // Cap at 100
+  //   return Math.min(Math.round(averageCompletion + streakBonus), 100);
+  // }, [goals, getGoalCompletionPercentage, streak]);
 
   const toggleItemCompleted = async (id: string) => {
     // Find the action item details from todaysItems
@@ -1018,70 +1041,40 @@ export default function MainDashboard() {
                   }}
                 >
                   <View style={{ alignItems: 'center' }}>
-                    {/* Semicircular Progress Gauge */}
-                    <View
-                      style={{
-                        width: width * 0.35,
-                        height: (width * 0.35) / 2 + 20,
+                    {/* Liquid Gauge for Health Score */}
+                    <LiquidGauge
+                      value={45}
+                      width={width * 0.35}
+                      height={width * 0.35}
+                      config={{
+                        circleColor: '#f97316',
+                        textColor: '#1f2937',
+                        waveTextColor: '#ffffff',
+                        waveColor: '#f97316',
+                        circleThickness: 0.08,
+                        textVertPosition: 0.5,
+                        waveAnimateTime: 3000,
+                        waveRiseTime: 1500,
+                        waveHeight: 0.08,
+                        waveCount: 2,
+                        textSize: 1.2,
+                        waveRise: true,
+                        waveAnimate: true,
+                        waveHeightScaling: true,
+                        valueCountUp: true,
+                        textSuffix: '',
+                        toFixed: 0,
                       }}
-                    >
-                      <Svg width={width * 0.35} height={(width * 0.35) / 2 + 10}>
-                        {/* Background semicircle */}
-                        <Circle
-                          cx={(width * 0.35) / 2}
-                          cy={(width * 0.35) / 2}
-                          r={(width * 0.35) / 2 - 8}
-                          stroke="#fed7aa"
-                          strokeWidth={8}
-                          fill="transparent"
-                          strokeDasharray={`${Math.PI * ((width * 0.35) / 2 - 8)} ${2 * Math.PI * ((width * 0.35) / 2 - 8)}`}
-                          strokeLinecap="round"
-                          transform={`rotate(180 ${(width * 0.35) / 2} ${(width * 0.35) / 2})`}
-                        />
-
-                        {/* Progress semicircle (84% progress) */}
-                        <Circle
-                          cx={(width * 0.35) / 2}
-                          cy={(width * 0.35) / 2}
-                          r={(width * 0.35) / 2 - 8}
-                          stroke="#f97316"
-                          strokeWidth={8}
-                          fill="transparent"
-                          strokeDasharray={`${(84 / 100) * Math.PI * ((width * 0.35) / 2 - 8)} ${2 * Math.PI * ((width * 0.35) / 2 - 8)}`}
-                          strokeLinecap="round"
-                          transform={`rotate(180 ${(width * 0.35) / 2} ${(width * 0.35) / 2})`}
-                        />
-                      </Svg>
-
-                      {/* Score text in center */}
-                      <View
-                        style={{
-                          position: 'absolute',
-                          top: (width * 0.35) / 2 - 30,
-                          left: 0,
-                          right: 0,
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: '#f97316',
-                            fontSize: width * 0.08,
-                            fontWeight: 'bold',
-                          }}
-                        >
-                          84
-                        </Text>
-                      </View>
-                    </View>
+                    />
 
                     {/* Label below */}
                     <Text
                       style={{
-                        color: '#00000080',
+                        color: isDarkMode ? '#9ca3af' : '#6b7280',
                         fontSize: 12,
                         fontWeight: '500',
                         textAlign: 'center',
+                        marginTop: 8,
                       }}
                     >
                       Health Score

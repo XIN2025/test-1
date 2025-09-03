@@ -42,3 +42,6 @@ credentials.json
 
 android
 build-*
+
+ios
+google-services.json

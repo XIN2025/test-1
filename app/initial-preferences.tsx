@@ -57,12 +57,13 @@ const genderOptions = ['Male', 'Female', 'Other'];
 export default function InitialPreferences() {
   const { email, name } = useLocalSearchParams();
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isFirstTimeUser } = useAuth();
 
   // Redirect if already authenticated and not setting initial preferences
   useEffect(() => {
     if (!isLoading && isAuthenticated && !email) {
-      router.replace('/dashboard/main');
+      // Navigate to dashboard - the tab navigator will handle the initial route
+      router.replace('/dashboard');
     }
   }, [isAuthenticated, isLoading, email, router]);
 

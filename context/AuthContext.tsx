@@ -11,8 +11,10 @@ interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, name: string) => Promise<void>;
+  isFirstTimeUser: boolean;
+  login: (email: string, name: string, isFirstTime?: boolean) => Promise<void>;
   logout: () => Promise<void>;
+  markAsReturningUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,6 +59,7 @@ const storageHelpers = {
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
 
   // Check for existing session on app start
   useEffect(() => {
@@ -69,6 +72,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       if (userData) {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
+
+        // Check if this is a first-time user
+        const firstTimeFlag = await storageHelpers.getItem(`firstTimeUser:${parsedUser.email}`);
+        setIsFirstTimeUser(firstTimeFlag === 'true');
       }
     } catch (error) {
       console.error('Error checking auth state:', error);
@@ -77,11 +84,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   };
 
-  const login = async (email: string, name: string) => {
+  const login = async (email: string, name: string, isFirstTime: boolean = false) => {
     try {
       const userData = { email, name };
       await storageHelpers.setItem('user', JSON.stringify(userData));
       setUser(userData);
+
+      // Set first-time user flag if specified
+      if (isFirstTime) {
+        await storageHelpers.setItem(`firstTimeUser:${email}`, 'true');
+        setIsFirstTimeUser(true);
+      } else {
+        // Check existing flag for returning users
+        const firstTimeFlag = await storageHelpers.getItem(`firstTimeUser:${email}`);
+        setIsFirstTimeUser(firstTimeFlag === 'true');
+      }
     } catch (error) {
       console.error('Error saving user data:', error);
       throw error;
@@ -92,8 +109,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
     try {
       await storageHelpers.removeItem('user');
       setUser(null);
+      setIsFirstTimeUser(false);
     } catch (error) {
       console.error('Error logging out:', error);
+      throw error;
+    }
+  };
+
+  const markAsReturningUser = async () => {
+    try {
+      if (user) {
+        await storageHelpers.removeItem(`firstTimeUser:${user.email}`);
+        setIsFirstTimeUser(false);
+      }
+    } catch (error) {
+      console.error('Error marking as returning user:', error);
       throw error;
     }
   };
@@ -102,8 +132,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
     user,
     isAuthenticated: !!user,
     isLoading,
+    isFirstTimeUser,
     login,
     logout,
+    markAsReturningUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
