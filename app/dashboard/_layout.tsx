@@ -80,6 +80,13 @@ function TabsNavigator() {
           tabBarIcon: ({ color, size }) => <User color={color} size={size ?? 22} />,
         }}
       />
+      <Tabs.Screen
+        name="health"
+        options={{
+          href: null, // This hides it from the tab bar
+          title: 'Health',
+        }}
+      />
     </Tabs>
   );
 }

@@ -7,12 +7,15 @@ export default {
     icon: './assets/images/logo.png',
     scheme: 'app',
     userInterfaceStyle: 'automatic',
-    newArchEnabled: true,
+    newArchEnabled: false,
     ios: {
       bundleIdentifier: 'com.evra.app',
       supportsTablet: true,
+      deploymentTarget: '16.0',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
+        NSHealthShareUsageDescription: 'Your own custom usage description',
+        NSHealthUpdateUsageDescription: 'Your own custom usage description',
       },
     },
     android: {
@@ -46,6 +49,14 @@ export default {
           ios: {
             useFrameworks: 'static',
           },
+        },
+      ],
+      [
+        '@kingstinct/react-native-healthkit',
+        {
+          NSHealthShareUsageDescription: 'Your own custom usage description',
+          NSHealthUpdateUsageDescription: 'Your own custom usage description',
+          background: true,
         },
       ],
     ],

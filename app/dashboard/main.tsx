@@ -7,12 +7,13 @@ import { useGoals } from '@/hooks/useGoals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Bell, Calendar, Flame, Heart, MessageCircle, Settings, Target } from 'lucide-react-native';
+import { Bell, Flame, Heart, Settings, Target } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Dimensions, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Modal, Pressable, ScrollView, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { goalsApi } from '../../services/goalsApi';
+import SimpleHealthCard from '../../components/SimpleHealthCard';
 
 const { width } = Dimensions.get('window');
 
@@ -120,7 +121,6 @@ export default function MainDashboard() {
       })
       .catch(() => setDailyCompletion({}));
   }, [userEmail]);
-  // ...existing code...
 
   // --- Streak Modal State and Logic ---
   const [showStreakModal, setShowStreakModal] = useState(false);
@@ -158,11 +158,6 @@ export default function MainDashboard() {
 
   // Walkthrough steps configuration
   const walkthroughSteps = [
-    {
-      content:
-        '💬 Chat with EVRA - Get instant health guidance from your AI assistant. Ask questions about nutrition, exercise, medications, and more!',
-      placement: 'bottom' as const,
-    },
     {
       content:
         '📊 Health Score - Your overall health score is calculated based on your daily activities, goal completion, and health metrics. Higher scores mean better health habits!',
@@ -888,7 +883,7 @@ export default function MainDashboard() {
             {/*
               Place this at the bottom of your file, outside the MainDashboard component:
             */}
-            {/* 
+            {/*
             Example usage:
               <StreakCalendar isDarkMode={isDarkMode} />
             */}
@@ -916,105 +911,98 @@ export default function MainDashboard() {
                 minHeight: width * 0.4, // Ensure consistent height
               }}
             >
-              {/* Quick Actions - Left Side */}
+              {/* Health Card - Left Side */}
               <View style={{ width: '48%', paddingRight: 8 }}>
-                <Tooltip
-                  isVisible={showWalkthrough && walkthroughStep === 0}
-                  content={renderTooltipContent(0)}
-                  placement="bottom"
-                  onClose={handleSkip}
-                  backgroundColor="rgba(0,0,0,0.9)"
-                  showChildInTooltip={true}
-                  allowChildInteraction={false}
-                  closeOnChildInteraction={false}
-                  closeOnContentInteraction={false}
-                  childContentSpacing={12}
-                  displayInsets={{ top: 50, bottom: 50, left: 20, right: 20 }}
-                  useReactNativeModal={true}
-                  childrenWrapperStyle={{
-                    backgroundColor: 'transparent',
-                  }}
-                  contentStyle={{
-                    backgroundColor: '#1f2937',
-                    borderRadius: 16,
-                    borderWidth: 2,
-                    borderColor: '#059669',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 8 },
-                    shadowOpacity: 0.5,
-                    shadowRadius: 16,
-                    elevation: 16,
-                  }}
-                >
-                  <TouchableOpacity
-                    onPress={() => router.push('./chat')}
-                    style={{
-                      marginBottom: 12,
-                      backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                      borderRadius: 16,
-                      padding: 16,
-                      alignItems: 'center',
-                      minHeight: width * 0.18,
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                      shadowRadius: 4,
-                      elevation: 3,
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <View style={{ marginBottom: 8 }}>
-                      <MessageCircle size={28} color={isDarkMode ? '#34d399' : '#114131'} />
-                    </View>
-                    <Text
+                {/* Health Card - iOS only */}
+                {Platform.OS === 'ios' && (
+                  <SimpleHealthCard
+                    isDarkMode={isDarkMode}
+                    onPress={() => router.push('/dashboard/health')}
+                    width={width * 0.44}
+                    height={width * 0.4}
+                  />
+                )}
+
+                {/* Android Alternative - Chat and Appointment Buttons */}
+                {Platform.OS === 'android' && (
+                  <View style={{ flex: 1, gap: 12 }}>
+                    {/* Chat with Evra Button */}
+                    <TouchableOpacity
+                      onPress={() => router.push('/dashboard/chat')}
                       style={{
-                        fontSize: 13,
-                        fontWeight: '600',
-                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                        textAlign: 'center',
+                        flex: 1,
+                        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                        borderRadius: 16,
+                        padding: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: isDarkMode ? 0.3 : 0.1,
+                        shadowRadius: 4,
+                        elevation: 3,
+                        borderWidth: 1,
+                        borderColor: isDarkMode ? '#374151' : '#e5e7eb',
                       }}
                     >
-                      Chat with EVRA
-                    </Text>
-                  </TouchableOpacity>
-                </Tooltip>
+                      <Heart size={24} color={isDarkMode ? '#34d399' : '#059669'} />
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: '600',
+                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                          marginTop: 8,
+                          textAlign: 'center',
+                        }}
+                      >
+                        Chat with Evra
+                      </Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                    borderRadius: 16,
-                    padding: 16,
-                    alignItems: 'center',
-                    minHeight: width * 0.18,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View style={{ marginBottom: 8 }}>
-                    <Calendar size={28} color={isDarkMode ? '#34d399' : '#114131'} />
+                    {/* Book Appointment Button */}
+                    <TouchableOpacity
+                      onPress={() => {
+                        // Add appointment booking logic here
+                        console.log('Book Appointment pressed');
+                      }}
+                      style={{
+                        flex: 1,
+                        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                        borderRadius: 16,
+                        padding: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: isDarkMode ? 0.3 : 0.1,
+                        shadowRadius: 4,
+                        elevation: 3,
+                        borderWidth: 1,
+                        borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+                      }}
+                    >
+                      <Target size={24} color={isDarkMode ? '#34d399' : '#059669'} />
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: '600',
+                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                          marginTop: 8,
+                          textAlign: 'center',
+                        }}
+                      >
+                        Book Appointment
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: '600',
-                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                      textAlign: 'center',
-                    }}
-                  >
-                    Book Appointment
-                  </Text>
-                </TouchableOpacity>
+                )}
               </View>
 
               {/* Health Score - Right Side */}
               <View className="items-center justify-center">
                 <Tooltip
-                  isVisible={showWalkthrough && walkthroughStep === 1}
-                  content={renderTooltipContent(1)}
+                  isVisible={showWalkthrough && walkthroughStep === 0}
+                  content={renderTooltipContent(0)}
                   placement="bottom"
                   onClose={handleSkip}
                   backgroundColor="rgba(0,0,0,0.9)"
@@ -1084,10 +1072,44 @@ export default function MainDashboard() {
               </View>
             </View>
 
+            {/* View Full Health Data Button - iOS only */}
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity
+                onPress={() => router.push('/dashboard/health')}
+                style={{
+                  backgroundColor: isDarkMode ? '#059669' : '#059669',
+                  paddingVertical: 12,
+                  paddingHorizontal: 20,
+                  borderRadius: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 24,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
+                activeOpacity={0.8}
+              >
+                <Heart size={16} color="#ffffff" style={{ marginRight: 8 }} />
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    fontSize: 14,
+                    fontWeight: '600',
+                  }}
+                >
+                  View Full Health Data
+                </Text>
+              </TouchableOpacity>
+            )}
+
             {/* Today's Action Items (collapsible) */}
             <Tooltip
-              isVisible={showWalkthrough && walkthroughStep === 2}
-              content={renderTooltipContent(2)}
+              isVisible={showWalkthrough && walkthroughStep === 1}
+              content={renderTooltipContent(1)}
               placement="top"
               onClose={handleSkip}
               backgroundColor="rgba(0,0,0,0.9)"
@@ -1281,9 +1303,9 @@ export default function MainDashboard() {
 
             {/* Weekly Goals Summary (from goals endpoint) */}
             <Tooltip
-              key={`weekly-goals-tooltip-${showWalkthrough && walkthroughStep === 3}`}
-              isVisible={showWalkthrough && walkthroughStep === 3}
-              content={renderTooltipContent(3)}
+              key={`weekly-goals-tooltip-${showWalkthrough && walkthroughStep === 2}`}
+              isVisible={showWalkthrough && walkthroughStep === 2}
+              content={renderTooltipContent(2)}
               placement="top"
               onClose={handleSkip}
               backgroundColor="rgba(0,0,0,0.95)"
