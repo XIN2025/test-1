@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StatusBar } from 'react-native';
 
 type ThemeContextType = {
   isDarkMode: boolean;
@@ -36,7 +37,12 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  return <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      {children}
+    </ThemeContext.Provider>
+  );
 };
 
 export const useTheme = () => {

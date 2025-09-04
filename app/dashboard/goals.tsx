@@ -1037,7 +1037,7 @@ export default function GoalsScreen() {
 
   // Enhanced loading screen component
   const LoadingScreen = () => (
-    <SafeAreaView>
+    <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
       {/* Fixed Header */}
       <View>
         <View
@@ -1174,7 +1174,7 @@ export default function GoalsScreen() {
   }
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
       {/* Fixed Header */}
       <View>
         {/* Header */}

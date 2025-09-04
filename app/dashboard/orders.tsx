@@ -208,7 +208,7 @@ export default function OrdersPage() {
   const { isDarkMode } = useTheme();
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
       {/* Fixed Header */}
       <View>
         <View

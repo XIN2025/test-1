@@ -51,8 +51,8 @@ function TabsNavigator() {
       <Tabs.Screen
         name="orders"
         options={{
-          title: 'Bookings',
-          tabBarLabel: 'Bookings',
+          title: 'Orders',
+          tabBarLabel: 'Orders',
           tabBarIcon: ({ color, size }) => <ShoppingBag color={color} size={size ?? 22} />,
         }}
       />

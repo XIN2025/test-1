@@ -11,8 +11,8 @@ export default function RootLayout() {
 
   if (!fontsLoaded) {
     return (
-      <AuthProvider>
-        <ThemeProvider>
+      <ThemeProvider>
+        <AuthProvider>
           <View
             style={{
               flex: 1,
@@ -23,18 +23,18 @@ export default function RootLayout() {
           >
             <Text style={{ color: '#059669', fontSize: 18 }}>Loading...</Text>
           </View>
-        </ThemeProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </ThemeProvider>
     );
   }
 
   return (
-    <AuthProvider>
-      <ThemeProvider>
+    <ThemeProvider>
+      <AuthProvider>
         <SafeAreaProvider>
           <Stack screenOptions={{ headerShown: false }} />
         </SafeAreaProvider>
-      </ThemeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

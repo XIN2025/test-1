@@ -128,7 +128,7 @@ export default function ChatPage() {
   const { isDarkMode } = useTheme();
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
         <View style={{ flex: 1 }}>
           {/* Header */}
@@ -371,8 +371,8 @@ export default function ChatPage() {
 
       {/* Input Section - Absolutely positioned outside TouchableWithoutFeedback */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        behavior={'padding'}
+        keyboardVerticalOffset={0}
         style={{
           position: 'absolute',
           bottom: 0,
@@ -426,13 +426,13 @@ export default function ChatPage() {
                   placeholder="Type your message..."
                   style={{
                     fontSize: 16,
-                    color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                    color: isDarkMode ? '#F3F4F6' : '#1F2937',
                     textAlignVertical: 'top',
                     paddingVertical: 8,
                     minHeight: 32,
                     maxHeight: 88,
                   }}
-                  placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
+                  placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
                   multiline
                   maxLength={500}
                   scrollEnabled={false}

@@ -369,7 +369,7 @@ export default function ProfileDashboard() {
   ];
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
       {/* @ts-ignore - expo-linear-gradient children prop typing issue */}
       <View>
         {/* Fixed Header */}
@@ -430,18 +430,6 @@ export default function ProfileDashboard() {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              activeOpacity={0.7}
-            >
-              <Settings size={20} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -553,20 +541,6 @@ export default function ProfileDashboard() {
                     Premium Member
                   </Text>
                 </View>
-                <TouchableOpacity
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 22,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-                  }}
-                  onPress={() => setIsEditing(true)}
-                  activeOpacity={0.7}
-                >
-                  <Edit size={18} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
-                </TouchableOpacity>
               </View>
 
               {/* Health Stats */}

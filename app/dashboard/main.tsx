@@ -658,7 +658,7 @@ export default function MainDashboard() {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
       <View>
         {/* Fixed Header */}
         <View
@@ -1036,8 +1036,8 @@ export default function MainDashboard() {
                       height={width * 0.35}
                       config={{
                         circleColor: '#f97316',
-                        textColor: '#1f2937',
-                        waveTextColor: '#ffffff',
+                        textColor: isDarkMode ? '#fff' : '#1f2937',
+                        waveTextColor: isDarkMode ? '#1f2937' : '#fff',
                         waveColor: '#f97316',
                         circleThickness: 0.08,
                         textVertPosition: 0.5,
