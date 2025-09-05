@@ -11,11 +11,14 @@ import { Bell, Flame, Heart, Settings, Target } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, Modal, Pressable, ScrollView, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Tooltip from 'react-native-walkthrough-tooltip';
+import { CopilotProvider, CopilotStep, walkthroughable, useCopilot } from 'react-native-copilot';
 import { goalsApi } from '../../services/goalsApi';
 import SimpleHealthCard from '../../components/SimpleHealthCard';
 
 const { width } = Dimensions.get('window');
+
+// Create walkthroughable components
+const WalkthroughableView = walkthroughable(View);
 
 // --- Helper function to render streak achievements ---
 function renderStreakAchievements(streak: number | null, isDarkMode: boolean) {
@@ -100,8 +103,9 @@ function renderStreakAchievements(streak: number | null, isDarkMode: boolean) {
   );
 }
 
-export default function MainDashboard() {
+function MainDashboard() {
   const { user, markAsReturningUser } = useAuth();
+  const { start, copilotEvents } = useCopilot();
   const userEmail = user?.email || '';
   const userName = user?.name || '';
 
@@ -150,30 +154,9 @@ export default function MainDashboard() {
   const { completionStats, getGoalCompletionPercentage, markCompletion, loadCompletionStats } =
     useActionCompletions(userEmail);
   // Walkthrough state management
-  const [walkthroughStep, setWalkthroughStep] = useState(0);
-  const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   const [showAllTodayItems, setShowAllTodayItems] = useState(false);
   const [recentInteractions, setRecentInteractions] = useState<Map<string, number>>(new Map());
-
-  // Walkthrough steps configuration
-  const walkthroughSteps = [
-    {
-      content:
-        '📊 Health Score - Your overall health score is calculated based on your daily activities, goal completion, and health metrics. Higher scores mean better health habits!',
-      placement: 'bottom' as const,
-    },
-    {
-      content:
-        "✅ Today's Action Items - Complete your daily health tasks to stay on track with your goals. Tap the checkboxes to mark items as done and build your streak!",
-      placement: 'top' as const,
-    },
-    {
-      content:
-        "🎯 Weekly Goals - Monitor your progress towards weekly health goals and stay motivated. Track completion percentages and see how you're doing each week!",
-      placement: 'top' as const,
-    },
-  ];
 
   // Refresh goals data when screen comes into focus
   useFocusEffect(
@@ -200,7 +183,7 @@ export default function MainDashboard() {
   // Per-user storage key for walkthrough completion
   const walkthroughStorageKey = useMemo(() => `dashboardWalkthroughSeen:${userEmail || 'guest'}`, [userEmail]);
 
-  // Check if walkthrough should be shown
+  // Check if walkthrough should be shown and setup copilot events
   useEffect(() => {
     const checkWalkthrough = async () => {
       try {
@@ -231,9 +214,11 @@ export default function MainDashboard() {
         console.log('💾 Walkthrough seen before:', !!seen, 'Storage key:', walkthroughStorageKey);
 
         if (!seen) {
-          console.log('🚀 Starting walkthrough');
-          setShowWalkthrough(true);
-          setWalkthroughStep(0);
+          console.log('🚀 Starting copilot walkthrough');
+          // Start the copilot walkthrough with a small delay to ensure components are mounted
+          setTimeout(() => {
+            start();
+          }, 500);
         } else {
           console.log('❌ Walkthrough already seen before');
         }
@@ -242,142 +227,35 @@ export default function MainDashboard() {
       }
     };
 
+    // Setup copilot event handlers
+    if (copilotEvents) {
+      copilotEvents.on('stepChange', (step: any) => {
+        console.log(`🎯 Current copilot step: ${step.name} (order: ${step.order})`);
+        console.log('📏 Step measurements:', step);
+      });
+
+      copilotEvents.on('start', () => {
+        console.log('🚀 Copilot walkthrough started');
+        console.log('📍 Available steps should be: healthScore, todayItems, weeklyGoals');
+      });
+
+      copilotEvents.on('stop', async () => {
+        console.log('✅ Copilot walkthrough completed');
+        try {
+          await AsyncStorage.setItem(walkthroughStorageKey, 'true');
+          console.log('💾 Walkthrough completion saved to storage');
+
+          // Mark user as returning user after completing onboarding
+          await markAsReturningUser();
+          console.log('👤 User marked as returning user');
+        } catch (error) {
+          console.log('❌ Error saving walkthrough completion:', error);
+        }
+      });
+    }
+
     checkWalkthrough();
-  }, [walkthroughStorageKey, userEmail]);
-
-  // Handle walkthrough navigation
-  const handleNext = () => {
-    if (walkthroughStep < walkthroughSteps.length - 1) {
-      setWalkthroughStep(walkthroughStep + 1);
-    } else {
-      handleFinish();
-    }
-  };
-
-  const handlePrevious = () => {
-    if (walkthroughStep > 0) {
-      setWalkthroughStep(walkthroughStep - 1);
-    }
-  };
-
-  const handleFinish = async () => {
-    console.log('✅ Walkthrough completed');
-    setShowWalkthrough(false);
-    try {
-      await AsyncStorage.setItem(walkthroughStorageKey, 'true');
-      console.log('💾 Walkthrough completion saved to storage');
-
-      // Mark user as returning user after completing onboarding
-      await markAsReturningUser();
-      console.log('👤 User marked as returning user');
-    } catch (error) {
-      console.log('❌ Error saving walkthrough completion:', error);
-    }
-  };
-
-  const handleSkip = () => {
-    console.log('⏭️ Walkthrough skipped');
-    handleFinish();
-  };
-
-  // Helper function to render tooltip content
-  const renderTooltipContent = (stepIndex: number) => {
-    const step = walkthroughSteps[stepIndex];
-    const isFirst = stepIndex === 0;
-    const isLast = stepIndex === walkthroughSteps.length - 1;
-
-    // Parse content to get title and description
-    const parts = step.content.split(' - ');
-    const title = parts[0] || 'Welcome to EVRA';
-    const description = parts[1] || step.content;
-
-    return (
-      <View style={{ padding: 20, minWidth: 320, maxWidth: 360 }}>
-        <Text
-          style={{
-            fontSize: 18,
-            fontWeight: 'bold',
-            marginBottom: 12,
-            color: '#fff',
-          }}
-        >
-          {title}
-        </Text>
-        <Text
-          style={{
-            fontSize: 15,
-            color: '#e5e7eb',
-            marginBottom: 20,
-            lineHeight: 22,
-          }}
-        >
-          {description}
-        </Text>
-
-        {/* Progress bar */}
-        <View style={{ marginBottom: 20 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 8,
-            }}
-          >
-            <Text style={{ color: '#9ca3af', fontSize: 12 }}>Progress</Text>
-            <Text style={{ color: '#9ca3af', fontSize: 12 }}>
-              {stepIndex + 1} of {walkthroughSteps.length}
-            </Text>
-          </View>
-          <View style={{ height: 4, backgroundColor: '#374151', borderRadius: 2 }}>
-            <View
-              style={{
-                height: 4,
-                backgroundColor: '#059669',
-                borderRadius: 2,
-                width: `${((stepIndex + 1) / walkthroughSteps.length) * 100}%`,
-              }}
-            />
-          </View>
-        </View>
-
-        {/* Buttons */}
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <TouchableOpacity
-            onPress={isFirst ? handleSkip : handlePrevious}
-            style={{
-              flex: 1,
-              padding: 12,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: '#6b7280',
-              alignItems: 'center',
-            }}
-          >
-            <Text style={{ color: '#d1d5db', fontSize: 16, fontWeight: '600' }}>{isFirst ? 'Skip' : 'Previous'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={handleNext}
-            style={{
-              flex: 1,
-              backgroundColor: '#059669',
-              padding: 12,
-              borderRadius: 8,
-              alignItems: 'center',
-              shadowColor: '#059669',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
-            }}
-          >
-            <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>{isLast ? 'Finish' : 'Next'}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
+  }, [walkthroughStorageKey, userEmail, start, copilotEvents, markAsReturningUser]);
 
   // Note: We now use AsyncStorage for walkthrough triggers instead of URL parameters
   // This avoids issues with tab navigation clearing parameters
@@ -686,6 +564,9 @@ export default function MainDashboard() {
               <Pressable onPress={openStreakModal} accessibilityLabel="Show Streak">
                 <Flame size={22} color={isDarkMode ? '#fbbf24' : '#f59e42'} />
               </Pressable>
+              <Pressable onPress={() => start()} accessibilityLabel="Start App Tour">
+                <Target size={20} color={isDarkMode ? '#9ca3af' : '#64748b'} />
+              </Pressable>
               <Pressable accessibilityLabel="Notifications">
                 <Bell size={20} color={isDarkMode ? '#9ca3af' : '#64748b'} />
               </Pressable>
@@ -907,7 +788,7 @@ export default function MainDashboard() {
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
-                marginBottom: 24,
+                marginBottom: 32,
                 minHeight: width * 0.4, // Ensure consistent height
               }}
             >
@@ -999,36 +880,21 @@ export default function MainDashboard() {
               </View>
 
               {/* Health Score - Right Side */}
-              <View className="items-center justify-center">
-                <Tooltip
-                  isVisible={showWalkthrough && walkthroughStep === 0}
-                  content={renderTooltipContent(0)}
-                  placement="bottom"
-                  onClose={handleSkip}
-                  backgroundColor="rgba(0,0,0,0.9)"
-                  showChildInTooltip={true}
-                  allowChildInteraction={false}
-                  closeOnChildInteraction={false}
-                  closeOnContentInteraction={false}
-                  childContentSpacing={16}
-                  displayInsets={{ top: 50, bottom: 50, left: 20, right: 20 }}
-                  useReactNativeModal={true}
-                  childrenWrapperStyle={{
-                    backgroundColor: 'transparent',
-                  }}
-                  contentStyle={{
-                    backgroundColor: '#1f2937',
-                    borderRadius: 16,
-                    borderWidth: 2,
-                    borderColor: '#059669',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 8 },
-                    shadowOpacity: 0.5,
-                    shadowRadius: 16,
-                    elevation: 16,
-                  }}
+              <View className="items-center justify-center" style={{ width: '48%', paddingLeft: 8 }}>
+                <CopilotStep
+                  text="📊 Health Score - Your overall health score is calculated based on your daily activities, goal completion, and health metrics. Higher scores mean better health habits!"
+                  order={1}
+                  name="healthScore"
                 >
-                  <View style={{ alignItems: 'center' }}>
+                  <WalkthroughableView
+                    style={{
+                      alignItems: 'center',
+                      padding: 20,
+                      borderRadius: 16,
+                      minHeight: width * 0.4,
+                      justifyContent: 'center',
+                    }}
+                  >
                     {/* Liquid Gauge for Health Score */}
                     <LiquidGauge
                       value={45}
@@ -1067,8 +933,8 @@ export default function MainDashboard() {
                     >
                       Health Score
                     </Text>
-                  </View>
-                </Tooltip>
+                  </WalkthroughableView>
+                </CopilotStep>
               </View>
             </View>
 
@@ -1107,258 +973,34 @@ export default function MainDashboard() {
             )}
 
             {/* Today's Action Items (collapsible) */}
-            <Tooltip
-              isVisible={showWalkthrough && walkthroughStep === 1}
-              content={renderTooltipContent(1)}
-              placement="top"
-              onClose={handleSkip}
-              backgroundColor="rgba(0,0,0,0.9)"
-              showChildInTooltip={true}
-              allowChildInteraction={false}
-              closeOnChildInteraction={false}
-              closeOnContentInteraction={false}
-              childContentSpacing={12}
-              displayInsets={{ top: 50, bottom: 50, left: 20, right: 20 }}
-              useReactNativeModal={true}
-              childrenWrapperStyle={{
-                backgroundColor: 'transparent',
-              }}
-              contentStyle={{
-                backgroundColor: '#1f2937',
-                borderRadius: 16,
-                borderWidth: 2,
-                borderColor: '#059669',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.5,
-                shadowRadius: 16,
-                elevation: 16,
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                  width: '100%',
-                  borderRadius: 16,
-                  padding: 16,
-                  marginBottom: 16,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}
+            <View style={{ marginBottom: 24 }}>
+              <CopilotStep
+                text="✅ Today's Action Items - Complete your daily health tasks to stay on track with your goals. Tap the checkboxes to mark items as done and build your streak!"
+                order={2}
+                name="todayItems"
               >
-                <View
+                <WalkthroughableView
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 16,
+                    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                    width: '100%',
+                    borderRadius: 16,
+                    padding: 16,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    borderWidth: 1,
+                    borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
                   }}
                 >
-                  <Text
+                  <View
                     style={{
-                      fontSize: 18,
-                      fontWeight: '600',
-                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginBottom: 16,
                     }}
                   >
-                    Today&apos;s Action Items
-                  </Text>
-                </View>
-                {todaysItems.length === 0 ? (
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: isDarkMode ? '#9ca3af' : '#6b7280',
-                    }}
-                  >
-                    No scheduled items for today.
-                  </Text>
-                ) : (
-                  (showAllTodayItems ? todaysItems : todaysItems.slice(0, 3)).map((it) => (
-                    <View
-                      key={it.id}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        marginBottom: 16,
-                        paddingVertical: 4,
-                      }}
-                    >
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          flex: 1,
-                        }}
-                      >
-                        <TouchableOpacity
-                          onPress={() => toggleItemCompleted(it.id)}
-                          style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: 4,
-                            borderWidth: 2,
-                            borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
-                            marginRight: 12,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backgroundColor: completedItems.has(it.id)
-                              ? isDarkMode
-                                ? '#10b981'
-                                : '#059669'
-                              : 'transparent',
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          {completedItems.has(it.id) && (
-                            <Text
-                              style={{
-                                color: 'white',
-                                fontSize: 16,
-                                fontWeight: 'bold',
-                              }}
-                            >
-                              ✓
-                            </Text>
-                          )}
-                        </TouchableOpacity>
-                        <View style={{ flex: 1 }}>
-                          <Text
-                            style={{
-                              fontSize: 14,
-                              fontWeight: '500',
-                              color: completedItems.has(it.id)
-                                ? isDarkMode
-                                  ? '#6b7280'
-                                  : '#6b7280'
-                                : isDarkMode
-                                  ? '#f3f4f6'
-                                  : '#1f2937',
-                              textDecorationLine: completedItems.has(it.id) ? 'line-through' : 'none',
-                            }}
-                          >
-                            {it.title}
-                          </Text>
-                          {it.goalTitle && (
-                            <Text
-                              style={{
-                                fontSize: 12,
-                                color: isDarkMode ? '#9ca3af' : '#6b7280',
-                                marginTop: 2,
-                              }}
-                            >
-                              {it.goalTitle}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                      <View style={{ alignItems: 'flex-end', marginLeft: 12 }}>
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontWeight: '500',
-                            color: isDarkMode ? '#9ca3af' : '#6b7280',
-                          }}
-                        >
-                          {it.start_time && it.end_time
-                            ? `${formatTimeHM(it.start_time)} - ${formatTimeHM(it.end_time)}`
-                            : formatTimeHM(it.start_time) || formatTimeHM(it.end_time) || ''}
-                        </Text>
-                      </View>
-                    </View>
-                  ))
-                )}
-
-                {todaysItems.length > 3 && (
-                  <TouchableOpacity
-                    onPress={() => setShowAllTodayItems((v) => !v)}
-                    style={{
-                      marginTop: 8,
-                      alignSelf: 'flex-start',
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 20,
-                      backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        fontWeight: '600',
-                        color: isDarkMode ? '#34d399' : '#114131',
-                      }}
-                    >
-                      {showAllTodayItems ? 'Show less' : `Show all (${todaysItems.length})`}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </Tooltip>
-
-            {/* Removed Today's Tasks card */}
-
-            {/* Weekly Goals Summary (from goals endpoint) */}
-            <Tooltip
-              key={`weekly-goals-tooltip-${showWalkthrough && walkthroughStep === 2}`}
-              isVisible={showWalkthrough && walkthroughStep === 2}
-              content={renderTooltipContent(2)}
-              placement="top"
-              onClose={handleSkip}
-              backgroundColor="rgba(0,0,0,0.95)"
-              showChildInTooltip={true}
-              allowChildInteraction={false}
-              closeOnChildInteraction={false}
-              closeOnContentInteraction={false}
-              childContentSpacing={16}
-              displayInsets={{ top: 50, bottom: 50, left: 20, right: 20 }}
-              useReactNativeModal={true}
-              childrenWrapperStyle={{
-                backgroundColor: 'transparent',
-                opacity: 1,
-                flex: 1,
-              }}
-              contentStyle={{
-                backgroundColor: '#1f2937',
-                borderRadius: 16,
-                borderWidth: 2,
-                borderColor: '#059669',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.5,
-                shadowRadius: 16,
-                elevation: 16,
-                maxWidth: 360,
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                  borderRadius: 16,
-                  padding: 16,
-                  marginBottom: 16,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                  shadowRadius: 4,
-                  elevation: 3,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: 16,
-                  }}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <View style={{ marginRight: 8 }}>
-                      <Target size={20} color={isDarkMode ? '#34d399' : '#114131'} />
-                    </View>
                     <Text
                       style={{
                         fontSize: 18,
@@ -1366,151 +1008,331 @@ export default function MainDashboard() {
                         color: isDarkMode ? '#f3f4f6' : '#1f2937',
                       }}
                     >
-                      Weekly Goals
+                      Today&apos;s Action Items
                     </Text>
                   </View>
-                  <View
-                    style={{
-                      paddingHorizontal: 12,
-                      paddingVertical: 4,
-                      borderRadius: 20,
-                      backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
-                    }}
-                  >
+                  {todaysItems.length === 0 ? (
                     <Text
                       style={{
-                        fontSize: 12,
-                        fontWeight: '600',
-                        color: isDarkMode ? '#34d399' : '#114131',
+                        fontSize: 14,
+                        color: isDarkMode ? '#9ca3af' : '#6b7280',
                       }}
                     >
-                      {`${(goals || []).filter((g: any) => g.completed).length}/${(goals || []).length}`}
+                      No scheduled items for today.
                     </Text>
-                  </View>
-                </View>
-                {(goals || []).length === 0 ? (
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: isDarkMode ? '#9ca3af' : '#6b7280',
-                    }}
-                  >
-                    No goals yet.
-                  </Text>
-                ) : (
-                  <View>
-                    {(goals as any[]).slice(0, 5).map((g: any) => {
-                      const completionPercentage = getGoalCompletionPercentage(g.id);
-                      return (
+                  ) : (
+                    (showAllTodayItems ? todaysItems : todaysItems.slice(0, 3)).map((it) => (
+                      <View
+                        key={it.id}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginBottom: 16,
+                          paddingVertical: 4,
+                        }}
+                      >
                         <View
-                          key={g.id}
                           style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            justifyContent: 'space-between',
-                            marginBottom: 16,
-                            paddingVertical: 4,
+                            flex: 1,
                           }}
                         >
-                          <View
+                          <TouchableOpacity
+                            onPress={() => toggleItemCompleted(it.id)}
                             style={{
-                              flexDirection: 'row',
+                              width: 24,
+                              height: 24,
+                              borderRadius: 4,
+                              borderWidth: 2,
+                              borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
+                              marginRight: 12,
                               alignItems: 'center',
-                              flex: 1,
+                              justifyContent: 'center',
+                              backgroundColor: completedItems.has(it.id)
+                                ? isDarkMode
+                                  ? '#10b981'
+                                  : '#059669'
+                                : 'transparent',
                             }}
+                            activeOpacity={0.7}
                           >
-                            {/* Circular Progress Ring */}
-                            <View style={{ marginRight: 12 }}>
-                              <CircularProgressRing
-                                size={44}
-                                strokeWidth={3}
-                                progress={completionPercentage}
-                                color={
-                                  completionPercentage >= 80
-                                    ? '#10b981' // Green for high completion
-                                    : completionPercentage >= 50
-                                      ? '#f59e0b' // Yellow for medium completion
-                                      : '#ef4444' // Red for low completion
-                                }
-                                backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
-                                showPercentage={false}
-                                textColor={isDarkMode ? '#d1d5db' : '#374151'}
-                              />
-                            </View>
-                            <View style={{ flex: 1 }}>
+                            {completedItems.has(it.id) && (
                               <Text
                                 style={{
-                                  fontSize: 14,
-                                  fontWeight: '500',
-                                  color: isDarkMode ? '#e5e7eb' : '#1f2937',
-                                  marginBottom: 2,
+                                  color: 'white',
+                                  fontSize: 16,
+                                  fontWeight: 'bold',
                                 }}
                               >
-                                {g.title}
+                                ✓
                               </Text>
+                            )}
+                          </TouchableOpacity>
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={{
+                                fontSize: 14,
+                                fontWeight: '500',
+                                color: completedItems.has(it.id)
+                                  ? isDarkMode
+                                    ? '#6b7280'
+                                    : '#6b7280'
+                                  : isDarkMode
+                                    ? '#f3f4f6'
+                                    : '#1f2937',
+                                textDecorationLine: completedItems.has(it.id) ? 'line-through' : 'none',
+                              }}
+                            >
+                              {it.title}
+                            </Text>
+                            {it.goalTitle && (
                               <Text
                                 style={{
                                   fontSize: 12,
                                   color: isDarkMode ? '#9ca3af' : '#6b7280',
+                                  marginTop: 2,
                                 }}
                               >
-                                {completionPercentage.toFixed(0)}% completed this week
+                                {it.goalTitle}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                        <View style={{ alignItems: 'flex-end', marginLeft: 12 }}>
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              fontWeight: '500',
+                              color: isDarkMode ? '#9ca3af' : '#6b7280',
+                            }}
+                          >
+                            {it.start_time && it.end_time
+                              ? `${formatTimeHM(it.start_time)} - ${formatTimeHM(it.end_time)}`
+                              : formatTimeHM(it.start_time) || formatTimeHM(it.end_time) || ''}
+                          </Text>
+                        </View>
+                      </View>
+                    ))
+                  )}
+
+                  {todaysItems.length > 3 && (
+                    <TouchableOpacity
+                      onPress={() => setShowAllTodayItems((v) => !v)}
+                      style={{
+                        marginTop: 8,
+                        alignSelf: 'flex-start',
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 20,
+                        backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: '600',
+                          color: isDarkMode ? '#34d399' : '#114131',
+                        }}
+                      >
+                        {showAllTodayItems ? 'Show less' : `Show all (${todaysItems.length})`}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </WalkthroughableView>
+              </CopilotStep>
+            </View>
+
+            {/* Removed Today's Tasks card */}
+
+            {/* Weekly Goals Summary (from goals endpoint) */}
+            <View style={{ marginBottom: 24 }}>
+              <CopilotStep
+                text="🎯 Weekly Goals - Monitor your progress towards weekly health goals and stay motivated. Track completion percentages and see how you're doing each week!"
+                order={3}
+                name="weeklyGoals"
+              >
+                <WalkthroughableView
+                  style={{
+                    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                    borderRadius: 16,
+                    padding: 16,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    borderWidth: 1,
+                    borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: 16,
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ marginRight: 8 }}>
+                        <Target size={20} color={isDarkMode ? '#34d399' : '#114131'} />
+                      </View>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          fontWeight: '600',
+                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                        }}
+                      >
+                        Weekly Goals
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 4,
+                        borderRadius: 20,
+                        backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: '600',
+                          color: isDarkMode ? '#34d399' : '#114131',
+                        }}
+                      >
+                        {`${(goals || []).filter((g: any) => g.completed).length}/${(goals || []).length}`}
+                      </Text>
+                    </View>
+                  </View>
+                  {(goals || []).length === 0 ? (
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        color: isDarkMode ? '#9ca3af' : '#6b7280',
+                      }}
+                    >
+                      No goals yet.
+                    </Text>
+                  ) : (
+                    <View>
+                      {(goals as any[]).slice(0, 5).map((g: any) => {
+                        const completionPercentage = getGoalCompletionPercentage(g.id);
+                        return (
+                          <View
+                            key={g.id}
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              marginBottom: 16,
+                              paddingVertical: 4,
+                            }}
+                          >
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                flex: 1,
+                              }}
+                            >
+                              {/* Circular Progress Ring */}
+                              <View style={{ marginRight: 12 }}>
+                                <CircularProgressRing
+                                  size={44}
+                                  strokeWidth={3}
+                                  progress={completionPercentage}
+                                  color={
+                                    completionPercentage >= 80
+                                      ? '#10b981' // Green for high completion
+                                      : completionPercentage >= 50
+                                        ? '#f59e0b' // Yellow for medium completion
+                                        : '#ef4444' // Red for low completion
+                                  }
+                                  backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
+                                  showPercentage={false}
+                                  textColor={isDarkMode ? '#d1d5db' : '#374151'}
+                                />
+                              </View>
+                              <View style={{ flex: 1 }}>
+                                <Text
+                                  style={{
+                                    fontSize: 14,
+                                    fontWeight: '500',
+                                    color: isDarkMode ? '#e5e7eb' : '#1f2937',
+                                    marginBottom: 2,
+                                  }}
+                                >
+                                  {g.title}
+                                </Text>
+                                <Text
+                                  style={{
+                                    fontSize: 12,
+                                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                                  }}
+                                >
+                                  {completionPercentage.toFixed(0)}% completed this week
+                                </Text>
+                              </View>
+                            </View>
+                            <View style={{ alignItems: 'flex-end' }}>
+                              <View
+                                style={{
+                                  width: 12,
+                                  height: 12,
+                                  borderRadius: 6,
+                                  backgroundColor: g.completed
+                                    ? isDarkMode
+                                      ? '#34d399'
+                                      : '#10b981'
+                                    : isDarkMode
+                                      ? '#4b5563'
+                                      : '#94a3b8',
+                                }}
+                              />
+                              <Text
+                                style={{
+                                  fontSize: 11,
+                                  marginTop: 4,
+                                  color: isDarkMode ? '#9ca3af' : '#6b7280',
+                                }}
+                              >
+                                {g.completed ? 'Done' : 'Active'}
                               </Text>
                             </View>
                           </View>
-                          <View style={{ alignItems: 'flex-end' }}>
-                            <View
-                              style={{
-                                width: 12,
-                                height: 12,
-                                borderRadius: 6,
-                                backgroundColor: g.completed
-                                  ? isDarkMode
-                                    ? '#34d399'
-                                    : '#10b981'
-                                  : isDarkMode
-                                    ? '#4b5563'
-                                    : '#94a3b8',
-                              }}
-                            />
-                            <Text
-                              style={{
-                                fontSize: 11,
-                                marginTop: 4,
-                                color: isDarkMode ? '#9ca3af' : '#6b7280',
-                              }}
-                            >
-                              {g.completed ? 'Done' : 'Active'}
-                            </Text>
-                          </View>
-                        </View>
-                      );
-                    })}
-                  </View>
-                )}
-                <TouchableOpacity
-                  style={{
-                    marginTop: 12,
-                    padding: 12,
-                    borderRadius: 12,
-                    backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
-                  }}
-                  onPress={() => router.push('./goals')}
-                  activeOpacity={0.7}
-                >
-                  <Text
+                        );
+                      })}
+                    </View>
+                  )}
+                  <TouchableOpacity
                     style={{
-                      textAlign: 'center',
-                      fontSize: 14,
-                      fontWeight: '600',
-                      color: isDarkMode ? '#34d399' : '#114131',
+                      marginTop: 12,
+                      padding: 12,
+                      borderRadius: 12,
+                      backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
                     }}
+                    onPress={() => router.push('./goals')}
+                    activeOpacity={0.7}
                   >
-                    View All Goals
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </Tooltip>
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        fontSize: 14,
+                        fontWeight: '600',
+                        color: isDarkMode ? '#34d399' : '#114131',
+                      }}
+                    >
+                      View All Goals
+                    </Text>
+                  </TouchableOpacity>
+                </WalkthroughableView>
+              </CopilotStep>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -1773,5 +1595,31 @@ export function StreakCalendar({ isDarkMode, dailyCompletion }: StreakCalendarPr
         </Text>
       </View>
     </View>
+  );
+}
+
+// Export MainDashboard wrapped with CopilotProvider for better positioning
+export default function MainDashboardWithCopilot() {
+  return (
+    <CopilotProvider
+      overlay="svg"
+      animated={true}
+      verticalOffset={Platform.OS === 'ios' ? -10 : 0}
+      animationDuration={400}
+      backdropColor="rgba(0, 0, 0, 0.8)"
+      arrowColor="#10b981"
+      arrowSize={8}
+      margin={12}
+      stopOnOutsideClick={false}
+      androidStatusBarVisible={true}
+      labels={{
+        skip: 'Skip Tour',
+        previous: 'Previous',
+        next: 'Next',
+        finish: 'Got it!',
+      }}
+    >
+      <MainDashboard />
+    </CopilotProvider>
   );
 }
