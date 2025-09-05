@@ -375,11 +375,6 @@ export default function ProfileDashboard() {
         {/* Fixed Header */}
         <View
           style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: isDarkMode ? 0.3 : 0.1,
-            shadowRadius: 4,
-            elevation: 3,
             borderBottomWidth: 1,
             borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
             backgroundColor: isDarkMode ? '#111827' : '#ffffff',

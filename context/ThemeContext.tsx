@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StatusBar } from 'react-native';
+import { SafeAreaView, StatusBar } from 'react-native';
 
 type ThemeContextType = {
   isDarkMode: boolean;
@@ -39,8 +39,10 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      {children}
+      <SafeAreaView style={{ flex: 1 }}>
+        <StatusBar translucent barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor="transparent" />
+        {children}
+      </SafeAreaView>
     </ThemeContext.Provider>
   );
 };
