@@ -15,6 +15,7 @@ import { CopilotProvider, CopilotStep, walkthroughable, useCopilot } from 'react
 import { goalsApi } from '../../services/goalsApi';
 import SimpleHealthCard from '../../components/SimpleHealthCard';
 import UserAvatar from '@/components/UserAvatar';
+import Greeting from '@/components/Greeting';
 
 const { width } = Dimensions.get('window');
 
@@ -551,9 +552,7 @@ function MainDashboard() {
                 userName={userName}
               />
               <View>
-                <Text className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
-                  {`Good morning, ${userName || 'User'}!`}
-                </Text>
+                <Greeting name={userName || 'User'} />
                 <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Ready for a healthy day?
                 </Text>
