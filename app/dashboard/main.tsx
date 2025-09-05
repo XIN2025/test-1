@@ -547,6 +547,7 @@ function MainDashboard() {
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <UserAvatar
+                showBorder={true}
                 onPress={() => router.push('/dashboard/profile')}
                 className={`${isDarkMode ? 'bg-emerald-900' : 'bg-emerald-800'}`}
                 userName={userName}

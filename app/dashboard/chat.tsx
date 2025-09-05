@@ -18,6 +18,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 // @ts-ignore
 import { MessageCircle, Mic, Send } from 'lucide-react-native';
+import CustomMarkdown from '@/components/chat/CustomMarkdown';
 // Removed file upload related imports
 
 interface Message {
@@ -299,15 +300,9 @@ export default function ChatPage() {
                         </Text>
                       </View>
                     ) : (
-                      <Text
-                        style={{
-                          fontSize: 15,
-                          lineHeight: 22,
-                          color: message.sender === 'user' ? '#ffffff' : isDarkMode ? '#f3f4f6' : '#1f2937',
-                        }}
-                      >
+                      <CustomMarkdown style={message.sender === 'user' ? { body: { color: '#ffffff' } } : {}}>
                         {message.text}
-                      </Text>
+                      </CustomMarkdown>
                     )}
                   </View>
 
