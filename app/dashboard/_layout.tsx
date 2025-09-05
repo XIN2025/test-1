@@ -76,8 +76,7 @@ function TabsNavigator() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarLabel: 'Profile',
-          tabBarIcon: ({ color, size }) => <User color={color} size={size ?? 22} />,
+          href: null,
         }}
       />
       <Tabs.Screen

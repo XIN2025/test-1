@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CopilotProvider, CopilotStep, walkthroughable, useCopilot } from 'react-native-copilot';
 import { goalsApi } from '../../services/goalsApi';
 import SimpleHealthCard from '../../components/SimpleHealthCard';
+import UserAvatar from '@/components/UserAvatar';
 
 const { width } = Dimensions.get('window');
 
@@ -543,14 +544,12 @@ function MainDashboard() {
           className={`z-10 px-4 py-4 shadow-sm ${isDarkMode ? 'border-b border-gray-800 bg-gray-900' : 'bg-white'}`}
         >
           <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center">
-              <View
-                className={`mr-3 h-10 w-10 items-center justify-center rounded-full ${
-                  isDarkMode ? 'bg-emerald-900' : 'bg-emerald-800'
-                }`}
-              >
-                <Heart size={20} color="#fff" />
-              </View>
+            <View className="flex-row items-center gap-2">
+              <UserAvatar
+                onPress={() => router.push('/dashboard/profile')}
+                className={`${isDarkMode ? 'bg-emerald-900' : 'bg-emerald-800'}`}
+                userName={userName}
+              />
               <View>
                 <Text className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
                   {`Good morning, ${userName || 'User'}!`}
@@ -569,9 +568,6 @@ function MainDashboard() {
               </Pressable>
               <Pressable accessibilityLabel="Notifications">
                 <Bell size={20} color={isDarkMode ? '#9ca3af' : '#64748b'} />
-              </Pressable>
-              <Pressable accessibilityLabel="Settings">
-                <Settings size={20} color={isDarkMode ? '#9ca3af' : '#64748b'} />
               </Pressable>
             </View>
             {/* Streak Modal */}

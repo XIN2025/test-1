@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView, StatusBar } from 'react-native';
+import * as NavigationBar from 'expo-navigation-bar';
 
 type ThemeContextType = {
   isDarkMode: boolean;
@@ -14,6 +15,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     loadThemePreference();
+    NavigationBar.setBackgroundColorAsync('#ffffff');
+    NavigationBar.setButtonStyleAsync('dark');
   }, []);
 
   const loadThemePreference = async () => {
