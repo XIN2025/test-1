@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SafeAreaView, StatusBar } from 'react-native';
+import { Platform, StatusBar } from 'react-native';
 import * as NavigationBar from 'expo-navigation-bar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type ThemeContextType = {
   isDarkMode: boolean;
@@ -15,8 +16,14 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     loadThemePreference();
-    NavigationBar.setBackgroundColorAsync('#ffffff');
-    NavigationBar.setButtonStyleAsync('dark');
+    if (Platform.OS === 'android') {
+      (async () => {
+        try {
+          await NavigationBar.setBackgroundColorAsync('#ffffff');
+          await NavigationBar.setButtonStyleAsync('dark');
+        } catch (e) {}
+      })();
+    }
   }, []);
 
   const loadThemePreference = async () => {
