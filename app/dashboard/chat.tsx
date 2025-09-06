@@ -130,246 +130,235 @@ export default function ChatPage() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
-      <TouchableWithoutFeedback onPress={dismissKeyboard}>
-        <View style={{ flex: 1 }}>
-          {/* Header */}
+      {/* <TouchableWithoutFeedback onPress={dismissKeyboard}> */}
+      <View style={{ flex: 1 }}>
+        {/* Header */}
+        <View
+          style={{
+            borderBottomWidth: 1,
+            borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
+            backgroundColor: isDarkMode ? '#111827' : '#ffffff',
+            paddingHorizontal: 16,
+            paddingVertical: 16,
+          }}
+        >
           <View
             style={{
-              borderBottomWidth: 1,
-              borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
-              backgroundColor: isDarkMode ? '#111827' : '#ffffff',
-              paddingHorizontal: 16,
-              paddingVertical: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
             }}
           >
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <View
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 12,
+                  backgroundColor: isDarkMode ? '#1f6f51' : '#114131',
+                }}
+              >
+                <MessageCircle size={22} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 22,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: 12,
-                    backgroundColor: isDarkMode ? '#1f6f51' : '#114131',
+                    fontSize: 18,
+                    fontWeight: '600',
+                    color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                    marginBottom: 2,
                   }}
                 >
-                  <MessageCircle size={22} color="#fff" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontWeight: '600',
-                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                      marginBottom: 2,
-                    }}
-                  >
-                    Chat with Evra
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      color: isDarkMode ? '#9ca3af' : '#6b7280',
-                    }}
-                  >
-                    Your AI Health Agent • Get health insights
-                  </Text>
-                </View>
+                  Chat with Evra
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                  }}
+                >
+                  Your AI Health Agent • Get health insights
+                </Text>
               </View>
             </View>
           </View>
+        </View>
 
-          {/* Removed Uploaded Files Section */}
+        {/* Removed Uploaded Files Section */}
 
-          {/* Messages */}
-          <ScrollView
-            ref={scrollViewRef}
-            style={{
-              backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
-              flex: 1,
-            }}
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingHorizontal: 16,
-              paddingVertical: 16,
-              paddingBottom: messages.length === 0 ? 16 : 120,
-              justifyContent: messages.length === 0 ? 'center' : 'flex-start',
-            }}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {messages.length === 0 ? (
-              // Empty state - centered placeholder
+        {/* Messages */}
+        <ScrollView
+          ref={scrollViewRef}
+          style={{
+            backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
+            flex: 1,
+          }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: 16,
+            paddingVertical: 16,
+            paddingBottom: messages.length === 0 ? 16 : 120,
+            justifyContent: messages.length === 0 ? 'center' : 'flex-start',
+          }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {messages.length === 0 ? (
+            // Empty state - centered placeholder
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingHorizontal: 32,
+              }}
+            >
               <View
                 style={{
-                  flex: 1,
-                  justifyContent: 'center',
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
                   alignItems: 'center',
-                  paddingHorizontal: 32,
+                  justifyContent: 'center',
+                  marginBottom: 24,
+                  backgroundColor: isDarkMode ? '#1f6f51' : '#114131',
+                }}
+              >
+                <MessageCircle size={40} color="#fff" />
+              </View>
+              <Text
+                style={{
+                  fontSize: 28,
+                  fontWeight: '600',
+                  color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                  textAlign: 'center',
+                  marginBottom: 12,
+                }}
+              >
+                How can I help you?
+              </Text>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: isDarkMode ? '#9ca3af' : '#6b7280',
+                  textAlign: 'center',
+                  lineHeight: 24,
+                  maxWidth: 300,
+                }}
+              >
+                I&apos;m your AI health assistant. Ask me about nutrition, exercise, medications, or any health-related
+                questions.
+              </Text>
+            </View>
+          ) : (
+            // Messages list
+            messages.map((message) => (
+              <View
+                key={message.id}
+                style={{
+                  marginBottom: 16,
+                  alignItems: message.sender === 'user' ? 'flex-end' : 'flex-start',
                 }}
               >
                 <View
                   style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 40,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 24,
-                    backgroundColor: isDarkMode ? '#1f6f51' : '#114131',
+                    maxWidth: '85%',
+                    borderRadius: 20,
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    backgroundColor:
+                      message.sender === 'user'
+                        ? isDarkMode
+                          ? '#064e3b'
+                          : '#059669'
+                        : isDarkMode
+                          ? '#1f2937'
+                          : '#ffffff',
+                    borderWidth: message.sender === 'bot' ? 1 : 0,
+                    borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
+                    shadowRadius: 2,
+                    elevation: 2,
                   }}
                 >
-                  <MessageCircle size={40} color="#fff" />
-                </View>
-                <Text
-                  style={{
-                    fontSize: 28,
-                    fontWeight: '600',
-                    color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                    textAlign: 'center',
-                    marginBottom: 12,
-                  }}
-                >
-                  How can I help you?
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: isDarkMode ? '#9ca3af' : '#6b7280',
-                    textAlign: 'center',
-                    lineHeight: 24,
-                    maxWidth: 300,
-                  }}
-                >
-                  I&apos;m your AI health assistant. Ask me about nutrition, exercise, medications, or any
-                  health-related questions.
-                </Text>
-              </View>
-            ) : (
-              // Messages list
-              messages.map((message) => (
-                <View
-                  key={message.id}
-                  style={{
-                    marginBottom: 16,
-                    alignItems: message.sender === 'user' ? 'flex-end' : 'flex-start',
-                  }}
-                >
-                  <View
-                    style={{
-                      maxWidth: '85%',
-                      borderRadius: 20,
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      backgroundColor:
-                        message.sender === 'user'
-                          ? isDarkMode
-                            ? '#064e3b'
-                            : '#059669'
-                          : isDarkMode
-                            ? '#1f2937'
-                            : '#ffffff',
-                      borderWidth: message.sender === 'bot' ? 1 : 0,
-                      borderColor: isDarkMode ? '#374151' : '#e5e7eb',
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                      shadowRadius: 2,
-                      elevation: 2,
-                    }}
-                  >
-                    {message.isLoading ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <ActivityIndicator size="small" color={isDarkMode ? '#34d399' : '#114131'} />
-                        <Text
-                          style={{
-                            marginLeft: 8,
-                            fontSize: 14,
-                            color: isDarkMode ? '#d1d5db' : '#6b7280',
-                          }}
-                        >
-                          Evra is thinking...
-                        </Text>
-                      </View>
-                    ) : (
-                      <CustomMarkdown style={message.sender === 'user' ? { body: { color: '#ffffff' } } : {}}>
-                        {message.text}
-                      </CustomMarkdown>
-                    )}
-                  </View>
-
-                  {/* Suggestions */}
-                  {message.sender === 'bot' &&
-                    message.suggestions &&
-                    message.suggestions.length > 0 &&
-                    !message.isLoading && (
-                      <View
+                  {message.isLoading ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <ActivityIndicator size="small" color={isDarkMode ? '#34d399' : '#114131'} />
+                      <Text
                         style={{
-                          marginTop: 12,
-                          flexDirection: 'row',
-                          flexWrap: 'wrap',
+                          marginLeft: 8,
+                          fontSize: 14,
+                          color: isDarkMode ? '#d1d5db' : '#6b7280',
                         }}
                       >
-                        {message.suggestions.map((suggestion, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() => handleSuggestionClick(suggestion)}
-                            style={{
-                              borderWidth: 1,
-                              borderRadius: 20,
-                              paddingHorizontal: 12,
-                              paddingVertical: 8,
-                              marginRight: 8,
-                              marginBottom: 8,
-                              backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                              borderColor: isDarkMode ? '#374151' : '#d1d5db',
-                              shadowColor: '#000',
-                              shadowOffset: { width: 0, height: 1 },
-                              shadowOpacity: isDarkMode ? 0.2 : 0.05,
-                              shadowRadius: 1,
-                              elevation: 1,
-                            }}
-                            activeOpacity={0.7}
-                          >
-                            <Text
-                              style={{
-                                fontSize: 14,
-                                color: isDarkMode ? '#d1d5db' : '#374151',
-                                fontWeight: '500',
-                              }}
-                            >
-                              {suggestion}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
+                        Evra is thinking...
+                      </Text>
+                    </View>
+                  ) : (
+                    <CustomMarkdown style={{ body: { color: '#ffffff' } }}>{message.text}</CustomMarkdown>
+                  )}
                 </View>
-              ))
-            )}
-          </ScrollView>
-        </View>
-      </TouchableWithoutFeedback>
+
+                {/* Suggestions */}
+                {message.sender === 'bot' &&
+                  message.suggestions &&
+                  message.suggestions.length > 0 &&
+                  !message.isLoading && (
+                    <View
+                      style={{
+                        marginTop: 12,
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      {message.suggestions.map((suggestion, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          onPress={() => handleSuggestionClick(suggestion)}
+                          style={{
+                            borderWidth: 1,
+                            borderRadius: 20,
+                            paddingHorizontal: 12,
+                            paddingVertical: 8,
+                            marginRight: 8,
+                            marginBottom: 8,
+                            backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                            borderColor: isDarkMode ? '#374151' : '#d1d5db',
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 1 },
+                            shadowOpacity: isDarkMode ? 0.2 : 0.05,
+                            shadowRadius: 1,
+                            elevation: 1,
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 14,
+                              color: isDarkMode ? '#d1d5db' : '#374151',
+                              fontWeight: '500',
+                            }}
+                          >
+                            {suggestion}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+              </View>
+            ))
+          )}
+        </ScrollView>
+      </View>
+      {/* </TouchableWithoutFeedback> */}
 
       {/* Input Section - Absolutely positioned outside TouchableWithoutFeedback */}
-      <KeyboardAvoidingView
-        behavior={'padding'}
-        keyboardVerticalOffset={0}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={60}>
         <TouchableWithoutFeedback>
           <View
             style={{
@@ -378,7 +367,7 @@ export default function ChatPage() {
               backgroundColor: isDarkMode ? '#111827' : '#ffffff',
               paddingHorizontal: 16,
               paddingTop: 16,
-              paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+              paddingBottom: 16,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: -2 },
               shadowOpacity: isDarkMode ? 0.3 : 0.1,
