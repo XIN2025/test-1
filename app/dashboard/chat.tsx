@@ -300,8 +300,13 @@ export default function ChatPage() {
                       </Text>
                     </View>
                   ) : (
-                    <CustomMarkdown style={{ body: { color: '#ffffff' } }}>{message.text}</CustomMarkdown>
-                  )}
+                    <CustomMarkdown style={
+                      message.sender === 'user'
+                        ? { body: { color: '#ffffff' } }
+                        : { body: { color: isDarkMode ? '#e5e7eb' : '#111827' } }
+                    }>
+                      {message.text}
+                    </CustomMarkdown>
                 </View>
 
                 {/* Suggestions */}
