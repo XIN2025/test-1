@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CopilotProvider, CopilotStep, walkthroughable, useCopilot } from 'react-native-copilot';
 import { goalsApi } from '../../services/goalsApi';
 import SimpleHealthCard from '../../components/SimpleHealthCard';
+import SimpleLabTestsCard from '../../components/SimpleLabTestsCard';
 import UserAvatar from '@/components/UserAvatar';
 import Greeting from '@/components/Greeting';
 
@@ -955,6 +956,16 @@ function MainDashboard() {
                 </Text>
               </TouchableOpacity>
             )}
+
+            {/* Lab Tests Card */}
+            <View style={{ marginBottom: 24 }}>
+              <SimpleLabTestsCard
+                isDarkMode={isDarkMode}
+                onPress={() => router.push('/dashboard/lab-tests')}
+                width={width - 32}
+                height={width * 0.3}
+              />
+            </View>
 
             {/* Today's Action Items (collapsible) */}
             <View style={{ marginBottom: 24 }}>

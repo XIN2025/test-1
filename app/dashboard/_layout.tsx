@@ -2,11 +2,8 @@ import { Tabs } from 'expo-router';
 import { Globe, Heart, MessageCircle, ShoppingBag, Target, User, Users } from 'lucide-react-native';
 import React from 'react';
 import ProtectedRoute from '../../components/ProtectedRoute';
-import { ThemeProvider, useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { SafeAreaProviderCompat } from '@react-navigation/elements';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { SafeAreaView } from 'react-native';
 
 function TabsNavigator() {
   const { isDarkMode } = useTheme();
@@ -68,14 +65,6 @@ function TabsNavigator() {
         }}
       />
       <Tabs.Screen
-        name="supplements"
-        options={{
-          title: 'Hub',
-          tabBarLabel: 'Hub',
-          tabBarIcon: ({ color, size }) => <Users color={color} size={size ?? 22} />,
-        }}
-      />
-      <Tabs.Screen
         name="community"
         options={{
           title: 'Community',
@@ -93,8 +82,15 @@ function TabsNavigator() {
       <Tabs.Screen
         name="health"
         options={{
-          href: null, // This hides it from the tab bar
+          href: null,
           title: 'Health',
+        }}
+      />
+      <Tabs.Screen
+        name="lab-tests"
+        options={{
+          href: null,
+          title: 'Lab Tests',
         }}
       />
     </Tabs>
