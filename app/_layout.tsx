@@ -1,8 +1,8 @@
 import { Stack } from 'expo-router';
-import { Text, View } from 'react-native';
+import { SafeAreaView, StatusBar, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../context/AuthContext';
-import { ThemeProvider } from '../context/ThemeContext';
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { useFonts } from '../hooks/useFonts';
 import './global.css';
 
@@ -31,9 +31,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <SafeAreaProvider>
-          <Stack screenOptions={{ headerShown: false }} />
-        </SafeAreaProvider>
+        <Stack screenOptions={{ headerShown: false }} />
       </AuthProvider>
     </ThemeProvider>
   );

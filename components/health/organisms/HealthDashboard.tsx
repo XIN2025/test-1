@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, Platform, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Platform, Alert, SafeAreaView } from 'react-native';
 import { Activity, ChevronRight } from 'lucide-react-native';
 import HealthSummaryCard from '../molecules/HealthSummaryCard';
 import { useHealthKit } from '../../../hooks/useHealthKit';
@@ -61,7 +61,7 @@ export default function HealthDashboard({ isDarkMode = false, onViewAllHealth }:
   // If permissions not granted, show permission request
   if (!hasPermissions) {
     return (
-      <View
+      <SafeAreaView
         style={{
           backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
           borderRadius: 16,
@@ -137,7 +137,7 @@ export default function HealthDashboard({ isDarkMode = false, onViewAllHealth }:
           </Text>
           <ChevronRight size={16} color="#ffffff" />
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -170,7 +170,7 @@ export default function HealthDashboard({ isDarkMode = false, onViewAllHealth }:
   ];
 
   return (
-    <View style={{ marginBottom: 16 }}>
+    <SafeAreaView style={{ marginBottom: 16, backgroundColor: isDarkMode ? '#111827' : '#ffffff' }}>
       <HealthSummaryCard
         healthData={healthDataForDisplay}
         isDarkMode={isDarkMode}
@@ -213,6 +213,6 @@ export default function HealthDashboard({ isDarkMode = false, onViewAllHealth }:
           <ChevronRight size={20} color="#ffffff" />
         </TouchableOpacity>
       )}
-    </View>
+    </SafeAreaView>
   );
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "782872528626",
+    "project_id": "evra-fcm",
+    "storage_bucket": "evra-fcm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:782872528626:android:f0caf13b1e63e1928a326b",
+        "android_client_info": {
+          "package_name": "com.evra.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5aISc7NStit03VqRtjG6kIvp5X88SOzM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

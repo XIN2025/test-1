@@ -508,16 +508,6 @@ function MainDashboard() {
       markCompletion(goalId, actionItem.title, !isCompleted)
         .then(() => {
           // Add a small delay to allow backend processing to complete
-          setTimeout(() => {
-            // Refresh goals data to get the updated weekly completion status
-            if (loadGoals) {
-              loadGoals();
-            }
-            // Also refresh completion stats
-            if (loadCompletionStats) {
-              loadCompletionStats();
-            }
-          }, 500); // 500ms delay to allow backend processing
         })
         .catch((error) => {
           console.error('Failed to mark completion:', error);
@@ -541,9 +531,7 @@ function MainDashboard() {
     <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
       <View>
         {/* Fixed Header */}
-        <View
-          className={`z-10 px-4 py-4 shadow-sm ${isDarkMode ? 'border-b border-gray-800 bg-gray-900' : 'bg-white'}`}
-        >
+        <View className={`z-10 px-4 py-4 shadow-sm ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <UserAvatar

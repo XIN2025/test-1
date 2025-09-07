@@ -4,6 +4,9 @@ import React from 'react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { ThemeProvider, useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { SafeAreaProviderCompat } from '@react-navigation/elements';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native';
 
 function TabsNavigator() {
   const { isDarkMode } = useTheme();
@@ -18,6 +21,14 @@ function TabsNavigator() {
         tabBarStyle: {
           backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
           borderTopColor: isDarkMode ? '#374151' : '#e5e7eb',
+          // height: 70,
+          // paddingBottom: 20,
+          // paddingTop: 10,
+          // marginBottom: 20,
+          // paddingHorizontal: 16,
+          // borderTopWidth: 1,
+          // elevation: 0,
+          // shadowOpacity: 0,
         },
         tabBarActiveTintColor: isDarkMode ? '#34d399' : '#059669',
         tabBarInactiveTintColor: isDarkMode ? '#9ca3af' : '#64748b',
@@ -92,10 +103,8 @@ function TabsNavigator() {
 
 export default function DashboardTabsLayout() {
   return (
-    <ThemeProvider>
-      <ProtectedRoute>
-        <TabsNavigator />
-      </ProtectedRoute>
-    </ThemeProvider>
+    <ProtectedRoute>
+      <TabsNavigator />
+    </ProtectedRoute>
   );
 }

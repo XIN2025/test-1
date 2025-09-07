@@ -297,7 +297,16 @@ class GoalsApiService {
       method: 'POST',
       body: JSON.stringify(completionData),
     });
-    return response.data;
+    if (response.success) {
+      return {
+        success: true,
+        data: response.data,
+      };
+    } else {
+      return {
+        success: false,
+      };
+    }
   }
 
   async getGoalCompletionStats(

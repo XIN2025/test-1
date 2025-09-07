@@ -3,13 +3,14 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   isHealthDataAvailable,
-  requestAuthorization,
   getMostRecentQuantitySample,
   getMostRecentCategorySample,
   queryQuantitySamples,
   subscribeToChanges,
   QuantityTypeIdentifier,
   CategoryTypeIdentifier,
+  useHealthkitAuthorization,
+  AuthorizationRequestStatus,
 } from '@kingstinct/react-native-healthkit';
 
 export interface HealthMetric {
@@ -21,6 +22,7 @@ export interface HealthMetric {
 }
 
 export interface HealthKitData {
+  // Core metrics that are guaranteed to work
   steps: HealthMetric;
   heartRate: HealthMetric;
   activeEnergy: HealthMetric;
@@ -29,24 +31,111 @@ export interface HealthKitData {
   bodyFat: HealthMetric;
   bloodGlucose: HealthMetric;
   oxygenSaturation: HealthMetric;
+
+  // Additional metrics that are available in the library
+  restingHeartRate: HealthMetric;
+  heartRateVariability: HealthMetric;
+  bloodPressureSystolic: HealthMetric;
+  bloodPressureDiastolic: HealthMetric;
+  bodyTemperature: HealthMetric;
+  respiratoryRate: HealthMetric;
+  vo2Max: HealthMetric;
+  distanceWalkingRunning: HealthMetric;
+  distanceCycling: HealthMetric;
+  flightsClimbed: HealthMetric;
+  standTime: HealthMetric;
+  exerciseTime: HealthMetric;
+  mindfulMinutes: HealthMetric;
+  bodyMassIndex: HealthMetric;
+  leanBodyMass: HealthMetric;
+  waistCircumference: HealthMetric;
+  bloodAlcoholContent: HealthMetric;
+  caffeine: HealthMetric;
+  dietaryWater: HealthMetric;
+  dietaryEnergyConsumed: HealthMetric;
+  dietaryProtein: HealthMetric;
+  dietaryCarbohydrates: HealthMetric;
+  dietaryFatTotal: HealthMetric;
+  dietaryFiber: HealthMetric;
+  dietarySugar: HealthMetric;
+  dietarySodium: HealthMetric;
+  dietaryCholesterol: HealthMetric;
+  dietarySaturatedFat: HealthMetric;
+  dietaryCalcium: HealthMetric;
+  dietaryIron: HealthMetric;
+  dietaryMagnesium: HealthMetric;
+  dietaryPotassium: HealthMetric;
+  dietaryVitaminA: HealthMetric;
+  dietaryVitaminB6: HealthMetric;
+  dietaryVitaminB12: HealthMetric;
+  dietaryVitaminC: HealthMetric;
+  dietaryVitaminD: HealthMetric;
+  dietaryVitaminE: HealthMetric;
+  dietaryVitaminK: HealthMetric;
+  dietaryFolate: HealthMetric;
 }
 
-const HEALTH_PERMISSIONS = [
-  'HKQuantityTypeIdentifierStepCount',
-  'HKQuantityTypeIdentifierHeartRate',
-  'HKQuantityTypeIdentifierActiveEnergyBurned',
-  'HKQuantityTypeIdentifierBodyMass',
-  'HKQuantityTypeIdentifierBodyFatPercentage',
-  'HKQuantityTypeIdentifierBloodGlucose',
-  'HKQuantityTypeIdentifierOxygenSaturation',
-  'HKCategoryTypeIdentifierSleepAnalysis',
-] as const;
+// Note: We now use the kingstinct useHealthkitAuthorization hook which handles all permissions
+// The permissions are defined directly in the hook call below
 
 export function useHealthKit() {
   const [isAvailable, setIsAvailable] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPermissions, setHasPermissions] = useState(false);
+
+  // Use the kingstinct recommended authorization hook
+  const [authorizationStatus, requestHealthkitAuthorization] = useHealthkitAuthorization([
+    'HKQuantityTypeIdentifierStepCount',
+    'HKQuantityTypeIdentifierHeartRate',
+    'HKQuantityTypeIdentifierActiveEnergyBurned',
+    'HKQuantityTypeIdentifierBodyMass',
+    'HKQuantityTypeIdentifierBodyFatPercentage',
+    'HKQuantityTypeIdentifierBloodGlucose',
+    'HKQuantityTypeIdentifierOxygenSaturation',
+    'HKCategoryTypeIdentifierSleepAnalysis',
+    'HKQuantityTypeIdentifierRestingHeartRate',
+    'HKQuantityTypeIdentifierHeartRateVariabilitySDNN',
+    'HKQuantityTypeIdentifierBodyTemperature',
+    'HKQuantityTypeIdentifierRespiratoryRate',
+    'HKQuantityTypeIdentifierVO2Max',
+    'HKQuantityTypeIdentifierDistanceWalkingRunning',
+    'HKQuantityTypeIdentifierDistanceCycling',
+    'HKQuantityTypeIdentifierFlightsClimbed',
+    'HKQuantityTypeIdentifierAppleStandTime',
+    'HKQuantityTypeIdentifierAppleExerciseTime',
+    'HKCategoryTypeIdentifierMindfulSession',
+    'HKQuantityTypeIdentifierBodyMassIndex',
+    'HKQuantityTypeIdentifierLeanBodyMass',
+    'HKQuantityTypeIdentifierWaistCircumference',
+    'HKQuantityTypeIdentifierBloodPressureSystolic',
+    'HKQuantityTypeIdentifierBloodPressureDiastolic',
+    'HKQuantityTypeIdentifierBloodAlcoholContent',
+    'HKQuantityTypeIdentifierDietaryCaffeine',
+    'HKQuantityTypeIdentifierDietaryWater',
+    'HKQuantityTypeIdentifierDietaryEnergyConsumed',
+    'HKQuantityTypeIdentifierDietaryProtein',
+    'HKQuantityTypeIdentifierDietaryCarbohydrates',
+    'HKQuantityTypeIdentifierDietaryFatTotal',
+    'HKQuantityTypeIdentifierDietaryFiber',
+    'HKQuantityTypeIdentifierDietarySugar',
+    'HKQuantityTypeIdentifierDietarySodium',
+    'HKQuantityTypeIdentifierDietaryCholesterol',
+    'HKQuantityTypeIdentifierDietaryFatSaturated',
+    'HKQuantityTypeIdentifierDietaryCalcium',
+    'HKQuantityTypeIdentifierDietaryIron',
+    'HKQuantityTypeIdentifierDietaryMagnesium',
+    'HKQuantityTypeIdentifierDietaryPotassium',
+    'HKQuantityTypeIdentifierDietaryVitaminA',
+    'HKQuantityTypeIdentifierDietaryVitaminB6',
+    'HKQuantityTypeIdentifierDietaryVitaminB12',
+    'HKQuantityTypeIdentifierDietaryVitaminC',
+    'HKQuantityTypeIdentifierDietaryVitaminD',
+    'HKQuantityTypeIdentifierDietaryVitaminE',
+    'HKQuantityTypeIdentifierDietaryVitaminK',
+    'HKQuantityTypeIdentifierDietaryFolate',
+  ]);
   const [healthData, setHealthData] = useState<HealthKitData>({
+    // Core metrics
     steps: { value: 0, isAvailable: false },
     heartRate: { value: 0, unit: 'bpm', isAvailable: false },
     activeEnergy: { value: 0, unit: 'kcal', isAvailable: false },
@@ -55,6 +144,48 @@ export function useHealthKit() {
     bodyFat: { value: 0, unit: '%', isAvailable: false },
     bloodGlucose: { value: 0, unit: 'mg/dL', isAvailable: false },
     oxygenSaturation: { value: 0, unit: '%', isAvailable: false },
+
+    // Additional metrics
+    restingHeartRate: { value: 0, unit: 'bpm', isAvailable: false },
+    heartRateVariability: { value: 0, unit: 'ms', isAvailable: false },
+    bloodPressureSystolic: { value: 0, unit: 'mmHg', isAvailable: false },
+    bloodPressureDiastolic: { value: 0, unit: 'mmHg', isAvailable: false },
+    bodyTemperature: { value: 0, unit: '°C', isAvailable: false },
+    respiratoryRate: { value: 0, unit: '/min', isAvailable: false },
+    vo2Max: { value: 0, unit: 'mL/kg·min', isAvailable: false },
+    distanceWalkingRunning: { value: 0, unit: 'km', isAvailable: false },
+    distanceCycling: { value: 0, unit: 'km', isAvailable: false },
+    flightsClimbed: { value: 0, unit: 'flights', isAvailable: false },
+    standTime: { value: 0, unit: 'hrs', isAvailable: false },
+    exerciseTime: { value: 0, unit: 'min', isAvailable: false },
+    mindfulMinutes: { value: 0, unit: 'min', isAvailable: false },
+    bodyMassIndex: { value: 0, unit: 'kg/m²', isAvailable: false },
+    leanBodyMass: { value: 0, unit: 'kg', isAvailable: false },
+    waistCircumference: { value: 0, unit: 'cm', isAvailable: false },
+    bloodAlcoholContent: { value: 0, unit: '%', isAvailable: false },
+    caffeine: { value: 0, unit: 'mg', isAvailable: false },
+    dietaryWater: { value: 0, unit: 'L', isAvailable: false },
+    dietaryEnergyConsumed: { value: 0, unit: 'kcal', isAvailable: false },
+    dietaryProtein: { value: 0, unit: 'g', isAvailable: false },
+    dietaryCarbohydrates: { value: 0, unit: 'g', isAvailable: false },
+    dietaryFatTotal: { value: 0, unit: 'g', isAvailable: false },
+    dietaryFiber: { value: 0, unit: 'g', isAvailable: false },
+    dietarySugar: { value: 0, unit: 'g', isAvailable: false },
+    dietarySodium: { value: 0, unit: 'mg', isAvailable: false },
+    dietaryCholesterol: { value: 0, unit: 'mg', isAvailable: false },
+    dietarySaturatedFat: { value: 0, unit: 'g', isAvailable: false },
+    dietaryCalcium: { value: 0, unit: 'mg', isAvailable: false },
+    dietaryIron: { value: 0, unit: 'mg', isAvailable: false },
+    dietaryMagnesium: { value: 0, unit: 'mg', isAvailable: false },
+    dietaryPotassium: { value: 0, unit: 'mg', isAvailable: false },
+    dietaryVitaminA: { value: 0, unit: 'μg', isAvailable: false },
+    dietaryVitaminB6: { value: 0, unit: 'mg', isAvailable: false },
+    dietaryVitaminB12: { value: 0, unit: 'μg', isAvailable: false },
+    dietaryVitaminC: { value: 0, unit: 'mg', isAvailable: false },
+    dietaryVitaminD: { value: 0, unit: 'μg', isAvailable: false },
+    dietaryVitaminE: { value: 0, unit: 'mg', isAvailable: false },
+    dietaryVitaminK: { value: 0, unit: 'μg', isAvailable: false },
+    dietaryFolate: { value: 0, unit: 'μg', isAvailable: false },
   });
 
   const verifyPermissions = useCallback(async (useCache = false) => {
@@ -135,9 +266,10 @@ export function useHealthKit() {
       setIsAvailable(available);
 
       if (available) {
-        // Always verify permissions, but use cache for faster initial load
-        const hasValidPermissions = await verifyPermissions(true);
-        setHasPermissions(hasValidPermissions);
+        // Use the authorization status from the kingstinct hook
+        const isAuthorized = authorizationStatus === AuthorizationRequestStatus.unnecessary;
+        setHasPermissions(isAuthorized);
+        console.log('Authorization status:', authorizationStatus, 'isAuthorized:', isAuthorized);
       }
     } catch (error) {
       console.error('Error checking health data availability:', error);
@@ -146,36 +278,115 @@ export function useHealthKit() {
     } finally {
       setIsLoading(false);
     }
-  }, [verifyPermissions]);
+  }, [authorizationStatus]);
 
-  const requestHealthKitPermissions = useCallback(async () => {
-    if (!isAvailable) return false;
+  const requestHealthKitPermissions = useCallback(
+    async (requestAllPermissions = false) => {
+      if (!isAvailable) return false;
 
-    try {
-      setIsLoading(true);
-      // requestAuthorization expects (toShare, read) - we only need read permissions
-      await requestAuthorization([], HEALTH_PERMISSIONS);
-
-      // Verify that permissions were actually granted by attempting to access data
-      const hasValidPermissions = await verifyPermissions(false);
-      setHasPermissions(hasValidPermissions);
-
-      return hasValidPermissions;
-    } catch (error) {
-      console.error('Error requesting HealthKit permissions:', error);
-      setHasPermissions(false);
-      // Clear any cached permissions on error
       try {
-        await AsyncStorage.removeItem('healthkit_permissions_granted');
-      } catch {}
+        setIsLoading(true);
+
+        console.log('Requesting HealthKit permissions using kingstinct authorization');
+
+        // Use the kingstinct recommended authorization method
+        await requestHealthkitAuthorization();
+
+        // The authorization status will be updated automatically by the hook
+        // We'll check it in the next render cycle
+        return true;
+      } catch (error) {
+        console.error('Error requesting HealthKit permissions:', error);
+        setHasPermissions(false);
+        // Clear any cached permissions on error
+        try {
+          await AsyncStorage.removeItem('healthkit_permissions_granted');
+        } catch {}
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [isAvailable, requestHealthkitAuthorization],
+  );
+
+  const resetHealthKitPermissions = useCallback(async () => {
+    try {
+      // Clear cached permissions
+      await AsyncStorage.removeItem('healthkit_permissions_granted');
+      setHasPermissions(false);
+
+      // Re-request permissions using kingstinct authorization
+      console.log('Resetting permissions and re-requesting authorization');
+      await requestHealthkitAuthorization();
+
+      // Reset health data
+      setHealthData({
+        // Core metrics
+        steps: { value: 0, isAvailable: false },
+        heartRate: { value: 0, unit: 'bpm', isAvailable: false },
+        activeEnergy: { value: 0, unit: 'kcal', isAvailable: false },
+        sleep: { value: 0, unit: 'hrs', isAvailable: false },
+        weight: { value: 0, unit: 'kg', isAvailable: false },
+        bodyFat: { value: 0, unit: '%', isAvailable: false },
+        bloodGlucose: { value: 0, unit: 'mg/dL', isAvailable: false },
+        oxygenSaturation: { value: 0, unit: '%', isAvailable: false },
+
+        // Additional metrics
+        restingHeartRate: { value: 0, unit: 'bpm', isAvailable: false },
+        heartRateVariability: { value: 0, unit: 'ms', isAvailable: false },
+        bloodPressureSystolic: { value: 0, unit: 'mmHg', isAvailable: false },
+        bloodPressureDiastolic: { value: 0, unit: 'mmHg', isAvailable: false },
+        bodyTemperature: { value: 0, unit: '°C', isAvailable: false },
+        respiratoryRate: { value: 0, unit: '/min', isAvailable: false },
+        vo2Max: { value: 0, unit: 'mL/kg·min', isAvailable: false },
+        distanceWalkingRunning: { value: 0, unit: 'km', isAvailable: false },
+        distanceCycling: { value: 0, unit: 'km', isAvailable: false },
+        flightsClimbed: { value: 0, unit: 'flights', isAvailable: false },
+        standTime: { value: 0, unit: 'hrs', isAvailable: false },
+        exerciseTime: { value: 0, unit: 'min', isAvailable: false },
+        mindfulMinutes: { value: 0, unit: 'min', isAvailable: false },
+        bodyMassIndex: { value: 0, unit: 'kg/m²', isAvailable: false },
+        leanBodyMass: { value: 0, unit: 'kg', isAvailable: false },
+        waistCircumference: { value: 0, unit: 'cm', isAvailable: false },
+        bloodAlcoholContent: { value: 0, unit: '%', isAvailable: false },
+        caffeine: { value: 0, unit: 'mg', isAvailable: false },
+        dietaryWater: { value: 0, unit: 'L', isAvailable: false },
+        dietaryEnergyConsumed: { value: 0, unit: 'kcal', isAvailable: false },
+        dietaryProtein: { value: 0, unit: 'g', isAvailable: false },
+        dietaryCarbohydrates: { value: 0, unit: 'g', isAvailable: false },
+        dietaryFatTotal: { value: 0, unit: 'g', isAvailable: false },
+        dietaryFiber: { value: 0, unit: 'g', isAvailable: false },
+        dietarySugar: { value: 0, unit: 'g', isAvailable: false },
+        dietarySodium: { value: 0, unit: 'mg', isAvailable: false },
+        dietaryCholesterol: { value: 0, unit: 'mg', isAvailable: false },
+        dietarySaturatedFat: { value: 0, unit: 'g', isAvailable: false },
+        dietaryCalcium: { value: 0, unit: 'mg', isAvailable: false },
+        dietaryIron: { value: 0, unit: 'mg', isAvailable: false },
+        dietaryMagnesium: { value: 0, unit: 'mg', isAvailable: false },
+        dietaryPotassium: { value: 0, unit: 'mg', isAvailable: false },
+        dietaryVitaminA: { value: 0, unit: 'μg', isAvailable: false },
+        dietaryVitaminB6: { value: 0, unit: 'mg', isAvailable: false },
+        dietaryVitaminB12: { value: 0, unit: 'μg', isAvailable: false },
+        dietaryVitaminC: { value: 0, unit: 'mg', isAvailable: false },
+        dietaryVitaminD: { value: 0, unit: 'μg', isAvailable: false },
+        dietaryVitaminE: { value: 0, unit: 'mg', isAvailable: false },
+        dietaryVitaminK: { value: 0, unit: 'μg', isAvailable: false },
+        dietaryFolate: { value: 0, unit: 'μg', isAvailable: false },
+      });
+
+      console.log('HealthKit permissions reset successfully');
+      return true;
+    } catch (error) {
+      console.error('Error resetting HealthKit permissions:', error);
       return false;
-    } finally {
-      setIsLoading(false);
     }
-  }, [isAvailable, verifyPermissions]);
+  }, [requestHealthkitAuthorization]);
 
   const fetchHealthMetric = useCallback(async (type: string, isCategory = false): Promise<HealthMetric> => {
     try {
+      console.log(`Fetching ${type} (category: ${isCategory})`);
+
       // Get today's date range (start of today to now)
       const now = new Date();
       const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
@@ -183,6 +394,7 @@ export function useHealthKit() {
       if (isCategory) {
         const sample = await getMostRecentCategorySample(type as CategoryTypeIdentifier);
         if (sample) {
+          console.log(`Successfully fetched category ${type}:`, sample.value);
           // For sleep, calculate duration in hours
           if (type.includes('Sleep')) {
             const duration =
@@ -206,7 +418,6 @@ export function useHealthKit() {
           try {
             // PERFORMANCE FIX: Query ONLY today's samples using native date range filtering
             // This prevents fetching ALL historical data and filtering in JavaScript,
-            // which was causing severe memory and CPU performance issues
             const samples = await queryQuantitySamples(type as QuantityTypeIdentifier, {
               filter: {
                 startDate: startOfToday,
@@ -245,6 +456,7 @@ export function useHealthKit() {
           // For instantaneous metrics like heart rate, weight, etc., get the most recent
           const sample = await getMostRecentQuantitySample(type as QuantityTypeIdentifier);
           if (sample) {
+            console.log(`Successfully fetched quantity ${type}:`, sample.quantity, sample.unit);
             return {
               value: Math.round(sample.quantity * 10) / 10,
               unit: sample.unit,
@@ -257,8 +469,9 @@ export function useHealthKit() {
 
       return { value: 0, isAvailable: false, error: 'No data available' };
     } catch (error) {
-      console.error(`Error fetching ${type}:`, error);
-      return { value: 0, isAvailable: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      // Log the error but don't throw - return unavailable status instead
+      console.warn(`Health metric ${type} is not available or not supported:`, error);
+      return { value: 0, isAvailable: false, error: 'Metric not supported or no data available' };
     }
   }, []);
 
@@ -275,17 +488,110 @@ export function useHealthKit() {
         return;
       }
 
-      const [steps, heartRate, activeEnergy, sleep, weight, bodyFat, bloodGlucose, oxygenSaturation] =
-        await Promise.all([
-          fetchHealthMetric('HKQuantityTypeIdentifierStepCount'),
-          fetchHealthMetric('HKQuantityTypeIdentifierHeartRate'),
-          fetchHealthMetric('HKQuantityTypeIdentifierActiveEnergyBurned'),
-          fetchHealthMetric('HKCategoryTypeIdentifierSleepAnalysis', true),
-          fetchHealthMetric('HKQuantityTypeIdentifierBodyMass'),
-          fetchHealthMetric('HKQuantityTypeIdentifierBodyFatPercentage'),
-          fetchHealthMetric('HKQuantityTypeIdentifierBloodGlucose'),
-          fetchHealthMetric('HKQuantityTypeIdentifierOxygenSaturation'),
-        ]);
+      const [
+        steps,
+        heartRate,
+        activeEnergy,
+        sleep,
+        weight,
+        bodyFat,
+        bloodGlucose,
+        oxygenSaturation,
+        restingHeartRate,
+        heartRateVariability,
+        bloodPressureSystolic,
+        bloodPressureDiastolic,
+        bodyTemperature,
+        respiratoryRate,
+        vo2Max,
+        distanceWalkingRunning,
+        distanceCycling,
+        flightsClimbed,
+        standTime,
+        exerciseTime,
+        mindfulMinutes,
+        bodyMassIndex,
+        leanBodyMass,
+        waistCircumference,
+        bloodAlcoholContent,
+        caffeine,
+        dietaryWater,
+        dietaryEnergyConsumed,
+        dietaryProtein,
+        dietaryCarbohydrates,
+        dietaryFatTotal,
+        dietaryFiber,
+        dietarySugar,
+        dietarySodium,
+        dietaryCholesterol,
+        dietarySaturatedFat,
+        dietaryCalcium,
+        dietaryIron,
+        dietaryMagnesium,
+        dietaryPotassium,
+        dietaryVitaminA,
+        dietaryVitaminB6,
+        dietaryVitaminB12,
+        dietaryVitaminC,
+        dietaryVitaminD,
+        dietaryVitaminE,
+        dietaryVitaminK,
+        dietaryFolate,
+      ] = await Promise.all([
+        fetchHealthMetric('HKQuantityTypeIdentifierStepCount'),
+        fetchHealthMetric('HKQuantityTypeIdentifierHeartRate'),
+        fetchHealthMetric('HKQuantityTypeIdentifierActiveEnergyBurned'),
+        fetchHealthMetric('HKCategoryTypeIdentifierSleepAnalysis', true),
+        fetchHealthMetric('HKQuantityTypeIdentifierBodyMass'),
+        fetchHealthMetric('HKQuantityTypeIdentifierBodyFatPercentage'),
+        fetchHealthMetric('HKQuantityTypeIdentifierBloodGlucose'),
+        fetchHealthMetric('HKQuantityTypeIdentifierOxygenSaturation'),
+        // Additional metrics
+        fetchHealthMetric('HKQuantityTypeIdentifierRestingHeartRate'),
+        fetchHealthMetric('HKQuantityTypeIdentifierHeartRateVariabilitySDNN'),
+        fetchHealthMetric('HKQuantityTypeIdentifierBloodPressureSystolic'),
+        fetchHealthMetric('HKQuantityTypeIdentifierBloodPressureDiastolic'),
+        fetchHealthMetric('HKQuantityTypeIdentifierBodyTemperature'),
+        fetchHealthMetric('HKQuantityTypeIdentifierRespiratoryRate'),
+        fetchHealthMetric('HKQuantityTypeIdentifierVO2Max'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDistanceWalkingRunning'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDistanceCycling'),
+        fetchHealthMetric('HKQuantityTypeIdentifierFlightsClimbed'),
+        fetchHealthMetric('HKQuantityTypeIdentifierAppleStandTime'),
+        fetchHealthMetric('HKQuantityTypeIdentifierAppleExerciseTime'),
+        fetchHealthMetric('HKCategoryTypeIdentifierMindfulSession', true),
+        fetchHealthMetric('HKQuantityTypeIdentifierBodyMassIndex'),
+        fetchHealthMetric('HKQuantityTypeIdentifierLeanBodyMass'),
+        fetchHealthMetric('HKQuantityTypeIdentifierWaistCircumference'),
+        fetchHealthMetric('HKQuantityTypeIdentifierBloodAlcoholContent'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryCaffeine'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryWater'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryEnergyConsumed'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryProtein'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryCarbohydrates'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryFatTotal'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryFiber'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietarySugar'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietarySodium'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryCholesterol'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryFatSaturated'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryCalcium'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryIron'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryMagnesium'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryPotassium'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryVitaminA'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryVitaminB6'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryVitaminB12'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryVitaminC'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryVitaminD'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryVitaminE'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryVitaminK'),
+        fetchHealthMetric('HKQuantityTypeIdentifierDietaryFolate'),
+      ]);
+      if (__DEV__) {
+        console.log('HealthKit data fetched successfully');
+        // Optionally keep minimal, non-sensitive diagnostics here during development.
+      }
 
       setHealthData({
         steps,
@@ -296,6 +602,46 @@ export function useHealthKit() {
         bodyFat,
         bloodGlucose,
         oxygenSaturation,
+        restingHeartRate,
+        heartRateVariability,
+        bloodPressureSystolic,
+        bloodPressureDiastolic,
+        bodyTemperature,
+        respiratoryRate,
+        vo2Max,
+        distanceWalkingRunning,
+        distanceCycling,
+        flightsClimbed,
+        standTime,
+        exerciseTime,
+        mindfulMinutes,
+        bodyMassIndex,
+        leanBodyMass,
+        waistCircumference,
+        bloodAlcoholContent,
+        caffeine,
+        dietaryWater,
+        dietaryEnergyConsumed,
+        dietaryProtein,
+        dietaryCarbohydrates,
+        dietaryFatTotal,
+        dietaryFiber,
+        dietarySugar,
+        dietarySodium,
+        dietaryCholesterol,
+        dietarySaturatedFat,
+        dietaryCalcium,
+        dietaryIron,
+        dietaryMagnesium,
+        dietaryPotassium,
+        dietaryVitaminA,
+        dietaryVitaminB6,
+        dietaryVitaminB12,
+        dietaryVitaminC,
+        dietaryVitaminD,
+        dietaryVitaminE,
+        dietaryVitaminK,
+        dietaryFolate,
       });
     } catch (error) {
       console.error('Error fetching health data:', error);
@@ -433,5 +779,6 @@ export function useHealthKit() {
     requestPermissions: requestHealthKitPermissions,
     refreshData: fetchAllHealthData,
     verifyPermissions: () => verifyPermissions(false),
+    resetPermissions: resetHealthKitPermissions,
   };
 }

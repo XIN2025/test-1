@@ -19,8 +19,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     if (Platform.OS === 'android') {
       (async () => {
         try {
-          await NavigationBar.setBackgroundColorAsync('#ffffff');
-          await NavigationBar.setButtonStyleAsync('dark');
+          // await NavigationBar.setBackgroundColorAsync('#ffffff');
+          // await NavigationBar.setButtonStyleAsync('dark');
         } catch (e) {}
       })();
     }
@@ -49,10 +49,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <StatusBar translucent barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor="transparent" />
-        {children}
-      </SafeAreaView>
+      <StatusBar translucent barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor="transparent" />
+      {children}
     </ThemeContext.Provider>
   );
 };

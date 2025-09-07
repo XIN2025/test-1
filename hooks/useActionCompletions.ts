@@ -66,17 +66,16 @@ export const useActionCompletions = (userEmail: string) => {
       const date = completionDate || new Date().toISOString().split('T')[0];
 
       try {
-        await goalsApi.markActionItemCompletion(goalId, userEmail, {
+        const res = await goalsApi.markActionItemCompletion(goalId, userEmail, {
           action_item_title: actionItemTitle,
           completion_date: date,
           completed,
           notes,
         });
-
-        // Reload stats to reflect the change
-        await loadCompletionStats();
-
-        return true;
+        if (res.success) {
+          return true;
+        }
+        return false;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to mark completion';
         setError(message);
@@ -84,7 +83,7 @@ export const useActionCompletions = (userEmail: string) => {
         return false;
       }
     },
-    [userEmail, loadCompletionStats],
+    [userEmail],
   );
 
   const getGoalCompletionPercentage = useCallback(
