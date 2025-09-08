@@ -29,15 +29,15 @@ export default function ChatPage() {
       >
         <ChatHeader />
 
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#F0FDF4' }}>
-            {messages.length === 0 ? (
-              <EmptyState />
-            ) : (
-              <Messages messages={messages} onSuggestionClick={handleSuggestionClick} />
-            )}
-          </View>
-        </TouchableWithoutFeedback>
+        {/*<TouchableWithoutFeedback onPress={Keyboard.dismiss}>*/}
+        <View style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#F0FDF4' }}>
+          {messages.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <Messages messages={messages} onSuggestionClick={handleSuggestionClick} />
+          )}
+        </View>
+        {/*</TouchableWithoutFeedback>*/}
 
         <ChatInput
           inputText={inputText}
