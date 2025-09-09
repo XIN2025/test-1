@@ -412,28 +412,6 @@ export default function InitialPreferences() {
             )}
           </View>
 
-          {/* Notifications */}
-          <View className="mb-6 w-full">
-            <View className="flex-row items-center justify-between">
-              <Text className="font-medium text-gray-700">Enable Notifications</Text>
-              <TouchableOpacity
-                className={`rounded-full border px-3 py-2 ${
-                  formData.notifications ? 'border-gray-300' : 'border-gray-300 bg-gray-100'
-                }`}
-                style={{
-                  backgroundColor: formData.notifications ? '#059669' : '#f3f4f6',
-                  borderColor: formData.notifications ? '#059669' : '#d1d5db',
-                }}
-                onPress={() => handleInputChange('notifications', !formData.notifications)}
-                disabled={loading}
-              >
-                <Text className={`text-sm font-medium ${formData.notifications ? 'text-white' : 'text-gray-700'}`}>
-                  {formData.notifications ? 'Yes' : 'No'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
           {/* Submit Button */}
           <TouchableOpacity
             className={`mb-2 mt-2 w-full items-center rounded-md py-3 ${!isFormValid || loading ? 'opacity-50' : ''}`}

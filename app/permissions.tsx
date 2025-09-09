@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, Platform, ActivityIndicator, SafeAreaView } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { nudgeApi } from '../services/nudgeApi';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../hooks/useNotifications';
 
 const PermissionsPage = () => {
-  const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'undetermined' | null>(null);
-  const [loading, setLoading] = useState(false);
-
   const router = useRouter();
   const params = useLocalSearchParams();
   const { login } = useAuth();
+
+  const { isLoading, permissionStatus, checkPermissionStatus, enableNotifications } = useNotifications();
 
   // Helper to authenticate user before navigating to dashboard
   const authenticateAndContinue = async () => {
@@ -42,66 +40,20 @@ const PermissionsPage = () => {
   };
 
   const registerForPushNotificationsAsync = async () => {
-    let token;
-    if (!Constants.isDevice) {
-      Alert.alert('Must use physical device for Push Notifications');
-      setPermissionStatus('denied');
+    const email = params?.email;
+    if (!email) {
+      Alert.alert('Error', 'User email not found. Cannot register FCM token.');
       return;
     }
-    setLoading(true);
-    try {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
 
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
+    const result = await enableNotifications(String(email), {
+      showSuccessAlert: true,
+      updateProfile: true,
+    });
 
-      setPermissionStatus(finalStatus);
-
-      if (finalStatus !== 'granted') {
-        Alert.alert('Failed to get push token for push notification!');
-        return;
-      }
-
-      token = (await Notifications.getExpoPushTokenAsync()).data;
-
-      // Send the FCM token to the backend using nudgeApi
-      // Assumes user's email is available in params.email
-      const email = params?.email;
-      if (!email) {
-        Alert.alert('Error', 'User email not found. Cannot register FCM token.');
-        return;
-      }
-
-      try {
-        const { success, message } = await nudgeApi.registerFcmToken(String(email), token);
-        if (!success) {
-          throw new Error(message || 'Failed to register FCM token.');
-        }
-      } catch (err: any) {
-        Alert.alert('Error', err.message || 'Failed to register FCM token with backend.');
-        return;
-      }
-
-      Alert.alert('Notifications enabled!', 'You will now receive nudges and reminders.');
-
-      if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('default', {
-          name: 'default',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#FF231F7C',
-        });
-      }
-
+    if (result.success) {
       // After enabling, proceed to next step (authenticate and go to dashboard)
       await authenticateAndContinue();
-    } catch (e) {
-      Alert.alert('Error', 'An error occurred while requesting permissions.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -112,15 +64,7 @@ const PermissionsPage = () => {
 
   useEffect(() => {
     // Check current notification permission status on mount
-    const checkPermission = async () => {
-      if (!Constants.isDevice) {
-        setPermissionStatus('denied');
-        return;
-      }
-      const { status } = await Notifications.getPermissionsAsync();
-      setPermissionStatus(status);
-    };
-    checkPermission();
+    checkPermissionStatus();
   }, []);
 
   return (
@@ -201,19 +145,19 @@ const PermissionsPage = () => {
           {permissionStatus !== 'granted' && (
             <TouchableOpacity
               style={{
-                backgroundColor: loading ? '#A7F3D0' : '#059669',
+                backgroundColor: isLoading ? '#A7F3D0' : '#059669',
                 borderRadius: 8,
                 paddingVertical: 14,
                 width: '100%',
                 alignItems: 'center',
                 marginBottom: 14,
-                opacity: loading ? 0.7 : 1,
+                opacity: isLoading ? 0.7 : 1,
               }}
               onPress={registerForPushNotificationsAsync}
-              disabled={loading}
+              disabled={isLoading}
               activeOpacity={0.85}
             >
-              {loading ? (
+              {isLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text
@@ -243,7 +187,7 @@ const PermissionsPage = () => {
               borderColor: '#D1D5DB',
             }}
             onPress={handleSkip}
-            disabled={loading}
+            disabled={isLoading}
             activeOpacity={0.85}
           >
             <Text
@@ -278,30 +222,6 @@ const PermissionsPage = () => {
                 }}
               >
                 Notifications are disabled. You can enable them in your device settings.
-              </Text>
-            </View>
-          )}
-
-          {!Constants.isDevice && (
-            <View
-              style={{
-                marginTop: 18,
-                backgroundColor: '#FEF3C7',
-                borderRadius: 8,
-                paddingVertical: 10,
-                paddingHorizontal: 16,
-                width: '100%',
-              }}
-            >
-              <Text
-                style={{
-                  color: '#B45309',
-                  textAlign: 'center',
-                  fontSize: 14,
-                  fontWeight: '500',
-                }}
-              >
-                Push notifications only work on a physical device.
               </Text>
             </View>
           )}

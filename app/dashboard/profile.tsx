@@ -2,6 +2,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
+import { useNotifications } from '@/hooks/useNotifications';
 
 import { useRouter } from 'expo-router';
 import {
@@ -51,6 +52,8 @@ export default function ProfileDashboard() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { isDarkMode, toggleDarkMode } = useTheme();
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://localhost:8000';
+
+  const { isLoading: notificationLoading, toggleNotifications } = useNotifications();
 
   useEffect(() => {
     console.log('API Base URL:', API_BASE_URL);
@@ -261,29 +264,15 @@ export default function ProfileDashboard() {
   };
 
   const handleNotificationToggle = async (value: boolean) => {
-    try {
-      setNotificationsEnabled(value);
-      const normalizedEmail = Array.isArray(actualEmail) ? actualEmail[0] : String(actualEmail || '');
+    const normalizedEmail = Array.isArray(actualEmail) ? actualEmail[0] : String(actualEmail || '');
 
-      const response = await fetch(`${API_BASE_URL}/api/user/profile/update`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: normalizedEmail,
-          ...editForm,
-          notifications_enabled: value,
-        }),
-      });
+    setNotificationsEnabled(value);
 
-      if (!response.ok) {
-        throw new Error('Failed to update notification settings');
-      }
+    const result = await toggleNotifications(normalizedEmail, value, {
+      showSuccessAlert: true,
+    });
 
-      Alert.alert('Notifications Updated', `Push notifications have been ${value ? 'enabled' : 'disabled'}.`);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update notification settings');
+    if (!result.success) {
       setNotificationsEnabled(!value);
     }
   };
@@ -1031,7 +1020,7 @@ export default function ProfileDashboard() {
                       true: '#10b981',
                     }}
                     thumbColor="#ffffff"
-                    disabled={loading}
+                    disabled={loading || notificationLoading}
                     style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
                   />
                 </View>
