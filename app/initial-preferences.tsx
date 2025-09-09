@@ -63,7 +63,7 @@ export default function InitialPreferences() {
   useEffect(() => {
     if (!isLoading && isAuthenticated && !email) {
       // Navigate to dashboard - the tab navigator will handle the initial route
-      router.replace('/dashboard');
+      router.replace('/dashboard/main');
     }
   }, [isAuthenticated, isLoading, email, router]);
 

@@ -31,7 +31,7 @@ export default function VerifyLoginOtpScreen() {
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       // Navigate to dashboard - the tab navigator will handle the initial route
-      router.replace('/dashboard');
+      router.replace('/dashboard/main');
     }
   }, [isAuthenticated, isLoading, router]);
 
@@ -90,7 +90,7 @@ export default function VerifyLoginOtpScreen() {
         // Store walkthrough trigger for login flow
         await AsyncStorage.setItem(`showWalkthrough:${normalizedEmail}`, 'login');
         router.push({
-          pathname: '/dashboard',
+          pathname: '/dashboard/main',
           params: { email: normalizedEmail, name: userName },
         });
       } else {

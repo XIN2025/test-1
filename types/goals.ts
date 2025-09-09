@@ -5,6 +5,7 @@ export interface TimeEstimate {
   min_duration: string;
   max_duration: string;
   recommended_frequency: string;
+  time_of_day: string | null;
 }
 
 export interface WeeklyCompletionStatus {
@@ -21,6 +22,7 @@ export interface ActionItem {
   success_criteria: string[];
   adaptation_notes: string[];
   weekly_completion?: WeeklyCompletionStatus[];
+  weekly_schedule?: WeeklySchedule;
 }
 
 export interface ActionPlan {

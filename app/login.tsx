@@ -43,7 +43,7 @@ export default function LoginScreen() {
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       // Navigate to dashboard - the tab navigator will handle the initial route
-      router.replace('/dashboard');
+      router.replace('/dashboard/main');
     }
   }, [isAuthenticated, isLoading, router]);
 

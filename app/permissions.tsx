@@ -27,7 +27,7 @@ const PermissionsPage = () => {
         console.log('authenticated');
         // Only redirect after successful authentication - navigate to dashboard
         router.replace({
-          pathname: '/dashboard',
+          pathname: '/dashboard/main',
           params,
         });
       } catch (err) {
