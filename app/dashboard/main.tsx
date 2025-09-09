@@ -882,7 +882,7 @@ function MainDashboard() {
                   >
                     {/* Liquid Gauge for Health Score */}
                     <LiquidGauge
-                      value={45}
+                      value={72}
                       width={width * 0.35}
                       height={width * 0.35}
                       config={{

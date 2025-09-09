@@ -1,6 +1,5 @@
 import Card from '@/components/ui/card';
 import { useTheme } from '@/context/ThemeContext';
-import { LinearGradient } from 'expo-linear-gradient';
 import {
   ArrowRight,
   CheckCircle,
@@ -13,6 +12,8 @@ import {
   Star,
   TrendingUp,
   Truck,
+  FileText,
+  Utensils,
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -50,10 +51,37 @@ interface OrderItem {
   image?: string;
 }
 
+interface Prescription {
+  id: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  refillsRemaining: number;
+  nextRefillDate: string;
+  doctor: string;
+  pharmacy: string;
+  price: number;
+  isRefillable: boolean;
+}
+
+interface Meal {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  rating: number;
+  prepTime: string;
+  calories: number;
+  isAvailable: boolean;
+  isRecommended: boolean;
+  image?: string;
+}
+
 export default function OrdersPage() {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [activeTab, setActiveTab] = useState<'orders' | 'supplements'>('orders');
+  const [activeTab, setActiveTab] = useState<'products' | 'supplements' | 'rx' | 'meals'>('products');
 
   const statusFilters = [
     { id: 'all', name: 'All Orders', icon: ShoppingBag },
@@ -120,6 +148,96 @@ export default function OrdersPage() {
     },
   ];
 
+  const prescriptions: Prescription[] = [
+    {
+      id: '1',
+      name: 'Metformin',
+      dosage: '500mg',
+      frequency: 'Twice daily',
+      refillsRemaining: 2,
+      nextRefillDate: '2024-02-15',
+      doctor: 'Dr. Sarah Johnson',
+      pharmacy: 'CVS Pharmacy',
+      price: 15.99,
+      isRefillable: true,
+    },
+    {
+      id: '2',
+      name: 'Lisinopril',
+      dosage: '10mg',
+      frequency: 'Once daily',
+      refillsRemaining: 0,
+      nextRefillDate: '2024-02-20',
+      doctor: 'Dr. Michael Chen',
+      pharmacy: 'Walgreens',
+      price: 8.5,
+      isRefillable: false,
+    },
+    {
+      id: '3',
+      name: 'Atorvastatin',
+      dosage: '20mg',
+      frequency: 'Once daily',
+      refillsRemaining: 1,
+      nextRefillDate: '2024-02-10',
+      doctor: 'Dr. Sarah Johnson',
+      pharmacy: 'CVS Pharmacy',
+      price: 12.75,
+      isRefillable: true,
+    },
+  ];
+
+  const meals: Meal[] = [
+    {
+      id: '1',
+      name: 'Mediterranean Quinoa Bowl',
+      description: 'Fresh quinoa with grilled vegetables, olives, and feta cheese',
+      category: 'healthy',
+      price: 14.99,
+      rating: 4.8,
+      prepTime: '15 min',
+      calories: 420,
+      isAvailable: true,
+      isRecommended: true,
+    },
+    {
+      id: '2',
+      name: 'Grilled Salmon with Sweet Potato',
+      description: 'Atlantic salmon with roasted sweet potato and steamed broccoli',
+      category: 'protein',
+      price: 18.5,
+      rating: 4.9,
+      prepTime: '25 min',
+      calories: 380,
+      isAvailable: true,
+      isRecommended: true,
+    },
+    {
+      id: '3',
+      name: 'Veggie Power Smoothie',
+      description: 'Kale, spinach, banana, and protein powder blend',
+      category: 'smoothie',
+      price: 9.99,
+      rating: 4.6,
+      prepTime: '5 min',
+      calories: 280,
+      isAvailable: true,
+      isRecommended: false,
+    },
+    {
+      id: '4',
+      name: 'Chicken Caesar Salad',
+      description: 'Grilled chicken breast with romaine lettuce and caesar dressing',
+      category: 'salad',
+      price: 12.99,
+      rating: 4.4,
+      prepTime: '10 min',
+      calories: 320,
+      isAvailable: false,
+      isRecommended: false,
+    },
+  ];
+
   const orders: Order[] = [
     {
       id: '1',
@@ -159,21 +277,6 @@ export default function OrdersPage() {
   ];
 
   const filteredOrders = selectedStatus === 'all' ? orders : orders.filter((o) => o.status === selectedStatus);
-
-  const getStatusColor = (status: Order['status']) => {
-    switch (status) {
-      case 'delivered':
-        return 'text-green-700';
-      case 'shipped':
-        return 'text-blue-600';
-      case 'processing':
-        return 'text-amber-600';
-      case 'cancelled':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
 
   const getStatusIcon = (status: Order['status']) => {
     switch (status) {
@@ -241,7 +344,15 @@ export default function OrdersPage() {
                 backgroundColor: isDarkMode ? '#1f6f51' : '#114131',
               }}
             >
-              {activeTab === 'orders' ? <ShoppingBag size={22} color="#fff" /> : <Pill size={22} color="#fff" />}
+              {activeTab === 'products' ? (
+                <ShoppingBag size={22} color="#fff" />
+              ) : activeTab === 'supplements' ? (
+                <Pill size={22} color="#fff" />
+              ) : activeTab === 'rx' ? (
+                <FileText size={22} color="#fff" />
+              ) : (
+                <Utensils size={22} color="#fff" />
+              )}
             </View>
             <View style={{ flex: 1 }}>
               <Text
@@ -252,7 +363,13 @@ export default function OrdersPage() {
                   marginBottom: 2,
                 }}
               >
-                {activeTab === 'orders' ? 'Orders' : 'Supplements'}
+                {activeTab === 'products'
+                  ? 'Products'
+                  : activeTab === 'supplements'
+                    ? 'Supplements'
+                    : activeTab === 'rx'
+                      ? 'RX'
+                      : 'Meals'}
               </Text>
               <Text
                 style={{
@@ -260,69 +377,135 @@ export default function OrdersPage() {
                   color: isDarkMode ? '#9ca3af' : '#6b7280',
                 }}
               >
-                {activeTab === 'orders' ? 'Track your purchases' : 'Your health essentials'}
+                {activeTab === 'products'
+                  ? 'Track your purchases'
+                  : activeTab === 'supplements'
+                    ? 'Your health essentials'
+                    : activeTab === 'rx'
+                      ? 'Manage your prescriptions'
+                      : 'Order healthy meals'}
               </Text>
             </View>
           </View>
 
           {/* Tab Navigation - Full Width */}
-          <View style={{ flexDirection: 'row', gap: 4 }}>
-            <TouchableOpacity
-              onPress={() => setActiveTab('orders')}
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 12,
-                borderRadius: 12,
-                backgroundColor: activeTab === 'orders' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
-              }}
-              activeOpacity={0.7}
-            >
-              <View style={{ marginRight: 6 }}>
-                <ShoppingBag
-                  size={16}
-                  color={activeTab === 'orders' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
-                />
-              </View>
-              <Text
+          <View style={{ flexDirection: 'column', gap: 4 }}>
+            <View style={{ flexDirection: 'row', gap: 4 }}>
+              <TouchableOpacity
+                onPress={() => setActiveTab('products')}
                 style={{
-                  fontSize: 14,
-                  fontWeight: '600',
-                  color: activeTab === 'orders' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  backgroundColor: activeTab === 'products' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
                 }}
+                activeOpacity={0.7}
               >
-                Orders
-              </Text>
-            </TouchableOpacity>
+                <View style={{ marginRight: 6 }}>
+                  <ShoppingBag
+                    size={16}
+                    color={activeTab === 'products' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
+                  />
+                </View>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: activeTab === 'products' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                  }}
+                >
+                  Products
+                </Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => setActiveTab('supplements')}
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 12,
-                borderRadius: 12,
-                backgroundColor: activeTab === 'supplements' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
-              }}
-              activeOpacity={0.7}
-            >
-              <View style={{ marginRight: 6 }}>
-                <Pill size={16} color={activeTab === 'supplements' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'} />
-              </View>
-              <Text
+              <TouchableOpacity
+                onPress={() => setActiveTab('supplements')}
                 style={{
-                  fontSize: 14,
-                  fontWeight: '600',
-                  color: activeTab === 'supplements' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  backgroundColor: activeTab === 'supplements' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
                 }}
+                activeOpacity={0.7}
               >
-                Supplements
-              </Text>
-            </TouchableOpacity>
+                <View style={{ marginRight: 6 }}>
+                  <Pill
+                    size={16}
+                    color={activeTab === 'supplements' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
+                  />
+                </View>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: activeTab === 'supplements' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                  }}
+                >
+                  Supplements
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 4 }}>
+              <TouchableOpacity
+                onPress={() => setActiveTab('rx')}
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  backgroundColor: activeTab === 'rx' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={{ marginRight: 6 }}>
+                  <FileText size={16} color={activeTab === 'rx' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'} />
+                </View>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: activeTab === 'rx' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                  }}
+                >
+                  RX
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setActiveTab('meals')}
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  backgroundColor: activeTab === 'meals' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={{ marginRight: 6 }}>
+                  <Utensils size={16} color={activeTab === 'meals' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'} />
+                </View>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: activeTab === 'meals' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                  }}
+                >
+                  Meals
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -332,12 +515,12 @@ export default function OrdersPage() {
             height: '100%',
             backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
           }}
-          contentContainerStyle={{ paddingBottom: 200 }}
+          contentContainerStyle={{ paddingBottom: 400 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 16 }}>
-            {activeTab === 'orders' ? (
+            {activeTab === 'products' ? (
               /* Status Filters */
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16 }}>
                 <View
@@ -383,7 +566,7 @@ export default function OrdersPage() {
                   ))}
                 </View>
               </ScrollView>
-            ) : (
+            ) : activeTab === 'supplements' ? (
               /* Categories */
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16 }}>
                 <View
@@ -394,6 +577,108 @@ export default function OrdersPage() {
                   }}
                 >
                   {categories.map((category) => (
+                    <TouchableOpacity
+                      key={category.id}
+                      onPress={() => setSelectedCategory(category.id)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingHorizontal: 16,
+                        paddingVertical: 10,
+                        borderRadius: 24,
+                        borderWidth: 1,
+                        borderColor: selectedCategory === category.id ? '#10b981' : isDarkMode ? '#374151' : '#d1d5db',
+                        backgroundColor:
+                          selectedCategory === category.id ? '#10b981' : isDarkMode ? '#1f2937' : '#ffffff',
+                        minWidth: 100,
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ marginRight: 6 }}>
+                        <category.icon
+                          size={18}
+                          color={selectedCategory === category.id ? '#fff' : isDarkMode ? '#9ca3af' : '#64748b'}
+                        />
+                      </View>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: '500',
+                          color: selectedCategory === category.id ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                        }}
+                      >
+                        {category.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            ) : activeTab === 'rx' ? (
+              /* RX Status Filters */
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    paddingHorizontal: 16,
+                    gap: 12,
+                  }}
+                >
+                  {[
+                    { id: 'all', name: 'All RX', icon: FileText },
+                    { id: 'refillable', name: 'Refillable', icon: RefreshCw },
+                    { id: 'expired', name: 'Expired', icon: Clock },
+                  ].map((filter) => (
+                    <TouchableOpacity
+                      key={filter.id}
+                      onPress={() => setSelectedStatus(filter.id)}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingHorizontal: 16,
+                        paddingVertical: 10,
+                        borderRadius: 24,
+                        borderWidth: 1,
+                        borderColor: selectedStatus === filter.id ? '#10b981' : isDarkMode ? '#374151' : '#d1d5db',
+                        backgroundColor: selectedStatus === filter.id ? '#10b981' : isDarkMode ? '#1f2937' : '#ffffff',
+                        minWidth: 120,
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ marginRight: 6 }}>
+                        <filter.icon
+                          size={18}
+                          color={selectedStatus === filter.id ? '#fff' : isDarkMode ? '#9ca3af' : '#64748b'}
+                        />
+                      </View>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: '500',
+                          color: selectedStatus === filter.id ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                        }}
+                      >
+                        {filter.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            ) : (
+              /* Meal Categories */
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    paddingHorizontal: 16,
+                    gap: 12,
+                  }}
+                >
+                  {[
+                    { id: 'all', name: 'All Meals', icon: Utensils },
+                    { id: 'healthy', name: 'Healthy', icon: Heart },
+                    { id: 'protein', name: 'Protein', icon: TrendingUp },
+                    { id: 'smoothie', name: 'Smoothies', icon: Star },
+                  ].map((category) => (
                     <TouchableOpacity
                       key={category.id}
                       onPress={() => setSelectedCategory(category.id)}
@@ -561,7 +846,7 @@ export default function OrdersPage() {
               </View>
             )}
 
-            {activeTab === 'orders' ? (
+            {activeTab === 'products' ? (
               <>
                 {/* Orders List */}
                 {filteredOrders.map((order) => {
@@ -775,7 +1060,7 @@ export default function OrdersPage() {
                   </View>
                 )}
               </>
-            ) : (
+            ) : activeTab === 'supplements' ? (
               <>
                 {/* Recommended Section */}
                 <Card className={`border-0 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
@@ -934,6 +1219,341 @@ export default function OrdersPage() {
                                       }`}
                                     >
                                       {supplement.inStock ? 'Add to Cart' : 'Unavailable'}
+                                    </Text>
+                                  </TouchableOpacity>
+                                </View>
+                              </View>
+                            </View>
+                          </View>
+                        </View>
+                      ))}
+                  </View>
+                </Card>
+              </>
+            ) : activeTab === 'rx' ? (
+              <>
+                {/* RX Refillable Section */}
+                <Card className={`border-0 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                  <View className="p-4">
+                    <View className="mb-3 flex-row items-center">
+                      <RefreshCw size={20} color="#10b981" className="mr-2" />
+                      <Text className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                        Refillable Prescriptions
+                      </Text>
+                    </View>
+                    <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                      Prescriptions ready for refill
+                    </Text>
+                    {prescriptions
+                      .filter((p) => p.isRefillable)
+                      .map((prescription) => (
+                        <View
+                          key={prescription.id}
+                          className={`mb-3 flex-row items-center rounded-lg p-3 ${
+                            isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
+                          }`}
+                        >
+                          <View
+                            className={`mr-3 h-12 w-12 items-center justify-center rounded-lg ${
+                              isDarkMode ? 'bg-blue-800/50' : 'bg-blue-100'
+                            }`}
+                          >
+                            <FileText size={24} color={isDarkMode ? '#60a5fa' : '#2563eb'} />
+                          </View>
+                          <View className="flex-1">
+                            <Text className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                              {prescription.name}
+                            </Text>
+                            <Text className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {prescription.dosage} • {prescription.frequency}
+                            </Text>
+                            <Text className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              Dr. {prescription.doctor.split(' ')[1]} • {prescription.pharmacy}
+                            </Text>
+                          </View>
+                          <View className="items-end">
+                            <Text className={`font-semibold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                              ${prescription.price.toFixed(2)}
+                            </Text>
+                            <Text className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {prescription.refillsRemaining} refills left
+                            </Text>
+                            <TouchableOpacity
+                              className={`mt-1 rounded-full px-3 py-1 ${isDarkMode ? 'bg-blue-700' : 'bg-blue-600'}`}
+                            >
+                              <Text className="text-xs font-medium text-white">Refill</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ))}
+                  </View>
+                </Card>
+
+                {/* All Prescriptions */}
+                <Card className={`border-0 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                  <View className="p-4">
+                    <Text className={`mb-4 text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                      All Prescriptions
+                    </Text>
+                    {prescriptions
+                      .filter(
+                        (p) =>
+                          selectedStatus === 'all' ||
+                          (selectedStatus === 'refillable' && p.isRefillable) ||
+                          (selectedStatus === 'expired' && !p.isRefillable),
+                      )
+                      .map((prescription) => (
+                        <View
+                          key={prescription.id}
+                          className={`mb-4 border-b pb-4 last:border-b-0 ${
+                            isDarkMode ? 'border-gray-700' : 'border-gray-100'
+                          }`}
+                        >
+                          <View className="flex-row items-start">
+                            <View
+                              className={`mr-3 h-16 w-16 items-center justify-center rounded-lg ${
+                                isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
+                              }`}
+                            >
+                              <FileText size={28} color={isDarkMode ? '#9ca3af' : '#64748b'} />
+                            </View>
+                            <View className="flex-1">
+                              <View className="flex-row items-center justify-between">
+                                <Text className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                                  {prescription.name}
+                                </Text>
+                                <Text className={`font-semibold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                  ${prescription.price.toFixed(2)}
+                                </Text>
+                              </View>
+                              <Text className={`mt-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {prescription.dosage} • {prescription.frequency}
+                              </Text>
+                              <Text className={`mt-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                Dr. {prescription.doctor.split(' ')[1]} • {prescription.pharmacy}
+                              </Text>
+                              <View className="mt-2 flex-row items-center space-x-4">
+                                <View className="flex-row items-center">
+                                  <RefreshCw size={12} color={isDarkMode ? '#9ca3af' : '#64748b'} className="mr-1" />
+                                  <Text className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    {prescription.refillsRemaining} refills
+                                  </Text>
+                                </View>
+                                <View className="flex-row items-center">
+                                  <Clock size={12} color={isDarkMode ? '#9ca3af' : '#64748b'} className="mr-1" />
+                                  <Text className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    Next: {prescription.nextRefillDate}
+                                  </Text>
+                                </View>
+                              </View>
+                              <View className="mt-2 flex-row items-center justify-between">
+                                <View className="flex-row items-center">
+                                  <Text className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    {prescription.isRefillable ? 'Ready for refill' : 'Needs doctor approval'}
+                                  </Text>
+                                </View>
+                                <View className="flex-row items-center space-x-2">
+                                  <TouchableOpacity
+                                    className={`rounded-full px-3 py-1 ${
+                                      prescription.isRefillable
+                                        ? isDarkMode
+                                          ? 'bg-blue-700'
+                                          : 'bg-blue-600'
+                                        : isDarkMode
+                                          ? 'bg-gray-700'
+                                          : 'bg-gray-300'
+                                    }`}
+                                    disabled={!prescription.isRefillable}
+                                  >
+                                    <Text
+                                      className={`text-xs font-medium ${
+                                        prescription.isRefillable
+                                          ? 'text-white'
+                                          : isDarkMode
+                                            ? 'text-gray-400'
+                                            : 'text-gray-500'
+                                      }`}
+                                    >
+                                      {prescription.isRefillable ? 'Refill Now' : 'Contact Doctor'}
+                                    </Text>
+                                  </TouchableOpacity>
+                                </View>
+                              </View>
+                            </View>
+                          </View>
+                        </View>
+                      ))}
+                  </View>
+                </Card>
+              </>
+            ) : (
+              <>
+                {/* Recommended Meals */}
+                <Card className={`border-0 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                  <View className="p-4">
+                    <View className="mb-3 flex-row items-center">
+                      <Star size={20} color="#fbbf24" className="mr-2" />
+                      <Text className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                        Recommended Meals
+                      </Text>
+                    </View>
+                    <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                      Based on your health goals and preferences
+                    </Text>
+                    {meals
+                      .filter((m) => m.isRecommended)
+                      .map((meal) => (
+                        <View
+                          key={meal.id}
+                          className={`mb-2 flex-row items-center rounded-lg p-3 ${
+                            isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-50'
+                          }`}
+                        >
+                          <View
+                            className={`mr-3 h-12 w-12 items-center justify-center rounded-lg ${
+                              isDarkMode ? 'bg-emerald-800/50' : 'bg-emerald-100'
+                            }`}
+                          >
+                            <Utensils size={24} color={isDarkMode ? '#34d399' : '#059669'} />
+                          </View>
+                          <View className="flex-1">
+                            <Text className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                              {meal.name}
+                            </Text>
+                            <Text className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {meal.description}
+                            </Text>
+                            <View className="mt-1 flex-row items-center">
+                              <View className="mr-2 flex-row items-center">
+                                {Array.from({ length: 5 }, (_, i) => (
+                                  <Star
+                                    key={i}
+                                    size={12}
+                                    color={i < Math.floor(meal.rating) ? '#fbbf24' : '#d1d5db'}
+                                    fill={i < Math.floor(meal.rating) ? '#fbbf24' : 'none'}
+                                  />
+                                ))}
+                              </View>
+                              <Text className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                ({meal.rating}) • {meal.calories} cal • {meal.prepTime}
+                              </Text>
+                            </View>
+                          </View>
+                          <View className="items-end">
+                            <Text className={`font-semibold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                              ${meal.price.toFixed(2)}
+                            </Text>
+                            <TouchableOpacity
+                              className={`mt-1 rounded-full px-3 py-1 ${
+                                meal.isAvailable
+                                  ? isDarkMode
+                                    ? 'bg-emerald-700'
+                                    : 'bg-emerald-600'
+                                  : isDarkMode
+                                    ? 'bg-gray-700'
+                                    : 'bg-gray-300'
+                              }`}
+                              disabled={!meal.isAvailable}
+                            >
+                              <Text
+                                className={`text-xs font-medium ${
+                                  meal.isAvailable ? 'text-white' : isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                                }`}
+                              >
+                                {meal.isAvailable ? 'Order' : 'Unavailable'}
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ))}
+                  </View>
+                </Card>
+
+                {/* All Meals */}
+                <Card className={`border-0 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                  <View className="p-4">
+                    <Text className={`mb-4 text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                      All Meals
+                    </Text>
+                    {meals
+                      .filter((m) => selectedCategory === 'all' || m.category === selectedCategory)
+                      .map((meal) => (
+                        <View
+                          key={meal.id}
+                          className={`mb-4 border-b pb-4 last:border-b-0 ${
+                            isDarkMode ? 'border-gray-700' : 'border-gray-100'
+                          }`}
+                        >
+                          <View className="flex-row items-start">
+                            <View
+                              className={`mr-3 h-16 w-16 items-center justify-center rounded-lg ${
+                                isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
+                              }`}
+                            >
+                              <Utensils size={28} color={isDarkMode ? '#9ca3af' : '#64748b'} />
+                            </View>
+                            <View className="flex-1">
+                              <View className="flex-row items-center justify-between">
+                                <Text className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                                  {meal.name}
+                                </Text>
+                                <Text
+                                  className={`font-semibold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}
+                                >
+                                  ${meal.price.toFixed(2)}
+                                </Text>
+                              </View>
+                              <Text className={`mt-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {meal.description}
+                              </Text>
+                              <View className="mt-2 flex-row items-center space-x-4">
+                                <View className="flex-row items-center">
+                                  <Clock size={12} color={isDarkMode ? '#9ca3af' : '#64748b'} className="mr-1" />
+                                  <Text className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    {meal.prepTime}
+                                  </Text>
+                                </View>
+                                <View className="flex-row items-center">
+                                  <Heart size={12} color={isDarkMode ? '#9ca3af' : '#64748b'} className="mr-1" />
+                                  <Text className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    {meal.calories} cal
+                                  </Text>
+                                </View>
+                              </View>
+                              <View className="mt-2 flex-row items-center justify-between">
+                                <View className="flex-row items-center">
+                                  {Array.from({ length: 5 }, (_, i) => (
+                                    <Star
+                                      key={i}
+                                      size={12}
+                                      color={i < Math.floor(meal.rating) ? '#fbbf24' : '#d1d5db'}
+                                      fill={i < Math.floor(meal.rating) ? '#fbbf24' : 'none'}
+                                    />
+                                  ))}
+                                  <Text className={`ml-1 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    ({meal.rating})
+                                  </Text>
+                                </View>
+                                <View className="flex-row items-center space-x-2">
+                                  {!meal.isAvailable && <Text className="text-xs text-red-500">Unavailable</Text>}
+                                  <TouchableOpacity
+                                    className={`rounded-full px-3 py-1 ${
+                                      meal.isAvailable
+                                        ? isDarkMode
+                                          ? 'bg-emerald-700'
+                                          : 'bg-emerald-600'
+                                        : isDarkMode
+                                          ? 'bg-gray-700'
+                                          : 'bg-gray-300'
+                                    }`}
+                                    disabled={!meal.isAvailable}
+                                  >
+                                    <Text
+                                      className={`text-xs font-medium ${
+                                        meal.isAvailable ? 'text-white' : isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                                      }`}
+                                    >
+                                      {meal.isAvailable ? 'Order Now' : 'Unavailable'}
                                     </Text>
                                   </TouchableOpacity>
                                 </View>

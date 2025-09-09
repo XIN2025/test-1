@@ -6,6 +6,7 @@ import {
   Award,
   BookOpen,
   Calendar,
+  Dumbbell,
   Heart,
   MessageCircle,
   Share2,
@@ -54,9 +55,23 @@ interface HealthChallenge {
   category: string;
 }
 
+interface FitnessActivity {
+  id: string;
+  title: string;
+  description: string;
+  type: 'workout' | 'cardio' | 'strength' | 'flexibility';
+  duration: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  calories: number;
+  participants: number;
+  isJoined: boolean;
+  instructor: string;
+  rating: number;
+}
+
 export default function HealthHubPage() {
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState<'posts' | 'groups' | 'challenges'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'groups' | 'challenges' | 'fitness'>('posts');
 
   const postFilters = [
     { id: 'all', name: 'All Posts', icon: MessageCircle },
@@ -71,6 +86,14 @@ export default function HealthHubPage() {
     { id: 'support', name: 'Support Groups', icon: Heart },
     { id: 'condition', name: 'Condition-Specific', icon: Activity },
     { id: 'treatment', name: 'Treatment Journey', icon: BookOpen },
+  ];
+
+  const fitnessCategories = [
+    { id: 'all', name: 'All Activities', icon: Dumbbell },
+    { id: 'workout', name: 'Workouts', icon: Activity },
+    { id: 'cardio', name: 'Cardio', icon: Heart },
+    { id: 'strength', name: 'Strength', icon: TrendingUp },
+    { id: 'flexibility', name: 'Flexibility', icon: Users },
   ];
 
   const communityPosts: CommunityPost[] = [
@@ -229,6 +252,88 @@ export default function HealthHubPage() {
     },
   ];
 
+  const fitnessActivities: FitnessActivity[] = [
+    {
+      id: '1',
+      title: 'Morning Yoga Flow',
+      description:
+        'Start your day with gentle stretches and mindful breathing to improve flexibility and reduce stress',
+      type: 'flexibility',
+      duration: '30 minutes',
+      difficulty: 'beginner',
+      calories: 120,
+      participants: 1247,
+      isJoined: true,
+      instructor: 'Sarah Johnson',
+      rating: 4.8,
+    },
+    {
+      id: '2',
+      title: 'HIIT Cardio Blast',
+      description: 'High-intensity interval training to boost metabolism and improve cardiovascular health',
+      type: 'cardio',
+      duration: '25 minutes',
+      difficulty: 'intermediate',
+      calories: 280,
+      participants: 892,
+      isJoined: false,
+      instructor: 'Mike Chen',
+      rating: 4.6,
+    },
+    {
+      id: '3',
+      title: 'Strength Training Basics',
+      description: 'Learn proper form and build muscle with bodyweight exercises perfect for beginners',
+      type: 'strength',
+      duration: '45 minutes',
+      difficulty: 'beginner',
+      calories: 200,
+      participants: 634,
+      isJoined: true,
+      instructor: 'Emma Rodriguez',
+      rating: 4.9,
+    },
+    {
+      id: '4',
+      title: 'Pilates Core Workout',
+      description: 'Strengthen your core and improve posture with controlled movements and breathing',
+      type: 'workout',
+      duration: '35 minutes',
+      difficulty: 'intermediate',
+      calories: 180,
+      participants: 456,
+      isJoined: false,
+      instructor: 'Lisa Park',
+      rating: 4.7,
+    },
+    {
+      id: '5',
+      title: 'Advanced CrossFit',
+      description: 'Challenge yourself with complex movements combining strength, cardio, and agility',
+      type: 'workout',
+      duration: '60 minutes',
+      difficulty: 'advanced',
+      calories: 450,
+      participants: 234,
+      isJoined: false,
+      instructor: 'David Kim',
+      rating: 4.5,
+    },
+    {
+      id: '6',
+      title: 'Meditation & Stretching',
+      description: 'End your day with calming stretches and guided meditation for better sleep',
+      type: 'flexibility',
+      duration: '20 minutes',
+      difficulty: 'beginner',
+      calories: 50,
+      participants: 1789,
+      isJoined: true,
+      instructor: 'Anna Thompson',
+      rating: 4.9,
+    },
+  ];
+
   const filteredPosts =
     selectedFilter === 'all' ? communityPosts : communityPosts.filter((p) => p.category === selectedFilter);
 
@@ -237,6 +342,9 @@ export default function HealthHubPage() {
 
   const filteredChallenges =
     selectedFilter === 'all' ? healthChallenges : healthChallenges.filter((c) => c.category === selectedFilter);
+
+  const filteredFitnessActivities =
+    selectedFilter === 'all' ? fitnessActivities : fitnessActivities.filter((f) => f.type === selectedFilter);
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -295,8 +403,10 @@ export default function HealthHubPage() {
                 <MessageCircle size={22} color="#fff" />
               ) : activeTab === 'groups' ? (
                 <Users size={22} color="#fff" />
-              ) : (
+              ) : activeTab === 'challenges' ? (
                 <Award size={22} color="#fff" />
+              ) : (
+                <Dumbbell size={22} color="#fff" />
               )}
             </View>
             <View style={{ flex: 1 }}>
@@ -312,7 +422,9 @@ export default function HealthHubPage() {
                   ? 'Community Hub'
                   : activeTab === 'groups'
                     ? 'Support Groups'
-                    : 'Health Challenges'}
+                    : activeTab === 'challenges'
+                      ? 'Health Challenges'
+                      : 'Fitness Activities'}
               </Text>
               <Text
                 style={{
@@ -324,100 +436,154 @@ export default function HealthHubPage() {
                   ? 'Connect with others on similar journeys'
                   : activeTab === 'groups'
                     ? 'Join condition-specific communities'
-                    : 'Achieve goals together'}
+                    : activeTab === 'challenges'
+                      ? 'Achieve goals together'
+                      : 'Stay active and healthy'}
               </Text>
             </View>
           </View>
 
-          {/* Tab Navigation - Full Width */}
-          <View style={{ flexDirection: 'row', gap: 4 }}>
-            <TouchableOpacity
-              onPress={() => setActiveTab('posts')}
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 12,
-                borderRadius: 12,
-                backgroundColor: activeTab === 'posts' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
-              }}
-              activeOpacity={0.7}
-            >
-              <MessageCircle
-                size={16}
-                color={activeTab === 'posts' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
-                style={{ marginRight: 6 }}
-              />
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: '600',
-                  color: activeTab === 'posts' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+          {/* Tab Navigation - Scrollable */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 4 }}
+            style={{ marginHorizontal: -4 }}
+          >
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setActiveTab('posts');
+                  setSelectedFilter('all');
                 }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  borderRadius: 12,
+                  backgroundColor: activeTab === 'posts' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
+                  minWidth: 100,
+                }}
+                activeOpacity={0.7}
               >
-                Posts
-              </Text>
-            </TouchableOpacity>
+                <MessageCircle
+                  size={16}
+                  color={activeTab === 'posts' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
+                  style={{ marginRight: 6 }}
+                />
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: activeTab === 'posts' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                  }}
+                >
+                  Posts
+                </Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => setActiveTab('groups')}
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 12,
-                borderRadius: 12,
-                backgroundColor: activeTab === 'groups' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
-              }}
-              activeOpacity={0.7}
-            >
-              <Users
-                size={16}
-                color={activeTab === 'groups' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
-                style={{ marginRight: 6 }}
-              />
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: '600',
-                  color: activeTab === 'groups' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+              <TouchableOpacity
+                onPress={() => {
+                  setActiveTab('groups');
+                  setSelectedFilter('all');
                 }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  borderRadius: 12,
+                  backgroundColor: activeTab === 'groups' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
+                  minWidth: 100,
+                }}
+                activeOpacity={0.7}
               >
-                Groups
-              </Text>
-            </TouchableOpacity>
+                <Users
+                  size={16}
+                  color={activeTab === 'groups' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
+                  style={{ marginRight: 6 }}
+                />
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: activeTab === 'groups' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                  }}
+                >
+                  Groups
+                </Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => setActiveTab('challenges')}
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 12,
-                borderRadius: 12,
-                backgroundColor: activeTab === 'challenges' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
-              }}
-              activeOpacity={0.7}
-            >
-              <Award
-                size={16}
-                color={activeTab === 'challenges' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
-                style={{ marginRight: 6 }}
-              />
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: '600',
-                  color: activeTab === 'challenges' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+              <TouchableOpacity
+                onPress={() => {
+                  setActiveTab('challenges');
+                  setSelectedFilter('all');
                 }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  borderRadius: 12,
+                  backgroundColor: activeTab === 'challenges' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
+                  minWidth: 100,
+                }}
+                activeOpacity={0.7}
               >
-                Challenges
-              </Text>
-            </TouchableOpacity>
-          </View>
+                <Award
+                  size={16}
+                  color={activeTab === 'challenges' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
+                  style={{ marginRight: 6 }}
+                />
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: activeTab === 'challenges' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                  }}
+                >
+                  Challenges
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setActiveTab('fitness');
+                  setSelectedFilter('all');
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  borderRadius: 12,
+                  backgroundColor: activeTab === 'fitness' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
+                  minWidth: 100,
+                }}
+                activeOpacity={0.7}
+              >
+                <Dumbbell
+                  size={16}
+                  color={activeTab === 'fitness' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
+                  style={{ marginRight: 6 }}
+                />
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: activeTab === 'fitness' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                  }}
+                >
+                  Fitness
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
       </View>
 
@@ -466,6 +632,45 @@ export default function HealthHubPage() {
                       }}
                     >
                       {filter.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          ) : activeTab === 'fitness' ? (
+            /* Fitness Categories */
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16 }}>
+              <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12 }}>
+                {fitnessCategories.map((category) => (
+                  <TouchableOpacity
+                    key={category.id}
+                    onPress={() => setSelectedFilter(category.id)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingHorizontal: 16,
+                      paddingVertical: 10,
+                      borderRadius: 24,
+                      borderWidth: 1,
+                      borderColor: selectedFilter === category.id ? '#10b981' : isDarkMode ? '#374151' : '#d1d5db',
+                      backgroundColor: selectedFilter === category.id ? '#10b981' : isDarkMode ? '#1f2937' : '#ffffff',
+                      minWidth: 100,
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <category.icon
+                      size={18}
+                      color={selectedFilter === category.id ? '#fff' : isDarkMode ? '#9ca3af' : '#64748b'}
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '500',
+                        color: selectedFilter === category.id ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                      }}
+                    >
+                      {category.name}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -756,7 +961,7 @@ export default function HealthHubPage() {
                 </Card>
               ))}
             </>
-          ) : (
+          ) : activeTab === 'challenges' ? (
             <>
               {/* Health Challenges */}
               {filteredChallenges.map((challenge) => (
@@ -827,6 +1032,119 @@ export default function HealthHubPage() {
                   </View>
                 </Card>
               ))}
+            </>
+          ) : (
+            <>
+              {/* Fitness Activities */}
+              {filteredFitnessActivities.map((activity) => (
+                <Card key={activity.id} className={`border-0 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                  <View className="p-4">
+                    <View className="mb-3 flex-row items-center justify-between">
+                      <View className="flex-1">
+                        <Text className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                          {activity.title}
+                        </Text>
+                        <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {activity.description}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        className={`rounded-lg px-4 py-2 ${
+                          activity.isJoined
+                            ? isDarkMode
+                              ? 'bg-gray-700'
+                              : 'bg-gray-100'
+                            : isDarkMode
+                              ? 'bg-emerald-600'
+                              : 'bg-emerald-600'
+                        }`}
+                      >
+                        <Text
+                          className={`text-sm font-medium ${
+                            activity.isJoined ? (isDarkMode ? 'text-gray-300' : 'text-gray-700') : 'text-white'
+                          }`}
+                        >
+                          {activity.isJoined ? 'Joined' : 'Join'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Activity Details */}
+                    <View className="mb-3 flex-row items-center justify-between">
+                      <View className="flex-row items-center">
+                        <Calendar size={16} color={isDarkMode ? '#9ca3af' : '#64748b'} />
+                        <Text className={`ml-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {activity.duration}
+                        </Text>
+                      </View>
+                      <View className="flex-row items-center">
+                        <Activity size={16} color={isDarkMode ? '#9ca3af' : '#64748b'} />
+                        <Text className={`ml-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {activity.calories} cal
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Difficulty and Rating */}
+                    <View className="mb-3 flex-row items-center justify-between">
+                      <View className="flex-row items-center">
+                        <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Difficulty:</Text>
+                        <Text
+                          className={`ml-1 text-sm font-medium ${
+                            activity.difficulty === 'beginner'
+                              ? isDarkMode
+                                ? 'text-green-400'
+                                : 'text-green-600'
+                              : activity.difficulty === 'intermediate'
+                                ? isDarkMode
+                                  ? 'text-yellow-400'
+                                  : 'text-yellow-600'
+                                : isDarkMode
+                                  ? 'text-red-400'
+                                  : 'text-red-600'
+                          }`}
+                        >
+                          {activity.difficulty.charAt(0).toUpperCase() + activity.difficulty.slice(1)}
+                        </Text>
+                      </View>
+                      <View className="flex-row items-center">
+                        {renderStars(activity.rating)}
+                        <Text className={`ml-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          ({activity.rating})
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Instructor and Participants */}
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-row items-center">
+                        <Users size={16} color={isDarkMode ? '#9ca3af' : '#64748b'} />
+                        <Text className={`ml-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {activity.participants} participants
+                        </Text>
+                      </View>
+                      <Text className={`text-sm ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                        by {activity.instructor}
+                      </Text>
+                    </View>
+                  </View>
+                </Card>
+              ))}
+
+              {/* Empty State */}
+              {filteredFitnessActivities.length === 0 && (
+                <Card className={`border-0 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                  <View className="items-center p-8">
+                    <Dumbbell size={48} color={isDarkMode ? '#374151' : '#d1d5db'} className="mb-4" />
+                    <Text className={`mb-2 text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                      No Activities Found
+                    </Text>
+                    <Text className={`text-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      No fitness activities available in this category yet!
+                    </Text>
+                  </View>
+                </Card>
+              )}
             </>
           )}
         </View>

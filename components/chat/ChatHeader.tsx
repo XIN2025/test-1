@@ -54,7 +54,7 @@ export default function ChatHeader() {
                 color: isDarkMode ? '#9ca3af' : '#6b7280',
               }}
             >
-              Your AI Health Agent • Get health insights
+              Your AI Health Agent
             </Text>
           </View>
         </View>

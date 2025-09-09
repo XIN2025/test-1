@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, FlaskConical, Plus, RefreshCw, Calendar, ChevronRight } from 'lucide-react-native';
+import { ArrowLeft, FlaskConical, Plus, RefreshCw, Calendar, ChevronRight, Upload } from 'lucide-react-native';
 import { useTheme } from '../../../context/ThemeContext';
 import { mockLabTestsData, mockEmptyLabTestsData } from '../../../utils/mockLabTests';
 import { LabTest } from '../../../types/labTests';
@@ -208,7 +208,7 @@ export default function LabTestsPage() {
               }}
               activeOpacity={0.8}
             >
-              <Plus size={20} color="#ffffff" />
+              <Upload size={20} color="#ffffff" />
               <Text
                 style={{
                   color: '#ffffff',
@@ -216,7 +216,7 @@ export default function LabTestsPage() {
                   fontWeight: '600',
                 }}
               >
-                Connect to Labcorp
+                Upload Lab Tests
               </Text>
             </TouchableOpacity>
           </View>
