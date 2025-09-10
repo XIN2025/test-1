@@ -57,7 +57,7 @@ export default function ChatInput({
             ref={inputRef}
             value={inputText}
             onChangeText={setInputText}
-            placeholder="Type your message..."
+            placeholder="Ask me about health..."
             style={{
               fontSize: 16,
               color: isDarkMode ? '#F3F4F6' : '#1F2937',
