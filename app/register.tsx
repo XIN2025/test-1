@@ -133,7 +133,7 @@ export default function RegisterScreen() {
       let data: ApiResponse | null = null;
       try {
         data = (await response.json()) as ApiResponse;
-      } catch (_) {
+      } catch {
         data = null;
       }
 

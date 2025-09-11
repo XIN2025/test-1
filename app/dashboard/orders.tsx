@@ -1,4 +1,4 @@
-import Card from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { useTheme } from '@/context/ThemeContext';
 import {
   ArrowRight,

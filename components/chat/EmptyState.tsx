@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { Text, View } from 'react-native';
 import { MessageCircle } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 

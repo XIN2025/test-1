@@ -7,7 +7,7 @@ import { useGoals } from '@/hooks/useGoals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Bell, Flame, Heart, Settings, Target } from 'lucide-react-native';
+import { Bell, Flame, Heart, Target } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, Modal, Pressable, ScrollView, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';

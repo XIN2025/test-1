@@ -25,7 +25,7 @@ export default function VerifyLoginOtpScreen() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { login, isAuthenticated, isLoading, isFirstTimeUser } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -55,8 +55,9 @@ export default function VerifyLoginOtpScreen() {
       let data: any = null;
       try {
         data = await response.json();
-      } catch (_) {
+      } catch (error) {
         data = null;
+        console.error('Failed to parse response JSON:', error);
       }
       if (!response.ok) {
         const backendMsg = data?.detail || data?.message;
@@ -72,8 +73,9 @@ export default function VerifyLoginOtpScreen() {
       let prefsData: any = null;
       try {
         prefsData = await prefsRes.json();
-      } catch (_) {
+      } catch (error) {
         prefsData = null;
+        console.error('Failed to parse user preferences response:', error);
       }
       if (!prefsRes.ok) {
         const backendMsg = prefsData?.detail || prefsData?.message;

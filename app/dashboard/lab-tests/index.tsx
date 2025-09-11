@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, FlaskConical, Plus, RefreshCw, Calendar, ChevronRight, Upload } from 'lucide-react-native';
+import { ArrowLeft, FlaskConical, RefreshCw, Calendar, ChevronRight, Upload } from 'lucide-react-native';
 import { useTheme } from '../../../context/ThemeContext';
 import { mockLabTestsData, mockEmptyLabTestsData } from '../../../utils/mockLabTests';
 import { LabTest } from '../../../types/labTests';

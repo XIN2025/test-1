@@ -6,7 +6,7 @@ import { ArrowLeft, Calendar, Activity, AlertCircle, CheckCircle, TrendingUp, Tr
 import { useTheme } from '../../../context/ThemeContext';
 import { mockLabTestsData } from '../../../utils/mockLabTests';
 import { LabTestItem } from '../../../types/labTests';
-import Accordion from '../../../components/ui/Accordion';
+import { Accordion } from '../../../components/ui/Accordion';
 
 export default function LabTestDetailsPage() {
   const { isDarkMode } = useTheme();

@@ -1,6 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
-import { ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GoalsHeader from './GoalsHeader';

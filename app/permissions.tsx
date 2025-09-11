@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, Platform, ActivityIndicator, SafeAreaView } from 'react-native';
-import Constants from 'expo-constants';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../hooks/useNotifications';
@@ -65,7 +64,7 @@ const PermissionsPage = () => {
   useEffect(() => {
     // Check current notification permission status on mount
     checkPermissionStatus();
-  }, []);
+  }, [checkPermissionStatus]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>

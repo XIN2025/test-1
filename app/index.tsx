@@ -1,11 +1,9 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Text, View, Alert, Platform } from 'react-native';
+import { Animated, Text, View } from 'react-native';
 import EvraLogo from '../components/EvraLogo';
 import './global.css';
-import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
 
 // Configure notifications for foreground behavior
 Notifications.setNotificationHandler({

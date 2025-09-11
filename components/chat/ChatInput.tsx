@@ -1,12 +1,5 @@
 import React, { useRef } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
+import { TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { Mic, Send } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 

@@ -21,7 +21,7 @@ import {
   User,
   X,
 } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Alert, Image, Platform, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -57,15 +57,9 @@ export default function ProfileDashboard() {
 
   useEffect(() => {
     console.log('API Base URL:', API_BASE_URL);
-  }, []);
+  }, [API_BASE_URL]);
 
-  useEffect(() => {
-    if (actualEmail) {
-      fetchProfile();
-    }
-  }, [actualEmail]);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const normalizedEmail = Array.isArray(actualEmail) ? actualEmail[0] : String(actualEmail || '');
       const response = await fetch(`${API_BASE_URL}/api/user/profile?email=${encodeURIComponent(normalizedEmail)}`);
@@ -88,7 +82,13 @@ export default function ProfileDashboard() {
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to fetch profile');
     }
-  };
+  }, [actualEmail, API_BASE_URL]);
+
+  useEffect(() => {
+    if (actualEmail) {
+      fetchProfile();
+    }
+  }, [actualEmail, fetchProfile]);
 
   const handleSaveProfile = async () => {
     try {
@@ -232,7 +232,7 @@ export default function ProfileDashboard() {
           formData.append('picture', blob, 'profile-picture.jpg');
 
           // Upload the image
-          const uploadResponse = await fetch(
+          await fetch(
             `${API_BASE_URL}/api/user/profile/upload-picture?email=${encodeURIComponent(
               Array.isArray(actualEmail) ? actualEmail[0] : actualEmail || '',
             )}`,
@@ -311,7 +311,7 @@ export default function ProfileDashboard() {
         try {
           await logout();
           router.replace('/login');
-        } catch (error) {
+        } catch {
           window.alert('Failed to sign out. Please try again.');
         }
       }
@@ -328,7 +328,7 @@ export default function ProfileDashboard() {
             try {
               await logout();
               router.replace('/login');
-            } catch (error) {
+            } catch {
               Alert.alert('Error', 'Failed to sign out. Please try again.');
             }
           },

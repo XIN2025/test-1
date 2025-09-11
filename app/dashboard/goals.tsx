@@ -7,7 +7,7 @@ import GoalsHeader from '@/components/goals/GoalsHeader';
 import LoadingScreen from '@/components/goals/LoadingScreen';
 import PreferencesModal from '@/components/goals/PreferencesModal';
 import HabitGoalIntegration from '@/components/HabitGoalIntegration';
-import Card from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import WeeklyGoalsSummary from '@/components/WeeklyGoalsSummary';
 import WeeklyReflection from '@/components/WeeklyReflection';
 import { useAuth } from '@/context/AuthContext';
@@ -18,8 +18,8 @@ import { goalsApi } from '@/services/goalsApi';
 import { ActionItem, ActionPlan, Goal, GoalCategory, GoalFormData, GoalPriority } from '@/types/goals';
 import { PillarTimePreferences, PillarType, TimePreference } from '@/types/preferences';
 import * as DocumentPicker from 'expo-document-picker';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { BarChart3, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AddGoalModal from '@/components/goals/AddGoalModal';
@@ -122,17 +122,18 @@ export default function GoalsScreen() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
 
   // Use the goals hook for backend integration
-  const { goals, loading, createGoal, updateGoal, updateGoalProgress, addGoalNote, saveWeeklyReflection, loadGoals } =
-    useGoals({ userEmail }) as {
-      goals: ExtendedGoal[];
-      loading: boolean;
-      createGoal: Function;
-      updateGoal: Function;
-      updateGoalProgress: Function;
-      addGoalNote: Function;
-      saveWeeklyReflection: Function;
-      loadGoals: Function;
-    };
+  const { goals, loading, createGoal, updateGoalProgress, saveWeeklyReflection, loadGoals } = useGoals({
+    userEmail,
+  }) as {
+    goals: ExtendedGoal[];
+    loading: boolean;
+    createGoal: Function;
+    updateGoal: Function;
+    updateGoalProgress: Function;
+    addGoalNote: Function;
+    saveWeeklyReflection: Function;
+    loadGoals: Function;
+  };
 
   // Form state for adding/editing goals
   const [formData, setFormData] = useState<Partial<GoalFormData>>({
@@ -239,11 +240,11 @@ export default function GoalsScreen() {
   const uploadMonitorActiveRef = useRef(false);
   const uploadIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const dedupeFiles = (files: typeof uploadedFiles) => {
+  const dedupeFiles = useCallback((files: typeof uploadedFiles) => {
     const map = new Map<string, any>();
     files.forEach((f) => map.set(f.upload_id || f.id || f.name, f));
     return Array.from(map.values());
-  };
+  }, []);
 
   // Fetch existing uploaded files when modal is opened
   useEffect(() => {
@@ -267,7 +268,7 @@ export default function GoalsScreen() {
       }
     };
     fetchFiles();
-  }, [showUploadModal, userEmail]);
+  }, [showUploadModal, userEmail, dedupeFiles]);
 
   useEffect(() => {
     return () => {

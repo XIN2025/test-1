@@ -15,7 +15,7 @@ const DeleteFileButton: React.FC<DeleteFileButtonProps> = ({ onDelete }) => {
     try {
       await onDelete();
       // Don't set isLoading to false - stays in loading state forever as requested
-    } catch (error) {
+    } catch {
       setIsLoading(false); // Only reset on error
     }
   };

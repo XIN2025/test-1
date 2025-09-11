@@ -446,16 +446,6 @@ export default function HealthDashboard() {
     },
   ];
 
-  // Combine all metrics for the overview
-  const allHealthMetrics = [
-    ...coreActivityMetrics,
-    ...heartHealthMetrics,
-    ...vitalSignsMetrics,
-    ...bodyCompositionMetrics,
-    ...sleepWellnessMetrics,
-    ...dietaryLifestyleMetrics,
-  ];
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }}>
       {/* Header */}

@@ -95,11 +95,11 @@ export const CircularProgressRing: React.FC<CircularProgressRingProps> = ({
 interface MultiRingProgressProps {
   size?: number;
   strokeWidth?: number;
-  rings: Array<{
+  rings: {
     progress: number;
     color: string;
     label?: string;
-  }>;
+  }[];
   backgroundColor?: string;
   showOverallPercentage?: boolean;
   textColor?: string;

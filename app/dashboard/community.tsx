@@ -1,6 +1,5 @@
-import Card from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { useTheme } from '@/context/ThemeContext';
-import { LinearGradient } from 'expo-linear-gradient';
 import {
   Activity,
   Award,

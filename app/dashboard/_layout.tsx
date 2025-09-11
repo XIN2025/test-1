@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Globe, Heart, MessageCircle, ShoppingBag, Target, User, Users } from 'lucide-react-native';
+import { Globe, Heart, MessageCircle, ShoppingBag, Target } from 'lucide-react-native';
 import React from 'react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { useTheme } from '../../context/ThemeContext';

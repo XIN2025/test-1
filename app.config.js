@@ -1,8 +1,9 @@
 export default {
   expo: {
     name: 'Evra',
-    slug: 'app',
-    version: '1.0.3',
+    slug: 'evra',
+    owner: 'gamma-heizen',
+    version: '1.0.5',
     orientation: 'portrait',
     icon: './assets/images/logo.png',
     scheme: 'app',
@@ -12,6 +13,7 @@ export default {
       bundleIdentifier: 'com.evra.app',
       supportsTablet: true,
       deploymentTarget: '16.0',
+      googleServicesFile: process.env.GOOGLE_SERVICES_PLIST ?? './GoogleService-Info.plist',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSHealthShareUsageDescription: 'Your own custom usage description',
@@ -25,7 +27,7 @@ export default {
         backgroundColor: '#fdf4de',
       },
       edgeToEdgeEnabled: true,
-      googleServicesFile: './google-services.json',
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
     },
     web: {
       bundler: 'metro',
@@ -59,6 +61,9 @@ export default {
           background: true,
         },
       ],
+      'expo-notifications',
+      '@react-native-firebase/app',
+      '@react-native-firebase/messaging',
     ],
     experiments: {
       typedRoutes: true,
@@ -66,8 +71,14 @@ export default {
     extra: {
       API_BASE_URL: 'https://api.evra.opengig.work',
       eas: {
-        projectId: '0da319d3-c739-435f-8d48-4036b2df3c77',
+        projectId: 'e25ba26a-90e5-4708-a76c-63ba61de3089',
       },
     },
+  },
+  updates: {
+    url: 'https://u.expo.dev/e25ba26a-90e5-4708-a76c-63ba61de3089',
+  },
+  runtimeVersion: {
+    policy: 'appVersion',
   },
 };

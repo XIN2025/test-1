@@ -17,7 +17,7 @@ import {
   Brain,
   Scale,
   Ruler,
-  Bone,
+  // Bone,
   Coffee,
   Utensils,
   Pill,

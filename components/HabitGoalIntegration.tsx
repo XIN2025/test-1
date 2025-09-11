@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 // @ts-ignore
-import { Target, Calendar, TrendingUp, Lightbulb, CheckCircle } from 'lucide-react-native';
-import Card from '@/components/ui/card';
+import { Target, Lightbulb, CheckCircle } from 'lucide-react-native';
+import { Card } from '@/components/ui/card';
 
 interface HabitGoalIntegrationProps {
   goalId: string;

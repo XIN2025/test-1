@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Alert } from 'react-native';
 // @ts-ignore
-import { TrendingUp, Plus, Minus, Target } from 'lucide-react-native';
+import { Plus, Minus, Target } from 'lucide-react-native';
 
 interface GoalProgressTrackerProps {
   goalId: string;

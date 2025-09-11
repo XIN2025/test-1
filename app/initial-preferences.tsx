@@ -57,7 +57,7 @@ const genderOptions = ['Male', 'Female', 'Other'];
 export default function InitialPreferences() {
   const { email, name } = useLocalSearchParams();
   const router = useRouter();
-  const { isAuthenticated, isLoading, isFirstTimeUser } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   // Redirect if already authenticated and not setting initial preferences
   useEffect(() => {

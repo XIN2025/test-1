@@ -1,8 +1,7 @@
 import { Stack } from 'expo-router';
-import { SafeAreaView, StatusBar, Text, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
 import { AuthProvider } from '../context/AuthContext';
-import { ThemeProvider, useTheme } from '../context/ThemeContext';
+import { ThemeProvider } from '../context/ThemeContext';
 import { useFonts } from '../hooks/useFonts';
 import './global.css';
 

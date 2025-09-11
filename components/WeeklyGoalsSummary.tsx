@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 // @ts-ignore
 import { Target } from 'lucide-react-native';
-import Card from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 
 interface Goal {
   id: string;
