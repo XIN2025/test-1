@@ -681,7 +681,7 @@ export default function GoalsScreen() {
                         </View>
                       </View>
                     </View>
-                    {!goal.action_plan && (
+                    {!goal.action_items && (
                       <TouchableOpacity
                         onPress={() => handleGeneratePlan(goal.id, goal)}
                         disabled={generatingPlan}
