@@ -114,10 +114,7 @@ export default function GoalsScreen() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [selectedActionItem, setSelectedActionItem] = useState<ActionItem | null>(null);
-  const [, setActivePlan] = useState<{
-    actionPlan: ActionPlan;
-    weeklySchedule: any;
-  } | null>(null);
+  const [, setActivePlan] = useState<any>(null);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
 
@@ -134,6 +131,10 @@ export default function GoalsScreen() {
     saveWeeklyReflection: Function;
     loadGoals: Function;
   };
+
+  useEffect(() => {
+    loadGoals();
+  }, []);
 
   // Form state for adding/editing goals
   const [formData, setFormData] = useState<Partial<GoalFormData>>({
@@ -410,24 +411,17 @@ export default function GoalsScreen() {
       console.log(`Generating plan for goal ${goalId}:`, goal);
 
       // Generate the plan (returns { actionPlan, weeklySchedule })
-      const { actionPlan, weeklySchedule } = await goalsApi.generatePlan(goalId, userEmail, [defaultPreferences]);
+      const { actionItems } = await goalsApi.generatePlan(goalId, userEmail, [defaultPreferences]);
 
-      console.log('Plan generation response:', { actionPlan, weeklySchedule });
+      console.log('Plan generation response:', { actionItems });
 
       // Defensive checks
-      if (!actionPlan || !weeklySchedule) {
+      if (!actionItems) {
         throw new Error('Plan generation returned incomplete data');
       }
 
       // Debug logs
-      console.log('Action plan:', actionPlan);
-      console.log('Weekly schedule:', weeklySchedule);
-
-      // Set the active plan for immediate UI feedback
-      setActivePlan({
-        actionPlan: actionPlan,
-        weeklySchedule: weeklySchedule,
-      });
+      console.log('Action items:', actionItems);
 
       // Reload all goals so the specific goal reflects new action items
       try {
@@ -626,7 +620,7 @@ export default function GoalsScreen() {
             {!loading && goals.length === 0 && <EmptyGoals setShowAddGoal={setShowAddGoal} />}
 
             {/* Goals List */}
-            {goals.map((goal: ExtendedGoal) => (
+            {goals.map((goal: any) => (
               <View
                 key={goal.id}
                 style={{
@@ -739,13 +733,13 @@ export default function GoalsScreen() {
                   </View>
 
                   {/* Action Items */}
-                  {(goal.action_plan?.action_items?.length ?? 0) > 0 && (
+                  {(goal.action_items?.length ?? 0) > 0 && (
                     <View className="mt-4">
                       <Text className={`mb-2 text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
                         Action Items
                       </Text>
                       <View>
-                        {goal.action_plan?.action_items?.map((item) => (
+                        {goal.action_items?.map((item: any) => (
                           <ActionItemCard key={item.title} item={item} onPress={() => setSelectedActionItem(item)} />
                         ))}
                       </View>

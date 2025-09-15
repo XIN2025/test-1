@@ -1,6 +1,7 @@
 import { useTheme } from '@/context/ThemeContext';
 import { ActionItem } from '@/types/goals';
 import { TouchableOpacity, View, Text } from 'react-native';
+import { useEffect } from 'react';
 
 interface ActionItemCardProps {
   item: ActionItem;
@@ -12,12 +13,15 @@ const ActionItemCard: React.FC<ActionItemCardProps> = ({ item, onPress }) => {
   const scheduledDays = Object.entries(item.weekly_schedule || {})
     .filter(
       ([key, value]: [string, any]) =>
-        ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].includes(key) &&
-        value &&
-        value.time_slots &&
-        value.time_slots.length > 0,
+        ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].includes(key) && value,
     )
     .map(([day]) => day);
+
+  useEffect(() => {
+    if (item.weekly_schedule) {
+      console.log('weekly_schedule:', item.weekly_schedule);
+    }
+  }, [item.weekly_schedule]);
 
   return (
     <TouchableOpacity className="mt-3" onPress={onPress}>

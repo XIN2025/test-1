@@ -21,7 +21,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
       setError(null);
 
       try {
-        const goalsData = await goalsApi.getUserGoals(userEmail, weekStart);
+        const goalsData = await goalsApi.getUserGoals(userEmail);
         console.log('goalsData', goalsData);
         setGoals(goalsData);
       } catch (err) {

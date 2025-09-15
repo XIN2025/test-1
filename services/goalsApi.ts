@@ -60,12 +60,8 @@ class GoalsApiService {
     return response.data?.daily_completion || {};
   }
 
-  async getUserGoals(userEmail: string, weekStart?: string): Promise<Goal[]> {
+  async getUserGoals(userEmail: string): Promise<Goal[]> {
     const params = new URLSearchParams({ user_email: userEmail });
-    if (weekStart) {
-      params.append('week_start', weekStart);
-    }
-
     const response: ApiResponse<{ goals: Goal[] }> = await this.makeRequest(`/api/goals?${params}`);
     return response.data!.goals;
   }
@@ -156,27 +152,21 @@ class GoalsApiService {
     return response.data!;
   }
 
-  async generatePlan(
-    goalId: string,
-    userEmail: string,
-    pillarPreferences?: PillarTimePreferences[],
-  ): Promise<{ actionPlan: ActionPlan; weeklySchedule: any }> {
+  async generatePlan(goalId: string, userEmail: string, pillarPreferences?: PillarTimePreferences[]): Promise<any> {
     const params = new URLSearchParams({ user_email: userEmail });
-    const response: ApiResponse<{
-      action_plan: ActionPlan;
-      weekly_schedule: any;
-    }> = await this.makeRequest(`/api/goals/${goalId}/generate-plan?${params}`, {
+    const response: any = await this.makeRequest(`/api/goals/${goalId}/generate-plan?${params}`, {
       method: 'POST',
       body: JSON.stringify(pillarPreferences),
     });
+
+    console.log(JSON.stringify(response.data, null, 2));
 
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Failed to generate plan');
     }
 
     return {
-      actionPlan: response.data.action_plan,
-      weeklySchedule: response.data.weekly_schedule,
+      actionItems: response.data.action_items,
     };
   }
 
