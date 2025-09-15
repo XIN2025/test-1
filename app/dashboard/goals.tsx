@@ -186,7 +186,6 @@ export default function GoalsScreen() {
         description: formData.description,
         priority: formData.priority,
         category: formData.category,
-        due_date: formData.dueDate?.toISOString(),
       });
 
       setShowAddGoal(false);
@@ -196,7 +195,6 @@ export default function GoalsScreen() {
         description: '',
         priority: 'medium',
         category: 'health',
-        dueDate: new Date(),
       });
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create goal');
