@@ -22,7 +22,6 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
 
       try {
         const goalsData = await goalsApi.getUserGoals(userEmail, weekStart);
-        console.log('goalsData', goalsData);
         setGoals(goalsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load goals');
