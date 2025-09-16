@@ -271,22 +271,19 @@ class GoalsApiService {
     });
   }
 
-  // Action Item Completion Methods
-  async markActionItemCompletion(
-    goalId: string,
-    userEmail: string,
-    completionData: {
-      action_item_title: string;
-      completion_date: string; // YYYY-MM-DD format
-      completed: boolean;
-      notes?: string;
-    },
-  ): Promise<any> {
-    const params = new URLSearchParams({ user_email: userEmail });
-    const response = await this.makeRequest<ApiResponse<any>>(`/api/goals/${goalId}/action-items/complete?${params}`, {
-      method: 'POST',
-      body: JSON.stringify(completionData),
-    });
+  async markActionItemCompletion(actionItemId: string, weekDayIndex: number, completed: boolean): Promise<any> {
+    let response;
+    if (completed) {
+      response = await this.makeRequest<ApiResponse<any>>(`/api/action-items/${actionItemId}/complete`, {
+        method: 'POST',
+        body: JSON.stringify({ weekday_index: weekDayIndex }),
+      });
+    } else {
+      response = await this.makeRequest<ApiResponse<any>>(`/api/action-items/${actionItemId}/incomplete`, {
+        method: 'POST',
+        body: JSON.stringify({ weekday_index: weekDayIndex }),
+      });
+    }
     if (response.success) {
       return {
         success: true,
@@ -322,6 +319,39 @@ class GoalsApiService {
     });
     const response = await this.makeRequest<ApiResponse<any>>(`/api/goals/completion-stats?${params}`);
     return response.data?.completion_stats || {};
+  }
+
+  // TODO: Look into if you can do this in a single API call especifically for today's items
+  async getTodaysActionItems(userEmail: string): Promise<any[]> {
+    console.log("Fetching today's action items for user:", userEmail);
+    const params = new URLSearchParams({
+      user_email: userEmail,
+    });
+    const response = await this.makeRequest<ApiResponse<{ goals: any[] }>>(`/api/goals?${params}`);
+    console.log('Fetched goals:', response.data);
+    const goals = response.data?.goals || [];
+    const todaysItems: any[] = [];
+    const dayKey = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][
+      new Date().getDay() - 1
+    ];
+    goals.forEach((goal) => {
+      const actionItems = goal.action_items || [];
+      actionItems.forEach((item: any) => {
+        const weeklySchedule = item.weekly_schedule || [];
+        const scheduleForDay = weeklySchedule[dayKey] || {};
+        todaysItems.push({
+          id: item.id,
+          title: item.title,
+          goalId: goal.id,
+          goalTitle: goal.title,
+          startTime: scheduleForDay.start_time,
+          endTime: scheduleForDay.end_time,
+          complete: scheduleForDay.complete || false,
+        });
+      });
+    });
+    console.log("Today's action items:", todaysItems);
+    return todaysItems;
   }
 }
 

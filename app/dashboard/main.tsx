@@ -154,8 +154,14 @@ function MainDashboard() {
   };
   const closeStreakModal = () => setShowStreakModal(false);
   const { goals, loadGoals } = useGoals({ userEmail });
-  const { completionStats, getGoalCompletionPercentage, markCompletion, loadCompletionStats } =
-    useActionCompletions(userEmail);
+  const {
+    completionStats,
+    getGoalCompletionPercentage,
+    markCompletion,
+    loadCompletionStats,
+    loadTodaysItems,
+    todaysItems,
+  } = useActionCompletions(userEmail);
   // Walkthrough state management
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   const [showAllTodayItems, setShowAllTodayItems] = useState(false);
@@ -286,66 +292,42 @@ function MainDashboard() {
   };
 
   // Build today's action items from goals data
-  const todaysItems: TodayItem[] = useMemo(() => {
-    const items: TodayItem[] = [];
+  // const todaysItems: TodayItem[] = useMemo(() => {
+  //   const items: TodayItem[] = [];
 
-    const normalizeTime = (t?: string): string => formatTimeHM(t);
+  //   if (!goals || !Array.isArray(goals)) return items;
 
-    const makeKey = (title: string, goalTitle: string | undefined, start?: string, end?: string) => {
-      const normTitle = (title || '').trim().toLowerCase();
-      const normGoal = (goalTitle || '').trim().toLowerCase();
-      const normStart = normalizeTime(start);
-      const normEnd = normalizeTime(end);
-      return `${normGoal}|${normTitle}|${normStart}|${normEnd}`;
-    };
+  //   (goals as any[]).forEach((goal) => {
+  //     if (goal?.action_items && Array.isArray(goal.action_items)) {
+  //       goal.action_items.forEach((item: any, index: number) => {
+  //         const weekly_schedule = item?.weekly_schedule || [];
+  //         if (weekly_schedule[dayKey]) {
+  //           items.push({
+  //             id: item.id, // Unique ID combining goal ID and item index
+  //             title: item.title || `Action Item ${index + 1}`,
+  //             start_time: weekly_schedule[dayKey].start_time,
+  //             end_time: weekly_schedule[dayKey].end_time,
+  //             goalTitle: goal.title || 'Untitled Goal',
+  //           });
+  //         }
+  //       });
+  //     }
+  //   });
 
-    const seen = new Set<string>();
+  //   // Sort items by start_time if available
+  //   items.sort((a, b) => {
+  //     if (a.start_time && b.start_time) {
+  //       return a.start_time.localeCompare(b.start_time);
+  //     } else if (a.start_time) {
+  //       return -1; // a comes first
+  //     } else if (b.start_time) {
+  //       return 1; // b comes first
+  //     }
+  //     return a.title.localeCompare(b.title); // Fallback to title sort
+  //   });
 
-    (goals as any[]).forEach((g: any) => {
-      // 1) From goal.weekly_schedule.daily_schedules[dayKey]
-      const ds = g?.weekly_schedule?.daily_schedules?.[dayKey];
-      if (ds?.time_slots?.length) {
-        ds.time_slots.forEach((ts: any, idx: number) => {
-          const title = ts.action_item || g.title;
-          const key = makeKey(title, g.title, ts.start_time, ts.end_time);
-          if (!seen.has(key)) {
-            seen.add(key);
-            items.push({
-              id: `${g.id}-top-${dayKey}-${idx}`,
-              title,
-              start_time: ts.start_time,
-              end_time: ts.end_time,
-              goalTitle: g.title,
-            });
-          }
-        });
-      }
-
-      // 2) From goal.action_plan.action_items[].weekly_schedule[dayKey].time_slots
-      const actionItems = g?.action_plan?.action_items || [];
-      actionItems.forEach((ai: any, aIdx: number) => {
-        const w = ai?.weekly_schedule?.[dayKey];
-        const slots = w?.time_slots || [];
-        slots.forEach((ts: any, sIdx: number) => {
-          const key = makeKey(ai.title, g.title, ts.start_time, ts.end_time);
-          if (!seen.has(key)) {
-            seen.add(key);
-            items.push({
-              id: `${g.id}-ai-${aIdx}-${dayKey}-${sIdx}`,
-              title: ai.title,
-              start_time: ts.start_time,
-              end_time: ts.end_time,
-              goalTitle: g.title,
-            });
-          }
-        });
-      });
-    });
-
-    // Sort by normalized time if available
-    items.sort((a, b) => formatTimeHM(a.start_time).localeCompare(formatTimeHM(b.start_time)));
-    return items;
-  }, [goals, dayKey]);
+  //   return items;
+  // }, [goals, dayKey]);
 
   // Helper to check if an action item is completed for the current week
   const isActionItemCompletedThisWeek = useCallback((actionItem: any): boolean => {
@@ -480,52 +462,18 @@ function MainDashboard() {
   // }, [goals, getGoalCompletionPercentage, streak]);
 
   const toggleItemCompleted = async (id: string) => {
-    // Find the action item details from todaysItems
     const actionItem = todaysItems.find((item) => item.id === id);
     if (!actionItem) return;
 
-    // Extract goal ID from the item ID (format: goalId-top-dayKey-index or goalId-ai-aIdx-dayKey-sIdx)
-    const goalId = actionItem.id.split('-')[0];
-
-    // Mark this item as recently interacted with
-    setRecentInteractions((prev) => {
-      const newMap = new Map(prev);
-      newMap.set(id, Date.now());
-      return newMap;
-    });
-
-    // Toggle local state immediately for UI responsiveness
-    setCompletedItems((prev) => {
-      const next = new Set(prev);
-      const isCompleted = next.has(id);
-
-      if (isCompleted) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-
-      // Call API to mark completion
-      markCompletion(goalId, actionItem.title, !isCompleted)
-        .then(() => {
-          // Add a small delay to allow backend processing to complete
-        })
-        .catch((error) => {
-          console.error('Failed to mark completion:', error);
-          // Revert local state on error
-          setCompletedItems((prevState) => {
-            const revertSet = new Set(prevState);
-            if (isCompleted) {
-              revertSet.add(id);
-            } else {
-              revertSet.delete(id);
-            }
-            return revertSet;
-          });
-        });
-
-      return next;
-    });
+    const isComplete = actionItem.complete;
+    markCompletion(id, !isComplete)
+      .then(() => {
+        console.log(`✅ Successfully marked action item ${id} as ${!isComplete ? 'completed' : 'not completed'}`);
+        loadTodaysItems();
+      })
+      .catch((error) => {
+        console.error('Failed to mark completion:', error);
+      });
   };
 
   return (
@@ -1045,15 +993,11 @@ function MainDashboard() {
                               marginRight: 12,
                               alignItems: 'center',
                               justifyContent: 'center',
-                              backgroundColor: completedItems.has(it.id)
-                                ? isDarkMode
-                                  ? '#10b981'
-                                  : '#059669'
-                                : 'transparent',
+                              backgroundColor: it.complete ? (isDarkMode ? '#10b981' : '#059669') : 'transparent',
                             }}
                             activeOpacity={0.7}
                           >
-                            {completedItems.has(it.id) && (
+                            {it.complete && (
                               <Text
                                 style={{
                                   color: 'white',
@@ -1070,14 +1014,14 @@ function MainDashboard() {
                               style={{
                                 fontSize: 14,
                                 fontWeight: '500',
-                                color: completedItems.has(it.id)
+                                color: it.complete
                                   ? isDarkMode
                                     ? '#6b7280'
                                     : '#6b7280'
                                   : isDarkMode
                                     ? '#f3f4f6'
                                     : '#1f2937',
-                                textDecorationLine: completedItems.has(it.id) ? 'line-through' : 'none',
+                                textDecorationLine: it.complete ? 'line-through' : 'none',
                               }}
                             >
                               {it.title}

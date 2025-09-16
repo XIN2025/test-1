@@ -19,6 +19,7 @@ export interface ActionCompletionStats {
 
 export const useActionCompletions = (userEmail: string) => {
   const [completionStats, setCompletionStats] = useState<Record<string, ActionCompletionStats>>({});
+  const [todaysItems, setTodaysItems] = useState<Array<any>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,24 +55,18 @@ export const useActionCompletions = (userEmail: string) => {
   );
 
   const markCompletion = useCallback(
-    async (
-      goalId: string,
-      actionItemTitle: string,
-      completed: boolean = true,
-      notes?: string,
-      completionDate?: string,
-    ) => {
-      if (!userEmail) throw new Error('User email required');
+    async (actionItemId: string, completed: boolean = true) => {
+      if (!actionItemId) {
+        setError('Action item ID is required');
+        return false;
+      }
 
-      const date = completionDate || new Date().toISOString().split('T')[0];
+      console.log(`Marking action item ${actionItemId} as ${completed ? 'completed' : 'not completed'}`);
+
+      const weekDayIndex = new Date().getDay() - 1;
 
       try {
-        const res = await goalsApi.markActionItemCompletion(goalId, userEmail, {
-          action_item_title: actionItemTitle,
-          completion_date: date,
-          completed,
-          notes,
-        });
+        const res = await goalsApi.markActionItemCompletion(actionItemId, weekDayIndex, completed);
         if (res.success) {
           return true;
         }
@@ -109,18 +104,40 @@ export const useActionCompletions = (userEmail: string) => {
     [completionStats],
   );
 
+  const loadTodaysItems = useCallback(async () => {
+    if (!userEmail) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const items = await goalsApi.getTodaysActionItems(userEmail);
+      console.log("Today's action items:", items);
+      setTodaysItems(items);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to load today's action items";
+      setError(message);
+      console.error("Error loading today's action items:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [userEmail]);
+
   // Load initial completion stats
   useEffect(() => {
-    loadCompletionStats();
-  }, [loadCompletionStats]);
+    // loadCompletionStats();
+    loadTodaysItems();
+  }, [loadTodaysItems]);
 
   return {
     completionStats,
     loading,
     error,
+    todaysItems,
     loadCompletionStats,
     markCompletion,
     getGoalCompletionPercentage,
     getTodayCompletionForGoal,
+    loadTodaysItems,
   };
 };
