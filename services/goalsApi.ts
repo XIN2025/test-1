@@ -344,18 +344,19 @@ const dayKey = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturda
     goals.forEach((goal) => {
       const actionItems = goal.action_items || [];
       actionItems.forEach((item: any) => {
-        const weeklySchedule = item.weekly_schedule || [];
-        const scheduleForDay = weeklySchedule[dayKey] || {};
-        todaysItems.push({
-          id: item.id,
-          title: item.title,
-          goalId: goal.id,
-          goalTitle: goal.title,
-          startTime: scheduleForDay.start_time,
-          endTime: scheduleForDay.end_time,
-          complete: scheduleForDay.complete || false,
-        });
-      });
+const weeklySchedule = item.weekly_schedule || {};
+const scheduleForDay = weeklySchedule[dayKey];
+if (scheduleForDay) {
+  todaysItems.push({
+    id: item.id,
+    title: item.title,
+    goalId: goal.id,
+    goalTitle: goal.title,
+    startTime: scheduleForDay.start_time,
+    endTime: scheduleForDay.end_time,
+    complete: !!scheduleForDay.complete,
+  });
+}
     });
     console.log("Today's action items:", todaysItems);
     return todaysItems;
