@@ -677,7 +677,7 @@ useEffect(() => {
                         </View>
                       </View>
                     </View>
-                    {!goal.action_items && (
+{!(goal.action_items && goal.action_items.length > 0) && (
                       <TouchableOpacity
                         onPress={() => handleGeneratePlan(goal.id, goal)}
                         disabled={generatingPlan}
