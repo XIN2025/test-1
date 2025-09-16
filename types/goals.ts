@@ -94,6 +94,8 @@ export interface Goal extends GoalBase {
   notes: string[];
   created_at: string;
   updated_at: string;
+  action_items?: ActionItem[];
+  completion_percentage?: number;
 }
 
 export interface GoalProgressUpdate {

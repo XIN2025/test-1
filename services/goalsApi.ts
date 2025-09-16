@@ -72,6 +72,13 @@ class GoalsApiService {
     return response.data!.goal;
   }
 
+  async getGoalActionItems(goalId: string): Promise<any[]> {
+    const response: ApiResponse<{ action_items: any[] }> = await this.makeRequest(`/api/goals/${goalId}/action-items`, {
+      method: 'GET',
+    });
+    return response.data!.action_items || [];
+  }
+
   async updateGoal(goalId: string, goalData: GoalUpdate, userEmail: string): Promise<Goal> {
     const params = new URLSearchParams({ user_email: userEmail });
     const response: ApiResponse<{ goal: Goal }> = await this.makeRequest(`/api/goals/${goalId}?${params}`, {
@@ -278,6 +285,7 @@ class GoalsApiService {
         method: 'POST',
         body: JSON.stringify({ weekday_index: weekDayIndex }),
       });
+      console.log('Mark complete response:', response);
     } else {
       response = await this.makeRequest<ApiResponse<any>>(`/api/action-items/${actionItemId}/incomplete`, {
         method: 'POST',

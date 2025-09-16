@@ -12,7 +12,6 @@ import WeeklyGoalsSummary from '@/components/WeeklyGoalsSummary';
 import WeeklyReflection from '@/components/WeeklyReflection';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
-import { useActionCompletions } from '@/hooks/useActionCompletions';
 import { useGoals } from '@/hooks/useGoals';
 import { goalsApi } from '@/services/goalsApi';
 import { ActionItem, ActionPlan, Goal, GoalCategory, GoalFormData, GoalPriority } from '@/types/goals';
@@ -95,9 +94,6 @@ export default function GoalsScreen() {
   const { user } = useAuth();
   const userEmail = user?.email || '';
   const userName = user?.name || '';
-
-  // Action completions hook for tracking completion percentages
-  const { getGoalCompletionPercentage } = useActionCompletions(userEmail);
 
   useEffect(() => {
     console.log('Current user context:', {
@@ -666,11 +662,11 @@ export default function GoalsScreen() {
                           <CircularProgressRing
                             size={54}
                             strokeWidth={4}
-                            progress={getGoalCompletionPercentage(goal.id)}
+                            progress={goal.completion_percentage || 0}
                             color={
-                              getGoalCompletionPercentage(goal.id) >= 80
+                              goal.completion_percentage >= 80
                                 ? '#10b981' // Green for high completion
-                                : getGoalCompletionPercentage(goal.id) >= 50
+                                : goal.completion_percentage >= 50
                                   ? '#f59e0b' // Yellow for medium completion
                                   : '#ef4444' // Red for low completion
                             }
