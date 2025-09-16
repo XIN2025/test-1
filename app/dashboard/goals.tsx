@@ -128,9 +128,9 @@ export default function GoalsScreen() {
     loadGoals: Function;
   };
 
-  useEffect(() => {
-    loadGoals();
-  }, []);
+useEffect(() => {
+  loadGoals();
+}, [loadGoals]);
 
   // Form state for adding/editing goals
   const [formData, setFormData] = useState<Partial<GoalFormData>>({
