@@ -12,7 +12,7 @@ import { Dimensions, Modal, Pressable, ScrollView, Text, TouchableOpacity, View,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CopilotProvider, CopilotStep, walkthroughable, useCopilot } from 'react-native-copilot';
 import { goalsApi } from '../../services/goalsApi';
-import SimpleHealthCard from '../../components/SimpleHealthCard';
+import PlatformHealthCard from '../../components/health/PlatformHealthCard';
 import SimpleLabTestsCard from '../../components/SimpleLabTestsCard';
 import UserAvatar from '@/components/UserAvatar';
 import Greeting from '@/components/Greeting';
@@ -493,65 +493,36 @@ function MainDashboard() {
           </View>
         </View>
       </View>
-
-      <ScrollView>
-        <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-          {/* Health Score and Quick Actions Row */}
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              marginBottom: 32,
-              minHeight: width * 0.4, // Ensure consistent height
-            }}
-          >
-            {/* Health Card - Left Side */}
-            <View style={{ width: '48%', paddingRight: 8 }}>
-              {/* Health Card - iOS only */}
-              {Platform.OS === 'ios' && (
-                <SimpleHealthCard
+        {/* Scrollable Content */}
+        <ScrollView
+          style={{
+            height: '100%',
+            backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
+          }}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+            {/* Health Score and Quick Actions Row */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginBottom: 32,
+                minHeight: width * 0.4, // Ensure consistent height
+              }}
+            >
+              {/* Health Card - Left Side */}
+              <View style={{ width: '48%', paddingRight: 8 }}>
+                {/* Health Card - Platform specific (iOS HealthKit / Android Health Connect) */}
+                <PlatformHealthCard
                   isDarkMode={isDarkMode}
                   onPress={() => router.push('/dashboard/health')}
                   width={width * 0.44}
                   height={width * 0.4}
                 />
-              )}
-
-              {/* Android Alternative - Chat and Appointment Buttons */}
-              {Platform.OS === 'android' && (
-                <View style={{ flex: 1, gap: 12 }}>
-                  {/* Chat with Evra Button */}
-                  <TouchableOpacity
-                    onPress={() => router.push('/dashboard/chat')}
-                    style={{
-                      flex: 1,
-                      backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                      borderRadius: 16,
-                      padding: 16,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                      shadowRadius: 4,
-                      elevation: 3,
-                      borderWidth: 1,
-                      borderColor: isDarkMode ? '#374151' : '#e5e7eb',
-                    }}
-                  >
-                    <Heart size={24} color={isDarkMode ? '#34d399' : '#059669'} />
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        fontWeight: '600',
-                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                        marginTop: 8,
-                        textAlign: 'center',
-                      }}
-                    >
-                      Chat with Evra
-                    </Text>
-                  </TouchableOpacity>
+              </View>
 
                   {/* Book Appointment Button */}
                   <TouchableOpacity
@@ -592,47 +563,37 @@ function MainDashboard() {
               )}
             </View>
 
-            {/* Health Score - Right Side */}
-            <View className="items-center justify-center" style={{ width: '48%', paddingLeft: 8 }}>
-              <CopilotStep
-                text="📊 Health Score - Your overall health score is calculated based on your daily activities, goal completion, and health metrics. Higher scores mean better health habits!"
-                order={1}
-                name="healthScore"
+            {/* View Full Health Data Button - Platform specific */}
+            <TouchableOpacity
+              onPress={() => router.push('/dashboard/health')}
+              style={{
+                backgroundColor: isDarkMode ? '#059669' : '#059669',
+                paddingVertical: 12,
+                paddingHorizontal: 20,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 24,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              }}
+              activeOpacity={0.8}
+            >
+              <Heart size={16} color="#ffffff" style={{ marginRight: 8 }} />
+              <Text
+                style={{
+                  color: '#ffffff',
+                  fontSize: 14,
+                  fontWeight: '600',
+                }}
               >
-                <WalkthroughableView
-                  style={{
-                    alignItems: 'center',
-                    padding: 20,
-                    borderRadius: 16,
-                    minHeight: width * 0.4,
-                    justifyContent: 'center',
-                  }}
-                >
-                  {/* Liquid Gauge for Health Score */}
-                  <LiquidGauge
-                    value={72}
-                    width={width * 0.35}
-                    height={width * 0.35}
-                    config={{
-                      circleColor: '#f97316',
-                      textColor: isDarkMode ? '#fff' : '#1f2937',
-                      waveTextColor: isDarkMode ? '#1f2937' : '#fff',
-                      waveColor: '#f97316',
-                      circleThickness: 0.08,
-                      textVertPosition: 0.5,
-                      waveAnimateTime: 3000,
-                      waveRiseTime: 1500,
-                      waveHeight: 0.08,
-                      waveCount: 2,
-                      textSize: 1.2,
-                      waveRise: true,
-                      waveAnimate: true,
-                      waveHeightScaling: true,
-                      valueCountUp: true,
-                      textSuffix: '',
-                      toFixed: 0,
-                    }}
-                  />
+                View Full Health Data
+              </Text>
+            </TouchableOpacity>
 
                   {/* Label below */}
                   <Text

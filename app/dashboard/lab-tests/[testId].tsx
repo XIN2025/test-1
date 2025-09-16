@@ -1,21 +1,41 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Calendar, Activity, AlertCircle, CheckCircle, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { useTheme } from '../../../context/ThemeContext';
-import { mockLabTestsData } from '../../../utils/mockLabTests';
-import { LabTestItem } from '../../../types/labTests';
+import { labReportsApi, LabReportDetail, LabReportDetailProperty } from '../../../services/labReportsApi';
+import { useAuth } from '../../../context/AuthContext';
 import { Accordion } from '../../../components/ui/Accordion';
 
 export default function LabTestDetailsPage() {
   const { isDarkMode } = useTheme();
   const router = useRouter();
   const { testId, testName } = useLocalSearchParams<{ testId: string; testName: string }>();
+  const { user } = useAuth();
+  const userEmail = user?.email || '';
+  const [loading, setLoading] = useState(true);
+  const [report, setReport] = useState<LabReportDetail | null>(null);
 
-  const test = mockLabTestsData.tests.find((t) => t.id === testId);
+  useEffect(() => {
+    const fetchReport = async () => {
+      if (!testId || !userEmail) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const data = await labReportsApi.getById(testId as string, userEmail);
+        setReport(data);
+      } catch (error: any) {
+        Alert.alert('Failed to load report', error?.message || 'Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReport();
+  }, [testId, userEmail]);
 
-  if (!test) {
+  if (!loading && !report) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }} edges={['top']}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
@@ -140,7 +160,7 @@ export default function LabTestDetailsPage() {
               color: isDarkMode ? '#f3f4f6' : '#1f2937',
             }}
           >
-            {decodeURIComponent(testName || test.name)}
+            {decodeURIComponent((testName as string) || report?.test_title || report?.test_description || '')}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
             <Calendar size={12} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
@@ -151,7 +171,7 @@ export default function LabTestDetailsPage() {
                 marginLeft: 4,
               }}
             >
-              {formatDate(test.date)}
+              {report ? formatDate(report.test_date) : ''}
             </Text>
           </View>
         </View>
@@ -167,42 +187,11 @@ export default function LabTestDetailsPage() {
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Test Summary */}
-        {test.summary && (
-          <View
-            style={{
-              backgroundColor: isDarkMode ? '#374151' : '#ffffff',
-              borderRadius: 16,
-              padding: 20,
-              marginBottom: 20,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 2,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                marginBottom: 8,
-              }}
-            >
-              Test Summary
-            </Text>
-            <Text
-              style={{
-                fontSize: 14,
-                color: isDarkMode ? '#d1d5db' : '#4b5563',
-                lineHeight: 20,
-              }}
-            >
-              {test.summary}
-            </Text>
+        {loading ? (
+          <View style={{ alignItems: 'center', paddingVertical: 60 }}>
+            <ActivityIndicator size="large" color={isDarkMode ? '#34d399' : '#059669'} />
           </View>
-        )}
+        ) : null}
 
         {/* Test Items */}
         <View>
@@ -218,9 +207,9 @@ export default function LabTestDetailsPage() {
           </Text>
 
           <View style={{ gap: 12 }}>
-            {test.items.map((item: LabTestItem) => (
+            {report?.properties.map((item: LabReportDetailProperty, idx: number) => (
               <View
-                key={item.id}
+                key={`${item.property_name}-${idx}`}
                 style={{
                   backgroundColor: isDarkMode ? '#374151' : '#ffffff',
                   borderRadius: 16,
@@ -250,7 +239,7 @@ export default function LabTestDetailsPage() {
                         marginBottom: 4,
                       }}
                     >
-                      {item.name}
+                      {item.property_name}
                     </Text>
 
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
@@ -277,7 +266,7 @@ export default function LabTestDetailsPage() {
                       )}
                     </View>
 
-                    {item.normalRange && (
+                    {item.reference_range && (
                       <Text
                         style={{
                           fontSize: 12,
@@ -285,7 +274,7 @@ export default function LabTestDetailsPage() {
                           marginBottom: 8,
                         }}
                       >
-                        Normal range: {item.normalRange}
+                        Reference range: {item.reference_range}
                       </Text>
                     )}
 
@@ -325,27 +314,8 @@ export default function LabTestDetailsPage() {
                       lineHeight: 20,
                     }}
                   >
-                    {item.details}
+                    {item.property_description || 'No additional details provided.'}
                   </Text>
-                  {item.lastUpdated && (
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: isDarkMode ? '#9ca3af' : '#6b7280',
-                        marginTop: 12,
-                        fontStyle: 'italic',
-                      }}
-                    >
-                      Last updated:{' '}
-                      {new Date(item.lastUpdated).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </Text>
-                  )}
                 </Accordion>
               </View>
             ))}
