@@ -339,24 +339,25 @@ class GoalsApiService {
     console.log('Fetched goals:', response.data);
     const goals = response.data?.goals || [];
     const todaysItems: any[] = [];
-const dayIndex = (new Date().getDay() + 6) % 7; // Sunday(0)->6, Monday(1)->0, ...
-const dayKey = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][dayIndex];
+    const dayIndex = (new Date().getDay() + 6) % 7; // Sunday(0)->6, Monday(1)->0, ...
+    const dayKey = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][dayIndex];
     goals.forEach((goal) => {
       const actionItems = goal.action_items || [];
       actionItems.forEach((item: any) => {
-const weeklySchedule = item.weekly_schedule || {};
-const scheduleForDay = weeklySchedule[dayKey];
-if (scheduleForDay) {
-  todaysItems.push({
-    id: item.id,
-    title: item.title,
-    goalId: goal.id,
-    goalTitle: goal.title,
-    startTime: scheduleForDay.start_time,
-    endTime: scheduleForDay.end_time,
-    complete: !!scheduleForDay.complete,
-  });
-}
+        const weeklySchedule = item.weekly_schedule || {};
+        const scheduleForDay = weeklySchedule[dayKey];
+        if (scheduleForDay) {
+          todaysItems.push({
+            id: item.id,
+            title: item.title,
+            goalId: goal.id,
+            goalTitle: goal.title,
+            startTime: scheduleForDay.start_time,
+            endTime: scheduleForDay.end_time,
+            complete: !!scheduleForDay.complete,
+          });
+        }
+      });
     });
     console.log("Today's action items:", todaysItems);
     return todaysItems;
