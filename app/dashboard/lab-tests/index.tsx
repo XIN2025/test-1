@@ -1,34 +1,87 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, FlaskConical, RefreshCw, Calendar, ChevronRight, Upload } from 'lucide-react-native';
 import { useTheme } from '../../../context/ThemeContext';
-import { mockLabTestsData, mockEmptyLabTestsData } from '../../../utils/mockLabTests';
-import { LabTest } from '../../../types/labTests';
+import * as DocumentPicker from 'expo-document-picker';
+import { labReportsApi, LabReportSummary } from '../../../services/labReportsApi';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function LabTestsPage() {
   const { isDarkMode } = useTheme();
   const router = useRouter();
+  const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState<LabReportSummary[]>([]);
+  const userEmail = user?.email || '';
 
-  const [isConnected, setIsConnected] = useState(false);
-  const labTestsData = isConnected ? mockLabTestsData : mockEmptyLabTestsData;
+  const fetchReports = async () => {
+    if (!userEmail) return;
+    try {
+      const data = await labReportsApi.getAll(userEmail);
+      console.log(data);
+      setReports(data);
+    } catch (error: any) {
+      Alert.alert('Failed to load lab reports', error?.message || 'Please try again.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchReports();
+  }, [userEmail]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    fetchReports();
   };
 
-  const handleConnectToLabcorp = () => {
-    // Simulate connection
-    setIsConnected(true);
+  const handleUpload = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/pdf',
+        multiple: false,
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+      // const file = result.output?.item(0);
+      // console.log(file);
+      // if (!file) return;
+      const asset = result.assets?.[0];
+      if (!asset) return;
+
+      // Validate extension and size if available
+      const isPdf = asset.mimeType === 'application/pdf' || asset.name?.toLowerCase().endsWith('.pdf');
+      if (!isPdf) {
+        Alert.alert('Invalid file', 'Please select a PDF file.');
+        return;
+      }
+
+      setLoading(true);
+
+      // Expo DocumentPicker returns a URI; fetch it and convert to blob
+
+      const response = await labReportsApi.uploadPdf(asset, userEmail);
+      console.log(response);
+      Alert.alert('Success', 'Lab report uploaded and processing started.');
+      setRefreshing(true);
+      fetchReports();
+    } catch (error: any) {
+      Alert.alert('Upload failed', error?.message || 'Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleTestPress = (test: LabTest) => {
-    router.push(`/dashboard/lab-tests/${test.id}?testName=${encodeURIComponent(test.name)}`);
+  const handleTestPress = (report: LabReportSummary) => {
+    const title = report.test_title || report.test_description;
+    router.push(`/dashboard/lab-tests/${report.id}?testName=${encodeURIComponent(title)}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -40,18 +93,7 @@ export default function LabTestsPage() {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return isDarkMode ? '#34d399' : '#059669';
-      case 'pending':
-        return isDarkMode ? '#fbbf24' : '#d97706';
-      case 'in_progress':
-        return isDarkMode ? '#60a5fa' : '#2563eb';
-      default:
-        return isDarkMode ? '#9ca3af' : '#6b7280';
-    }
-  };
+  const statusColor = useMemo(() => (isDarkMode ? '#34d399' : '#059669'), [isDarkMode]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }} edges={['top']}>
@@ -95,7 +137,7 @@ export default function LabTestsPage() {
           >
             Lab Tests
           </Text>
-          {isConnected && (
+          {reports.length <= 0 && (
             <Text
               style={{
                 fontSize: 12,
@@ -108,26 +150,42 @@ export default function LabTestsPage() {
           )}
         </View>
 
-        <TouchableOpacity
-          onPress={onRefresh}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: isDarkMode ? '#064e3b' : '#f0fdf4',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          disabled={refreshing}
-        >
-          <RefreshCw
-            size={20}
-            color={isDarkMode ? '#34d399' : '#059669'}
+        {reports.length > 0 ? (
+          <TouchableOpacity
+            onPress={handleUpload}
             style={{
-              transform: [{ rotate: refreshing ? '180deg' : '0deg' }],
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: isDarkMode ? '#064e3b' : '#f0fdf4',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-          />
-        </TouchableOpacity>
+          >
+            <Upload size={20} color={isDarkMode ? '#34d399' : '#059669'} />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={onRefresh}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: isDarkMode ? '#064e3b' : '#f0fdf4',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            disabled={refreshing}
+          >
+            <RefreshCw
+              size={20}
+              color={isDarkMode ? '#34d399' : '#059669'}
+              style={{
+                transform: [{ rotate: refreshing ? '180deg' : '0deg' }],
+              }}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView
@@ -146,7 +204,11 @@ export default function LabTestsPage() {
           />
         }
       >
-        {!isConnected ? (
+        {loading ? (
+          <View style={{ alignItems: 'center', paddingVertical: 60 }}>
+            <ActivityIndicator size="large" color={isDarkMode ? '#34d399' : '#059669'} />
+          </View>
+        ) : reports.length === 0 ? (
           <View style={{ alignItems: 'center', paddingVertical: 60 }}>
             <View
               style={{
@@ -187,11 +249,11 @@ export default function LabTestsPage() {
                 paddingHorizontal: 20,
               }}
             >
-              Connect to Labcorp to view your lab test results and track your health metrics over time.
+              Upload PDF lab reports to view your results and track your health metrics over time.
             </Text>
 
             <TouchableOpacity
-              onPress={handleConnectToLabcorp}
+              onPress={handleUpload}
               style={{
                 backgroundColor: '#f97316',
                 paddingHorizontal: 32,
@@ -239,15 +301,15 @@ export default function LabTestsPage() {
                   color: isDarkMode ? '#9ca3af' : '#6b7280',
                 }}
               >
-                {labTestsData.tests.length} test{labTestsData.tests.length !== 1 ? 's' : ''} available
+                {reports.length} test{reports.length !== 1 ? 's' : ''} available
               </Text>
             </View>
 
             <View style={{ gap: 12 }}>
-              {labTestsData.tests.map((test) => (
+              {reports.map((report) => (
                 <TouchableOpacity
-                  key={test.id}
-                  onPress={() => handleTestPress(test)}
+                  key={report.id}
+                  onPress={() => handleTestPress(report)}
                   style={{
                     backgroundColor: isDarkMode ? '#374151' : '#ffffff',
                     borderRadius: 16,
@@ -273,8 +335,22 @@ export default function LabTestsPage() {
                           marginBottom: 4,
                         }}
                       >
-                        {test.name}
+                        {report.test_title || report.test_description}
                       </Text>
+
+                      {report.test_description ? (
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            color: isDarkMode ? '#d1d5db' : '#4b5563',
+                            lineHeight: 20,
+                            marginBottom: 8,
+                          }}
+                          numberOfLines={2}
+                        >
+                          {report.test_description}
+                        </Text>
+                      ) : null}
 
                       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                         <Calendar size={14} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
@@ -285,22 +361,9 @@ export default function LabTestsPage() {
                             marginLeft: 6,
                           }}
                         >
-                          {formatDate(test.date)}
+                          {formatDate(report.test_date)}
                         </Text>
                       </View>
-
-                      {test.summary && (
-                        <Text
-                          style={{
-                            fontSize: 14,
-                            color: isDarkMode ? '#d1d5db' : '#4b5563',
-                            lineHeight: 20,
-                            marginBottom: 8,
-                          }}
-                        >
-                          {test.summary}
-                        </Text>
-                      )}
 
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <View
@@ -308,7 +371,7 @@ export default function LabTestsPage() {
                             width: 8,
                             height: 8,
                             borderRadius: 4,
-                            backgroundColor: getStatusColor(test.status),
+                            backgroundColor: statusColor,
                             marginRight: 6,
                           }}
                         />
@@ -316,11 +379,11 @@ export default function LabTestsPage() {
                           style={{
                             fontSize: 12,
                             fontWeight: '500',
-                            color: getStatusColor(test.status),
+                            color: statusColor,
                             textTransform: 'capitalize',
                           }}
                         >
-                          {test.status.replace('_', ' ')}
+                          completed
                         </Text>
                         <Text
                           style={{
@@ -329,7 +392,7 @@ export default function LabTestsPage() {
                             marginLeft: 12,
                           }}
                         >
-                          {test.items.length} item{test.items.length !== 1 ? 's' : ''}
+                          {report.properties_count} item{report.properties_count !== 1 ? 's' : ''}
                         </Text>
                       </View>
                     </View>

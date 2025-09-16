@@ -79,19 +79,15 @@ export default function HealthMetricCard({
               <HealthMetricValue
                 value="--"
                 unit={unit}
-                label={label}
                 isDarkMode={isDarkMode}
                 size={size === 'large' ? 'medium' : 'small'}
-                textAlign="left"
               />
             ) : (
               <HealthMetricValue
                 value={value}
                 unit={unit}
-                label={label}
                 isDarkMode={isDarkMode}
                 size={size === 'large' ? 'medium' : 'small'}
-                textAlign="left"
               />
             )}
           </View>
@@ -104,19 +100,15 @@ export default function HealthMetricCard({
             <HealthMetricValue
               value="--"
               unit={unit}
-              label={label}
               isDarkMode={isDarkMode}
               size={size === 'large' ? 'medium' : 'small'}
-              textAlign="center"
             />
           ) : (
             <HealthMetricValue
               value={value}
               unit={unit}
-              label={label}
               isDarkMode={isDarkMode}
               size={size === 'large' ? 'medium' : 'small'}
-              textAlign="center"
             />
           )}
         </View>
