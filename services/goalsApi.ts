@@ -339,9 +339,8 @@ class GoalsApiService {
     console.log('Fetched goals:', response.data);
     const goals = response.data?.goals || [];
     const todaysItems: any[] = [];
-    const dayKey = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][
-      new Date().getDay() - 1
-    ];
+const dayIndex = (new Date().getDay() + 6) % 7; // Sunday(0)->6, Monday(1)->0, ...
+const dayKey = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][dayIndex];
     goals.forEach((goal) => {
       const actionItems = goal.action_items || [];
       actionItems.forEach((item: any) => {
