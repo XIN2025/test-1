@@ -128,9 +128,9 @@ export default function GoalsScreen() {
     loadGoals: Function;
   };
 
-useEffect(() => {
-  loadGoals();
-}, [loadGoals]);
+  useEffect(() => {
+    loadGoals();
+  }, [loadGoals]);
 
   // Form state for adding/editing goals
   const [formData, setFormData] = useState<Partial<GoalFormData>>({
@@ -677,7 +677,7 @@ useEffect(() => {
                         </View>
                       </View>
                     </View>
-{!(goal.action_items && goal.action_items.length > 0) && (
+                    {!(goal.action_items && goal.action_items.length > 0) && (
                       <TouchableOpacity
                         onPress={() => handleGeneratePlan(goal.id, goal)}
                         disabled={generatingPlan}
