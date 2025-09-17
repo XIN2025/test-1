@@ -136,7 +136,7 @@ const ActionItemScheduleModal: React.FC<ActionItemScheduleModalProps> = ({
                 fontSize: 18,
               }}
             >
-              Weekly Schedules
+              Weekly Schedule
             </Text>
 
             {Object.entries(selectedActionItem?.weekly_schedule || {}).map(([day, schedule]: [string, any]) =>
