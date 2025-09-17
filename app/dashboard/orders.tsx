@@ -91,60 +91,96 @@ export default function OrdersPage() {
   ];
 
   const categories = [
-    { id: 'all', name: 'All', icon: Pill },
-    { id: 'vitamins', name: 'Vitamins', icon: Heart },
-    { id: 'minerals', name: 'Minerals', icon: Star },
-    { id: 'protein', name: 'Protein', icon: TrendingUp },
+    { id: 'all', name: 'All', icon: Package },
+    { id: 'devices', name: 'Health Devices', icon: Heart },
+    { id: 'monitoring', name: 'Monitoring', icon: TrendingUp },
+    { id: 'wellness', name: 'Wellness', icon: Star },
   ];
 
   const supplements: Supplement[] = [
     {
       id: '1',
-      name: 'Vitamin D3',
-      category: 'vitamins',
-      description: 'Essential for bone health and immune system support',
+      name: 'Digital Thermometer',
+      category: 'devices',
+      description: 'Fast and accurate digital temperature readings',
       price: 24.99,
-      rating: 4.8,
+      rating: 4.5,
       inStock: true,
       isRecommended: true,
-      dosage: '1000 IU',
-      frequency: 'Daily',
+      dosage: 'N/A',
+      frequency: 'As needed',
     },
     {
       id: '2',
-      name: 'Omega-3 Fish Oil',
-      category: 'vitamins',
-      description: 'Supports heart health and brain function',
-      price: 32.5,
-      rating: 4.6,
-      inStock: true,
-      isRecommended: true,
-      dosage: '1000mg',
-      frequency: 'Twice daily',
-    },
-    {
-      id: '3',
-      name: 'Whey Protein',
-      category: 'protein',
-      description: 'High-quality protein for muscle recovery',
-      price: 45.0,
+      name: 'Air Purifier',
+      category: 'devices',
+      description: 'HEPA filter air purifier for improved indoor air quality',
+      price: 159.99,
       rating: 4.7,
       inStock: true,
-      isRecommended: false,
-      dosage: '30g',
-      frequency: 'Post-workout',
+      isRecommended: true,
+      dosage: 'N/A',
+      frequency: 'Continuous use',
     },
     {
       id: '4',
-      name: 'Magnesium',
-      category: 'minerals',
-      description: 'Supports muscle and nerve function',
-      price: 18.99,
-      rating: 4.5,
-      inStock: false,
+      name: 'Pulse Oximeter',
+      category: 'devices',
+      description: 'Monitor blood oxygen levels and pulse rate',
+      price: 39.99,
+      rating: 4.6,
+      inStock: true,
       isRecommended: true,
-      dosage: '400mg',
-      frequency: 'Daily',
+      dosage: 'N/A',
+      frequency: 'As needed',
+    },
+    {
+      id: '5',
+      name: 'Digital Blood Pressure Monitor',
+      category: 'devices',
+      description: 'Accurate home blood pressure monitoring with memory storage',
+      price: 89.99,
+      rating: 4.6,
+      inStock: true,
+      isRecommended: true,
+      dosage: 'N/A',
+      frequency: 'As needed',
+    },
+    {
+      id: '6',
+      name: 'Smart Fitness Tracker',
+      category: 'devices',
+      description: 'Track steps, heart rate, sleep and calories with smartphone app',
+      price: 129.99,
+      rating: 4.8,
+      inStock: true,
+      isRecommended: false,
+      dosage: 'N/A',
+      frequency: 'Daily use',
+    },
+    {
+      id: '7',
+      name: 'UV Sanitizer Box',
+      category: 'wellness',
+      description: 'UV-C light sanitizer for phones, keys, and small items',
+      price: 49.99,
+      rating: 4.4,
+      inStock: true,
+      isRecommended: true,
+      dosage: 'N/A',
+      frequency: 'Daily use',
+    },
+    {
+      id: '8',
+      name: 'Ergonomic Lumbar Support',
+      category: 'wellness',
+      description: 'Memory foam lumbar support cushion for better posture',
+      price: 34.99,
+      rating: 4.3,
+      inStock: true,
+      isRecommended: false,
+      dosage: 'N/A',
+      frequency: 'During sitting',
     },
   ];
 
@@ -163,6 +199,18 @@ export default function OrdersPage() {
     },
     {
       id: '2',
+      name: 'Rosuvastatin',
+      dosage: '20mg',
+      frequency: 'Once daily',
+      refillsRemaining: 3,
+      nextRefillDate: '2024-02-12',
+      doctor: 'Dr. Sarah Johnson',
+      pharmacy: 'CVS Pharmacy',
+      price: 18.5,
+      isRefillable: true,
+    },
+    {
+      id: '3',
       name: 'Lisinopril',
       dosage: '10mg',
       frequency: 'Once daily',
@@ -174,7 +222,7 @@ export default function OrdersPage() {
       isRefillable: false,
     },
     {
-      id: '3',
+      id: '4',
       name: 'Atorvastatin',
       dosage: '20mg',
       frequency: 'Once daily',
@@ -244,11 +292,11 @@ export default function OrdersPage() {
       orderNumber: 'ORD-2024-001',
       date: '2024-01-15',
       status: 'delivered',
-      total: 89.97,
+      total: 249.97,
       items: [
-        { id: '1', name: 'Vitamin D3', quantity: 2, price: 24.99 },
-        { id: '2', name: 'Omega-3 Fish Oil', quantity: 1, price: 32.5 },
-        { id: '3', name: 'Magnesium', quantity: 1, price: 18.99 },
+        { id: '1', name: 'Digital Thermometer', quantity: 2, price: 24.99 },
+        { id: '2', name: 'Air Purifier', quantity: 1, price: 159.99 },
+        { id: '4', name: 'Pulse Oximeter', quantity: 1, price: 39.99 },
       ],
       trackingNumber: '1Z999AA1234567890',
     },
@@ -257,8 +305,8 @@ export default function OrdersPage() {
       orderNumber: 'ORD-2024-002',
       date: '2024-01-20',
       status: 'shipped',
-      total: 45.0,
-      items: [{ id: '4', name: 'Whey Protein', quantity: 1, price: 45.0 }],
+      total: 89.99,
+      items: [{ id: '5', name: 'Digital Blood Pressure Monitor', quantity: 1, price: 89.99 }],
       trackingNumber: '1Z999AA1234567891',
       estimatedDelivery: '2024-01-25',
     },
@@ -267,11 +315,11 @@ export default function OrdersPage() {
       orderNumber: 'ORD-2024-003',
       date: '2024-01-22',
       status: 'processing',
-      total: 67.48,
+      total: 349.97,
       items: [
-        { id: '1', name: 'Vitamin D3', quantity: 1, price: 24.99 },
-        { id: '5', name: 'Vitamin B12', quantity: 1, price: 19.99 },
-        { id: '6', name: 'Zinc', quantity: 1, price: 22.5 },
+        { id: '6', name: 'Smart Fitness Tracker', quantity: 1, price: 129.99 },
+        { id: '5', name: 'Digital Blood Pressure Monitor', quantity: 1, price: 89.99 },
+        { id: '6', name: 'Smart Fitness Tracker', quantity: 1, price: 129.99 },
       ],
     },
   ];
@@ -717,8 +765,10 @@ export default function OrdersPage() {
               </ScrollView>
             )}
 
-            {/* Recommended Reorders */}
-            {orders.filter((order) => order.status === 'delivered').length > 0 && (
+            {/* Time to Reorder Section */}
+            {(activeTab === 'products' && orders.filter((order) => order.status === 'delivered').length > 0) ||
+            activeTab === 'rx' ||
+            activeTab === 'meals' ? (
               <View
                 style={{
                   backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
@@ -756,13 +806,180 @@ export default function OrdersPage() {
                     </View>
                   </View>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-                    {orders
-                      .filter((order) => order.status === 'delivered')
-                      .flatMap((order) => order.items)
-                      .slice(0, 3)
-                      .map((item) => (
+                    {activeTab === 'products' &&
+                      orders
+                        .filter((order) => order.status === 'delivered')
+                        .flatMap((order) => order.items)
+                        .slice(0, 3)
+                        .map((item) => (
+                          <View
+                            key={item.id}
+                            style={{
+                              marginRight: 16,
+                              padding: 16,
+                              borderRadius: 12,
+                              width: 280,
+                              backgroundColor: isDarkMode ? 'rgba(6, 78, 59, 0.3)' : '#d1fae5',
+                            }}
+                          >
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginBottom: 12,
+                              }}
+                            >
+                              <View
+                                style={{
+                                  width: 44,
+                                  height: 44,
+                                  borderRadius: 12,
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  backgroundColor: isDarkMode ? 'rgba(6, 78, 59, 0.5)' : '#a7f3d0',
+                                }}
+                              >
+                                <Package size={22} color={isDarkMode ? '#34d399' : '#059669'} />
+                              </View>
+                              <Text
+                                style={{
+                                  fontSize: 16,
+                                  fontWeight: '600',
+                                  color: isDarkMode ? '#34d399' : '#059669',
+                                }}
+                              >
+                                ${item.price.toFixed(2)}
+                              </Text>
+                            </View>
+                            <Text
+                              style={{
+                                fontSize: 16,
+                                fontWeight: '500',
+                                marginBottom: 6,
+                                color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                              }}
+                            >
+                              {item.name}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 13,
+                                marginBottom: 12,
+                                color: isDarkMode ? '#9ca3af' : '#6b7280',
+                              }}
+                            >
+                              Last ordered quantity: {item.quantity}
+                            </Text>
+                            <TouchableOpacity
+                              style={{
+                                paddingVertical: 12,
+                                borderRadius: 12,
+                                backgroundColor: '#10b981',
+                              }}
+                              activeOpacity={0.7}
+                            >
+                              <Text
+                                style={{
+                                  color: '#ffffff',
+                                  textAlign: 'center',
+                                  fontSize: 14,
+                                  fontWeight: '500',
+                                }}
+                              >
+                                Quick Reorder
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+                    {activeTab === 'rx' &&
+                      prescriptions
+                        .filter((p) => p.name === 'Metformin' || p.name === 'Rosuvastatin')
+                        .map((prescription) => (
+                          <View
+                            key={prescription.id}
+                            style={{
+                              marginRight: 16,
+                              padding: 16,
+                              borderRadius: 12,
+                              width: 280,
+                              backgroundColor: isDarkMode ? 'rgba(6, 78, 59, 0.3)' : '#d1fae5',
+                            }}
+                          >
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginBottom: 12,
+                              }}
+                            >
+                              <View
+                                style={{
+                                  width: 44,
+                                  height: 44,
+                                  borderRadius: 12,
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  backgroundColor: isDarkMode ? 'rgba(6, 78, 59, 0.5)' : '#a7f3d0',
+                                }}
+                              >
+                                <FileText size={22} color={isDarkMode ? '#34d399' : '#059669'} />
+                              </View>
+                              <Text
+                                style={{
+                                  fontSize: 16,
+                                  fontWeight: '600',
+                                  color: isDarkMode ? '#34d399' : '#059669',
+                                }}
+                              >
+                                ${prescription.price.toFixed(2)}
+                              </Text>
+                            </View>
+                            <Text
+                              style={{
+                                fontSize: 16,
+                                fontWeight: '500',
+                                marginBottom: 6,
+                                color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                              }}
+                            >
+                              {prescription.name}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 13,
+                                marginBottom: 12,
+                                color: isDarkMode ? '#9ca3af' : '#6b7280',
+                              }}
+                            >
+                              {prescription.dosage} • {prescription.frequency}
+                            </Text>
+                            <TouchableOpacity
+                              style={{
+                                paddingVertical: 12,
+                                borderRadius: 12,
+                                backgroundColor: '#10b981',
+                              }}
+                              activeOpacity={0.7}
+                            >
+                              <Text
+                                style={{
+                                  color: '#ffffff',
+                                  textAlign: 'center',
+                                  fontSize: 14,
+                                  fontWeight: '500',
+                                }}
+                              >
+                                Quick Reorder
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+                    {activeTab === 'meals' &&
+                      meals.slice(0, 3).map((meal) => (
                         <View
-                          key={item.id}
+                          key={meal.id}
                           style={{
                             marginRight: 16,
                             padding: 16,
@@ -789,7 +1006,7 @@ export default function OrdersPage() {
                                 backgroundColor: isDarkMode ? 'rgba(6, 78, 59, 0.5)' : '#a7f3d0',
                               }}
                             >
-                              <Package size={22} color={isDarkMode ? '#34d399' : '#059669'} />
+                              <Utensils size={22} color={isDarkMode ? '#34d399' : '#059669'} />
                             </View>
                             <Text
                               style={{
@@ -798,7 +1015,7 @@ export default function OrdersPage() {
                                 color: isDarkMode ? '#34d399' : '#059669',
                               }}
                             >
-                              ${item.price.toFixed(2)}
+                              ${meal.price.toFixed(2)}
                             </Text>
                           </View>
                           <Text
@@ -809,7 +1026,7 @@ export default function OrdersPage() {
                               color: isDarkMode ? '#f3f4f6' : '#1f2937',
                             }}
                           >
-                            {item.name}
+                            {meal.name}
                           </Text>
                           <Text
                             style={{
@@ -818,7 +1035,7 @@ export default function OrdersPage() {
                               color: isDarkMode ? '#9ca3af' : '#6b7280',
                             }}
                           >
-                            Last ordered quantity: {item.quantity}
+                            {meal.calories} cal • {meal.prepTime}
                           </Text>
                           <TouchableOpacity
                             style={{
@@ -836,7 +1053,7 @@ export default function OrdersPage() {
                                 fontWeight: '500',
                               }}
                             >
-                              Quick Reorder
+                              Order Again
                             </Text>
                           </TouchableOpacity>
                         </View>
@@ -844,7 +1061,7 @@ export default function OrdersPage() {
                   </ScrollView>
                 </View>
               </View>
-            )}
+            ) : null}
 
             {activeTab === 'products' ? (
               <>

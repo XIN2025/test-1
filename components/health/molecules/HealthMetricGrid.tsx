@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ViewStyle } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import HealthMetricCard from './HealthMetricCard';
 
 interface HealthMetric {
