@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  initialize,
-  requestPermission,
-  getGrantedPermissions,
-  readRecords,
-  RecordType,
-} from 'react-native-health-connect';
-import { TimeRangeFilter } from 'react-native-health-connect/lib/typescript/types/base.types';
+import { initialize, requestPermission, getGrantedPermissions, readRecords } from 'react-native-health-connect';
+import type { RecordType } from 'react-native-health-connect';
+
+type TimeRangeFilter = {
+  operator: 'between';
+  startTime: string;
+  endTime: string;
+};
 
 export interface HealthMetric {
   value: number | string;
