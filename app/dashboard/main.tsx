@@ -153,7 +153,12 @@ function MainDashboard() {
   };
   const closeStreakModal = () => setShowStreakModal(false);
   const { goals, markCompletion, todaysItems } = useGoals({ userEmail });
+  // Walkthrough state management
+  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   const [showAllTodayItems, setShowAllTodayItems] = useState(false);
+  const [recentInteractions, setRecentInteractions] = useState<Map<string, number>>(new Map());
+
+  // Removed local demo tasks; weekly goals are now sourced from API via useGoals
 
   // Determine the key for today's day name used in schedules
   const dayKey = useMemo(() => {
@@ -241,14 +246,6 @@ function MainDashboard() {
   // Note: We now use AsyncStorage for walkthrough triggers instead of URL parameters
   // This avoids issues with tab navigation clearing parameters
 
-  type TodayItem = {
-    id: string;
-    title: string;
-    start_time?: string;
-    end_time?: string;
-    goalTitle?: string;
-  };
-
   // Helper to format time into HH:MM
   const formatTimeHM = (t?: string): string => {
     if (!t) return '';
@@ -263,6 +260,67 @@ function MainDashboard() {
     return t;
   };
 
+  // Helper to check if an action item is completed for the current week
+  const isActionItemCompletedThisWeek = useCallback((actionItem: any): boolean => {
+    if (!actionItem?.weekly_completion) {
+      return false;
+    }
+
+    // Get the start of the current week (Monday)
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Get Monday
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() + mondayOffset);
+    weekStart.setHours(0, 0, 0, 0);
+
+    // Check if there's a completion entry for this week
+    const isComplete = actionItem.weekly_completion.some((completion: any) => {
+      const completionWeekStart = new Date(completion.week_start);
+      const matches = completionWeekStart.toDateString() === weekStart.toDateString();
+      return matches && completion.is_complete;
+    });
+
+    return isComplete;
+  }, []);
+
+  // Clean up old interactions
+  useEffect(() => {
+    const cleanup = setInterval(() => {
+      const now = Date.now();
+      setRecentInteractions((prev) => {
+        const newMap = new Map();
+        prev.forEach((timestamp, id) => {
+          if (now - timestamp < 10000) {
+            // Keep interactions for 10 seconds
+            newMap.set(id, timestamp);
+          }
+        });
+        return newMap;
+      });
+    }, 5000); // Clean up every 5 seconds
+
+    return () => clearInterval(cleanup);
+  }, []);
+
+  // Health score calculation (currently using hardcoded value for testing)
+  // const healthScore = useMemo(() => {
+  //   if (!goals || goals.length === 0) return 0;
+  //
+  //   // Calculate average completion percentage across all goals
+  //   const totalGoals = (goals as any[]).length;
+  //   const totalCompletion = (goals as any[]).reduce((sum, goal) => {
+  //     return sum + getGoalCompletionPercentage(goal.id);
+  //   }, 0);
+  //
+  //   const averageCompletion = totalCompletion / totalGoals;
+  //
+  //   // Add bonus points for streak
+  //   const streakBonus = Math.min((streak || 0) * 2, 20); // Up to 20 bonus points for streak
+  //
+  //   // Cap at 100
+  //   return Math.min(Math.round(averageCompletion + streakBonus), 100);
+  // }, [goals, getGoalCompletionPercentage, streak]);
   const toggleItemCompleted = async (id: string) => {
     const actionItem = todaysItems.find((item) => item.id === id);
     if (!actionItem) return;
@@ -490,365 +548,207 @@ function MainDashboard() {
                 </View>
               </View>
             </Modal>
+
+            {/* --- Streak Calendar Component --- */}
+            {/*
+              Dummy data: Array of last 12 weeks, true = streak, false = missed
+              You can replace this with real data if available.
+            */}
+            {/*
+              Place this at the bottom of your file, outside the MainDashboard component:
+            */}
+            {/*
+            Example usage:
+              <StreakCalendar isDarkMode={isDarkMode} />
+            */}
+            {/* --- End Streak Calendar Component --- */}
           </View>
         </View>
-      </View>
-      {/* Scrollable Content */}
-      <ScrollView
-        style={{
-          height: '100%',
-          backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
-        }}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-          {/* Health Score and Quick Actions Row */}
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              marginBottom: 32,
-              minHeight: width * 0.4, // Ensure consistent height
-            }}
-          >
-            {/* Health Card - Left Side */}
-            <View style={{ width: '48%', paddingRight: 8 }}>
-              {/* Health Card - Platform specific (iOS HealthKit / Android Health Connect) */}
-              <PlatformHealthCard
+
+        {/* Scrollable Content */}
+        <ScrollView
+          style={{
+            height: '100%',
+            backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
+          }}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+            {/* Health Score and Quick Actions Row */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginBottom: 32,
+                minHeight: width * 0.4, // Ensure consistent height
+              }}
+            >
+              {/* Health Card - Left Side */}
+              <View style={{ width: '48%', paddingRight: 8 }}>
+                {/* Health Card - Platform specific (iOS HealthKit / Android Health Connect) */}
+                <PlatformHealthCard
+                  isDarkMode={isDarkMode}
+                  onPress={() => router.push('/dashboard/health')}
+                  width={width * 0.44}
+                  height={width * 0.4}
+                />
+              </View>
+
+              {/* Health Score - Right Side */}
+              <View className="items-center justify-center" style={{ width: '48%', paddingLeft: 8 }}>
+                <CopilotStep
+                  text="📊 Health Score - Your overall health score is calculated based on your daily activities, goal completion, and health metrics. Higher scores mean better health habits!"
+                  order={1}
+                  name="healthScore"
+                >
+                  <WalkthroughableView
+                    style={{
+                      alignItems: 'center',
+                      padding: 20,
+                      borderRadius: 16,
+                      minHeight: width * 0.4,
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {/* Liquid Gauge for Health Score */}
+                    <LiquidGauge
+                      value={72}
+                      width={width * 0.35}
+                      height={width * 0.35}
+                      config={{
+                        circleColor: '#f97316',
+                        textColor: isDarkMode ? '#fff' : '#1f2937',
+                        waveTextColor: isDarkMode ? '#1f2937' : '#fff',
+                        waveColor: '#f97316',
+                        circleThickness: 0.08,
+                        textVertPosition: 0.5,
+                        waveAnimateTime: 3000,
+                        waveRiseTime: 1500,
+                        waveHeight: 0.08,
+                        waveCount: 2,
+                        textSize: 1.2,
+                        waveRise: true,
+                        waveAnimate: true,
+                        waveHeightScaling: true,
+                        valueCountUp: true,
+                        textSuffix: '',
+                        toFixed: 0,
+                      }}
+                    />
+
+                    {/* Label below */}
+                    <Text
+                      style={{
+                        color: isDarkMode ? '#9ca3af' : '#6b7280',
+                        fontSize: 12,
+                        fontWeight: '500',
+                        textAlign: 'center',
+                        marginTop: 8,
+                      }}
+                    >
+                      Health Score
+                    </Text>
+                  </WalkthroughableView>
+                </CopilotStep>
+              </View>
+            </View>
+
+            {/* View Full Health Data Button - Platform specific */}
+            <TouchableOpacity
+              onPress={() => router.push('/dashboard/health')}
+              style={{
+                backgroundColor: isDarkMode ? '#059669' : '#059669',
+                paddingVertical: 12,
+                paddingHorizontal: 20,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 24,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              }}
+              activeOpacity={0.8}
+            >
+              <Heart size={16} color="#ffffff" style={{ marginRight: 8 }} />
+              <Text
+                style={{
+                  color: '#ffffff',
+                  fontSize: 14,
+                  fontWeight: '600',
+                }}
+              >
+                View Full Health Data
+              </Text>
+            </TouchableOpacity>
+
+            {/* Lab Tests Card */}
+            <View style={{ marginBottom: 24 }}>
+              <SimpleLabTestsCard
                 isDarkMode={isDarkMode}
-                onPress={() => router.push('/dashboard/health')}
-                width={width * 0.44}
-                height={width * 0.4}
+                onPress={() => router.push('/dashboard/lab-tests')}
+                width={width - 32}
+                height={width * 0.3}
               />
             </View>
 
-            {/* Book Appointment Button */}
-            <TouchableOpacity
-              onPress={() => {
-                // Add appointment booking logic here
-                console.log('Book Appointment pressed');
-              }}
-              style={{
-                flex: 1,
-                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                borderRadius: 16,
-                padding: 16,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-                borderWidth: 1,
-                borderColor: isDarkMode ? '#374151' : '#e5e7eb',
-              }}
-            >
-              <Target size={24} color={isDarkMode ? '#34d399' : '#059669'} />
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: '600',
-                  color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                  marginTop: 8,
-                  textAlign: 'center',
-                }}
+            {/* Today's Action Items (collapsible) */}
+            <View style={{ marginBottom: 24 }}>
+              <CopilotStep
+                text="✅ Today's Action Items - Complete your daily health tasks to stay on track with your goals. Tap the checkboxes to mark items as done and build your streak!"
+                order={2}
+                name="todayItems"
               >
-                Book Appointment
-              </Text>
-            </TouchableOpacity>
-          </View>
-          {/* View Full Health Data Button - Platform specific */}
-          <TouchableOpacity
-            onPress={() => router.push('/dashboard/health')}
-            style={{
-              backgroundColor: isDarkMode ? '#059669' : '#059669',
-              paddingVertical: 12,
-              paddingHorizontal: 20,
-              borderRadius: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 24,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 3,
-            }}
-            activeOpacity={0.8}
-          >
-            <Heart size={16} color="#ffffff" style={{ marginRight: 8 }} />
-            <Text
-              style={{
-                color: '#ffffff',
-                fontSize: 14,
-                fontWeight: '600',
-              }}
-            >
-              View Full Health Data
-            </Text>
-          </TouchableOpacity>
-          {/* Label below */}
-          <Text
-            style={{
-              color: isDarkMode ? '#9ca3af' : '#6b7280',
-              fontSize: 12,
-              fontWeight: '500',
-              textAlign: 'center',
-              marginTop: 8,
-            }}
-          >
-            Health Score
-          </Text>
-        </View>
-        {/* Today's Action Items (collapsible) */}
-        <View style={{ marginBottom: 24 }}>
-          <CopilotStep
-            text="✅ Today's Action Items - Complete your daily health tasks to stay on track with your goals. Tap the checkboxes to mark items as done and build your streak!"
-            order={2}
-            name="todayItems"
-          >
-            <WalkthroughableView
-              style={{
-                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                width: '100%',
-                borderRadius: 16,
-                padding: 16,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-                borderWidth: 1,
-                borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginBottom: 16,
-                }}
-              >
-                <Text
+                <WalkthroughableView
                   style={{
-                    fontSize: 18,
-                    fontWeight: '600',
-                    color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                    width: '100%',
+                    borderRadius: 16,
+                    padding: 16,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    borderWidth: 1,
+                    borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
                   }}
                 >
-                  Today&apos;s Action Items
-                </Text>
-              </View>
-              {todaysItems.length === 0 ? (
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: isDarkMode ? '#9ca3af' : '#6b7280',
-                  }}
-                >
-                  No scheduled items for today.
-                </Text>
-              ) : (
-                (showAllTodayItems ? todaysItems : todaysItems.slice(0, 3)).map((it) => (
                   <View
-                    key={it.id}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
                       marginBottom: 16,
-                      paddingVertical: 4,
                     }}
                   >
-                    <View
+                    <Text
                       style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        flex: 1,
+                        fontSize: 18,
+                        fontWeight: '600',
+                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
                       }}
                     >
-                      <TouchableOpacity
-                        onPress={() => toggleItemCompleted(it.id)}
-                        style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: 4,
-                          borderWidth: 2,
-                          borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
-                          marginRight: 12,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          backgroundColor: it.complete ? (isDarkMode ? '#10b981' : '#059669') : 'transparent',
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        {it.complete && (
-                          <Text
-                            style={{
-                              color: 'white',
-                              fontSize: 16,
-                              fontWeight: 'bold',
-                            }}
-                          >
-                            ✓
-                          </Text>
-                        )}
-                      </TouchableOpacity>
-                      <View style={{ flex: 1 }}>
-                        <Text
-                          style={{
-                            fontSize: 14,
-                            fontWeight: '500',
-                            color: it.complete
-                              ? isDarkMode
-                                ? '#6b7280'
-                                : '#6b7280'
-                              : isDarkMode
-                                ? '#f3f4f6'
-                                : '#1f2937',
-                            textDecorationLine: it.complete ? 'line-through' : 'none',
-                          }}
-                        >
-                          {it.title}
-                        </Text>
-                        {it.goalTitle && (
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              color: isDarkMode ? '#9ca3af' : '#6b7280',
-                              marginTop: 2,
-                            }}
-                          >
-                            {it.goalTitle}
-                          </Text>
-                        )}
-                      </View>
-                    </View>
-                    <View style={{ alignItems: 'flex-end', marginLeft: 12 }}>
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          fontWeight: '500',
-                          color: isDarkMode ? '#9ca3af' : '#6b7280',
-                        }}
-                      >
-                        {it.start_time && it.end_time
-                          ? `${formatTimeHM(it.start_time)} - ${formatTimeHM(it.end_time)}`
-                          : formatTimeHM(it.start_time) || formatTimeHM(it.end_time) || ''}
-                      </Text>
-                    </View>
+                      Today&apos;s Action Items
+                    </Text>
                   </View>
-                ))
-              )}
-
-              {todaysItems.length > 3 && (
-                <TouchableOpacity
-                  onPress={() => setShowAllTodayItems((v) => !v)}
-                  style={{
-                    marginTop: 8,
-                    alignSelf: 'flex-start',
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 20,
-                    backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: '600',
-                      color: isDarkMode ? '#34d399' : '#114131',
-                    }}
-                  >
-                    {showAllTodayItems ? 'Show less' : `Show all (${todaysItems.length})`}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </WalkthroughableView>
-          </CopilotStep>
-        </View>
-        {/* Weekly Goals Summary (from goals endpoint) */}
-        <View style={{ marginBottom: 24 }}>
-          <CopilotStep
-            text="🎯 Weekly Goals - Monitor your progress towards weekly health goals and stay motivated. Track completion percentages and see how you're doing each week!"
-            order={3}
-            name="weeklyGoals"
-          >
-            <WalkthroughableView
-              style={{
-                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                borderRadius: 16,
-                padding: 16,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-                borderWidth: 1,
-                borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: 16,
-                }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={{ marginRight: 8 }}>
-                    <Target size={20} color={isDarkMode ? '#34d399' : '#114131'} />
-                  </View>
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontWeight: '600',
-                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                    }}
-                  >
-                    Weekly Goals
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 4,
-                    borderRadius: 20,
-                    backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: '600',
-                      color: isDarkMode ? '#34d399' : '#114131',
-                    }}
-                  >
-                    {goals ? goals.length : 0}
-                  </Text>
-                </View>
-              </View>
-              {(goals || []).length === 0 ? (
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: isDarkMode ? '#9ca3af' : '#6b7280',
-                  }}
-                >
-                  No goals yet
-                </Text>
-              ) : (
-                <View>
-                  {(goals as any[]).slice(0, 5).map((goal: any) => {
-                    return (
+                  {todaysItems.length === 0 ? (
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        color: isDarkMode ? '#9ca3af' : '#6b7280',
+                      }}
+                    >
+                      No scheduled items for today.
+                    </Text>
+                  ) : (
+                    (showAllTodayItems ? todaysItems : todaysItems.slice(0, 3)).map((it) => (
                       <View
-                        key={goal.id}
+                        key={it.id}
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
@@ -864,82 +764,306 @@ function MainDashboard() {
                             flex: 1,
                           }}
                         >
-                          {/* Circular Progress Ring */}
-                          <View style={{ marginRight: 12 }}>
-                            <CircularProgressRing
-                              size={44}
-                              strokeWidth={3}
-                              progress={goal.completion_percentage || 0}
-                              color={
-                                goal.completion_percentage >= 80
-                                  ? '#10b981' // Green for high completion
-                                  : goal.completion_percentage >= 50
-                                    ? '#f59e0b' // Yellow for medium completion
-                                    : '#ef4444' // Red for low completion
-                              }
-                              backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
-                              showPercentage={false}
-                              textColor={isDarkMode ? '#d1d5db' : '#374151'}
-                            />
-                          </View>
+                          <TouchableOpacity
+                            onPress={() => toggleItemCompleted(it.id)}
+                            style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: 4,
+                              borderWidth: 2,
+                              borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
+                              marginRight: 12,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: completedItems.has(it.id)
+                                ? isDarkMode
+                                  ? '#10b981'
+                                  : '#059669'
+                                : 'transparent',
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            {completedItems.has(it.id) && (
+                              <Text
+                                style={{
+                                  color: 'white',
+                                  fontSize: 16,
+                                  fontWeight: 'bold',
+                                }}
+                              >
+                                ✓
+                              </Text>
+                            )}
+                          </TouchableOpacity>
                           <View style={{ flex: 1 }}>
                             <Text
                               style={{
                                 fontSize: 14,
                                 fontWeight: '500',
-                                color: isDarkMode ? '#e5e7eb' : '#1f2937',
-                                marginBottom: 2,
+                                color: completedItems.has(it.id)
+                                  ? isDarkMode
+                                    ? '#6b7280'
+                                    : '#6b7280'
+                                  : isDarkMode
+                                    ? '#f3f4f6'
+                                    : '#1f2937',
+                                textDecorationLine: completedItems.has(it.id) ? 'line-through' : 'none',
                               }}
                             >
-                              {goal.title}
+                              {it.title}
                             </Text>
-                            <Text
-                              style={{
-                                fontSize: 12,
-                                color: isDarkMode ? '#9ca3af' : '#6b7280',
-                              }}
-                            >
-                              {goal.completion_percentage?.toFixed(0)}% completed this week
-                            </Text>
+                            {it.goalTitle && (
+                              <Text
+                                style={{
+                                  fontSize: 12,
+                                  color: isDarkMode ? '#9ca3af' : '#6b7280',
+                                  marginTop: 2,
+                                }}
+                              >
+                                {it.goalTitle}
+                              </Text>
+                            )}
                           </View>
                         </View>
-                        <View style={{ alignItems: 'flex-end' }}>
-                          <View
-                            style={{
-                              width: 12,
-                              height: 12,
-                              borderRadius: 6,
-                              backgroundColor: goal.completed
-                                ? isDarkMode
-                                  ? '#34d399'
-                                  : '#10b981'
-                                : isDarkMode
-                                  ? '#4b5563'
-                                  : '#94a3b8',
-                            }}
-                          />
+                        <View style={{ alignItems: 'flex-end', marginLeft: 12 }}>
                           <Text
                             style={{
-                              fontSize: 11,
-                              marginTop: 4,
+                              fontSize: 12,
+                              fontWeight: '500',
                               color: isDarkMode ? '#9ca3af' : '#6b7280',
                             }}
                           >
-                            {goal.completed ? 'Done' : 'Active'}
+                            {it.start_time && it.end_time
+                              ? `${formatTimeHM(it.start_time)} - ${formatTimeHM(it.end_time)}`
+                              : formatTimeHM(it.start_time) || formatTimeHM(it.end_time) || ''}
                           </Text>
                         </View>
                       </View>
-                    );
-                  })}
-                </View>
-              )}
-            </WalkthroughableView>
-          </CopilotStep>
-        </View>
-      </ScrollView>
+                    ))
+                  )}
+
+                  {todaysItems.length > 3 && (
+                    <TouchableOpacity
+                      onPress={() => setShowAllTodayItems((v) => !v)}
+                      style={{
+                        marginTop: 8,
+                        alignSelf: 'flex-start',
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 20,
+                        backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: '600',
+                          color: isDarkMode ? '#34d399' : '#114131',
+                        }}
+                      >
+                        {showAllTodayItems ? 'Show less' : `Show all (${todaysItems.length})`}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </WalkthroughableView>
+              </CopilotStep>
+            </View>
+
+            {/* Removed Today's Tasks card */}
+
+            {/* Weekly Goals Summary (from goals endpoint) */}
+            <View style={{ marginBottom: 24 }}>
+              <CopilotStep
+                text="🎯 Weekly Goals - Monitor your progress towards weekly health goals and stay motivated. Track completion percentages and see how you're doing each week!"
+                order={3}
+                name="weeklyGoals"
+              >
+                <WalkthroughableView
+                  style={{
+                    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                    borderRadius: 16,
+                    padding: 16,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    borderWidth: 1,
+                    borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: 16,
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ marginRight: 8 }}>
+                        <Target size={20} color={isDarkMode ? '#34d399' : '#114131'} />
+                      </View>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          fontWeight: '600',
+                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                        }}
+                      >
+                        Weekly Goals
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 4,
+                        borderRadius: 20,
+                        backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: '600',
+                          color: isDarkMode ? '#34d399' : '#114131',
+                        }}
+                      >
+                        {`${(goals || []).filter((g: any) => g.completed).length}/${(goals || []).length}`}
+                      </Text>
+                    </View>
+                  </View>
+                  {(goals || []).length === 0 ? (
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        color: isDarkMode ? '#9ca3af' : '#6b7280',
+                      }}
+                    >
+                      No goals yet.
+                    </Text>
+                  ) : (
+                    <View>
+                      {(goals as any[]).slice(0, 5).map((g: any) => {
+                        return (
+                          <View
+                            key={g.id}
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              marginBottom: 16,
+                              paddingVertical: 4,
+                            }}
+                          >
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                flex: 1,
+                              }}
+                            >
+                              {/* Circular Progress Ring */}
+                              <View style={{ marginRight: 12 }}>
+                                <CircularProgressRing
+                                  size={44}
+                                  strokeWidth={3}
+                                  progress={g.completion_percentage || 0}
+                                  color={
+                                    g.completion_percentage >= 80
+                                      ? '#10b981' // Green for high completion
+                                      : g.completion_percentage >= 50
+                                        ? '#f59e0b' // Yellow for medium completion
+                                        : '#ef4444' // Red for low completion
+                                  }
+                                  backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
+                                  showPercentage={false}
+                                  textColor={isDarkMode ? '#d1d5db' : '#374151'}
+                                />
+                              </View>
+                              <View style={{ flex: 1 }}>
+                                <Text
+                                  style={{
+                                    fontSize: 14,
+                                    fontWeight: '500',
+                                    color: isDarkMode ? '#e5e7eb' : '#1f2937',
+                                    marginBottom: 2,
+                                  }}
+                                >
+                                  {g.title}
+                                </Text>
+                                <Text
+                                  style={{
+                                    fontSize: 12,
+                                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                                  }}
+                                >
+                                  {g.completion_percentage}% completed this week
+                                </Text>
+                              </View>
+                            </View>
+                            <View style={{ alignItems: 'flex-end' }}>
+                              <View
+                                style={{
+                                  width: 12,
+                                  height: 12,
+                                  borderRadius: 6,
+                                  backgroundColor: g.completed
+                                    ? isDarkMode
+                                      ? '#34d399'
+                                      : '#10b981'
+                                    : isDarkMode
+                                      ? '#4b5563'
+                                      : '#94a3b8',
+                                }}
+                              />
+                              <Text
+                                style={{
+                                  fontSize: 11,
+                                  marginTop: 4,
+                                  color: isDarkMode ? '#9ca3af' : '#6b7280',
+                                }}
+                              >
+                                {g.completed ? 'Done' : 'Active'}
+                              </Text>
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    style={{
+                      marginTop: 12,
+                      padding: 12,
+                      borderRadius: 12,
+                      backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
+                    }}
+                    onPress={() => router.push('./goals')}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        fontSize: 14,
+                        fontWeight: '600',
+                        color: isDarkMode ? '#34d399' : '#114131',
+                      }}
+                    >
+                      View All Goals
+                    </Text>
+                  </TouchableOpacity>
+                </WalkthroughableView>
+              </CopilotStep>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
+
 type StreakCalendarProps = {
   isDarkMode: boolean;
   dailyCompletion: Record<string, number>;
