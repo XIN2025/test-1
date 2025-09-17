@@ -90,97 +90,61 @@ export default function OrdersPage() {
     { id: 'delivered', name: 'Delivered', icon: CheckCircle },
   ];
 
-  const categories = [
-    { id: 'all', name: 'All', icon: Package },
-    { id: 'devices', name: 'Health Devices', icon: Heart },
-    { id: 'monitoring', name: 'Monitoring', icon: TrendingUp },
-    { id: 'wellness', name: 'Wellness', icon: Star },
+  const supplementCategories = [
+    { id: 'all', name: 'All', icon: Pill },
+    { id: 'vitamins', name: 'Vitamins', icon: Heart },
+    { id: 'minerals', name: 'Minerals', icon: Star },
+    { id: 'protein', name: 'Protein', icon: TrendingUp },
   ];
 
   const supplements: Supplement[] = [
     {
-      id: '1',
-      name: 'Digital Thermometer',
-      category: 'devices',
-      description: 'Fast and accurate digital temperature readings',
+      id: 's1',
+      name: 'Vitamin D3',
+      category: 'vitamins',
+      description: 'Essential for bone health and immune system support',
       price: 24.99,
+      rating: 4.8,
+      inStock: true,
+      isRecommended: true,
+      dosage: '1000 IU',
+      frequency: 'Daily',
+    },
+    {
+      id: 's2',
+      name: 'Omega-3 Fish Oil',
+      category: 'vitamins',
+      description: 'Supports heart health and brain function',
+      price: 32.5,
+      rating: 4.6,
+      inStock: true,
+      isRecommended: true,
+      dosage: '1000mg',
+      frequency: 'Twice daily',
+    },
+    {
+      id: 's3',
+      name: 'Vitamin B3 (Niacin)',
+      category: 'vitamins',
+      description: 'Supports energy metabolism and cardiovascular health',
+      price: 18.99,
       rating: 4.5,
       inStock: true,
       isRecommended: true,
-      dosage: 'N/A',
-      frequency: 'As needed',
+      dosage: '500mg',
+      frequency: 'Daily',
     },
     {
-      id: '2',
-      name: 'Air Purifier',
-      category: 'devices',
-      description: 'HEPA filter air purifier for improved indoor air quality',
-      price: 159.99,
-      rating: 4.7,
-      inStock: true,
-      isRecommended: true,
-      dosage: 'N/A',
-      frequency: 'Continuous use',
-    },
-    {
-      id: '4',
-      name: 'Pulse Oximeter',
-      category: 'devices',
-      description: 'Monitor blood oxygen levels and pulse rate',
-      price: 39.99,
-      rating: 4.6,
-      inStock: true,
-      isRecommended: true,
-      dosage: 'N/A',
-      frequency: 'As needed',
-    },
-    {
-      id: '5',
-      name: 'Digital Blood Pressure Monitor',
-      category: 'devices',
-      description: 'Accurate home blood pressure monitoring with memory storage',
-      price: 89.99,
-      rating: 4.6,
-      inStock: true,
-      isRecommended: true,
-      dosage: 'N/A',
-      frequency: 'As needed',
-    },
-    {
-      id: '6',
-      name: 'Smart Fitness Tracker',
-      category: 'devices',
-      description: 'Track steps, heart rate, sleep and calories with smartphone app',
-      price: 129.99,
-      rating: 4.8,
-      inStock: true,
-      isRecommended: false,
-      dosage: 'N/A',
-      frequency: 'Daily use',
-    },
-    {
-      id: '7',
-      name: 'UV Sanitizer Box',
-      category: 'wellness',
-      description: 'UV-C light sanitizer for phones, keys, and small items',
-      price: 49.99,
+      id: 's4',
+      name: 'Magnesium',
+      category: 'minerals',
+      description: 'Supports muscle and nerve function',
+      price: 21.99,
       rating: 4.4,
       inStock: true,
-      isRecommended: true,
-      dosage: 'N/A',
-      frequency: 'Daily use',
-    },
-    {
-      id: '8',
-      name: 'Ergonomic Lumbar Support',
-      category: 'wellness',
-      description: 'Memory foam lumbar support cushion for better posture',
-      price: 34.99,
-      rating: 4.3,
-      inStock: true,
       isRecommended: false,
-      dosage: 'N/A',
-      frequency: 'During sitting',
+      dosage: '400mg',
+      frequency: 'Daily',
     },
   ];
 
@@ -315,11 +279,11 @@ export default function OrdersPage() {
       orderNumber: 'ORD-2024-003',
       date: '2024-01-22',
       status: 'processing',
-      total: 349.97,
+      total: 269.97,
       items: [
         { id: '6', name: 'Smart Fitness Tracker', quantity: 1, price: 129.99 },
         { id: '5', name: 'Digital Blood Pressure Monitor', quantity: 1, price: 89.99 },
-        { id: '6', name: 'Smart Fitness Tracker', quantity: 1, price: 129.99 },
+        { id: '7', name: 'UV Sanitizer Box', quantity: 1, price: 49.99 },
       ],
     },
   ];
@@ -624,7 +588,7 @@ export default function OrdersPage() {
                     gap: 12,
                   }}
                 >
-                  {categories.map((category) => (
+                  {supplementCategories.map((category) => (
                     <TouchableOpacity
                       key={category.id}
                       onPress={() => setSelectedCategory(category.id)}
@@ -767,6 +731,7 @@ export default function OrdersPage() {
 
             {/* Time to Reorder Section */}
             {(activeTab === 'products' && orders.filter((order) => order.status === 'delivered').length > 0) ||
+            activeTab === 'supplements' ||
             activeTab === 'rx' ||
             activeTab === 'meals' ? (
               <View
@@ -870,6 +835,91 @@ export default function OrdersPage() {
                               }}
                             >
                               Last ordered quantity: {item.quantity}
+                            </Text>
+                            <TouchableOpacity
+                              style={{
+                                paddingVertical: 12,
+                                borderRadius: 12,
+                                backgroundColor: '#10b981',
+                              }}
+                              activeOpacity={0.7}
+                            >
+                              <Text
+                                style={{
+                                  color: '#ffffff',
+                                  textAlign: 'center',
+                                  fontSize: 14,
+                                  fontWeight: '500',
+                                }}
+                              >
+                                Quick Reorder
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+                    {activeTab === 'supplements' &&
+                      supplements
+                        .filter((s) => s.isRecommended)
+                        .slice(0, 3)
+                        .map((supplement) => (
+                          <View
+                            key={supplement.id}
+                            style={{
+                              marginRight: 16,
+                              padding: 16,
+                              borderRadius: 12,
+                              width: 280,
+                              backgroundColor: isDarkMode ? 'rgba(6, 78, 59, 0.3)' : '#d1fae5',
+                            }}
+                          >
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginBottom: 12,
+                              }}
+                            >
+                              <View
+                                style={{
+                                  width: 44,
+                                  height: 44,
+                                  borderRadius: 12,
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  backgroundColor: isDarkMode ? 'rgba(6, 78, 59, 0.5)' : '#a7f3d0',
+                                }}
+                              >
+                                <Pill size={22} color={isDarkMode ? '#34d399' : '#059669'} />
+                              </View>
+                              <Text
+                                style={{
+                                  fontSize: 16,
+                                  fontWeight: '600',
+                                  color: isDarkMode ? '#34d399' : '#059669',
+                                }}
+                              >
+                                ${supplement.price.toFixed(2)}
+                              </Text>
+                            </View>
+                            <Text
+                              style={{
+                                fontSize: 16,
+                                fontWeight: '500',
+                                marginBottom: 6,
+                                color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                              }}
+                            >
+                              {supplement.name}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 13,
+                                marginBottom: 12,
+                                color: isDarkMode ? '#9ca3af' : '#6b7280',
+                              }}
+                            >
+                              {supplement.dosage} • {supplement.frequency}
                             </Text>
                             <TouchableOpacity
                               style={{
