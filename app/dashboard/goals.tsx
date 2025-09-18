@@ -734,7 +734,7 @@ export default function GoalsScreen() {
                       </Text>
                       <View>
                         {goal.action_items?.map((item: any) => (
-                          <ActionItemCard key={item.title} item={item} onPress={() => setSelectedActionItem(item)} />
+                          <ActionItemCard key={item.id} item={item} onPress={() => setSelectedActionItem(item)} />
                         ))}
                       </View>
                     </View>
