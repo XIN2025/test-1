@@ -2,12 +2,12 @@ import { LabTestsData } from '../types/labTests';
 
 export const mockLabTestsData: LabTestsData = {
   isConnected: true,
-  lastSync: '2024-01-15T10:30:00Z',
+  lastSync: '2025-08-15T10:30:00Z',
   tests: [
     {
       id: 'test-1',
       name: 'Test 1',
-      date: '2024-01-15',
+      date: '2025-08-15',
       status: 'completed',
       summary: 'Comprehensive metabolic panel and blood work',
       items: [
@@ -20,7 +20,7 @@ export const mockLabTestsData: LabTestsData = {
           status: 'low',
           details:
             'Blood glucose level indicates how much sugar is in your blood. Low levels may indicate hypoglycemia, which can cause symptoms like dizziness, confusion, and fatigue. Consider eating regular meals and monitoring blood sugar levels.',
-          lastUpdated: '2024-01-15T08:00:00Z',
+          lastUpdated: '2025-08-15T08:00:00Z',
         },
         {
           id: 'cbc-1',
@@ -31,7 +31,7 @@ export const mockLabTestsData: LabTestsData = {
           status: 'low',
           details:
             'Complete Blood Count (CBC) measures the number of blood cells in your body. Low white blood cell count may indicate a weakened immune system or bone marrow problems. Consult your healthcare provider for further evaluation.',
-          lastUpdated: '2024-01-15T08:00:00Z',
+          lastUpdated: '2025-08-15T08:00:00Z',
         },
         {
           id: 'vitamin-d-1',
@@ -42,14 +42,14 @@ export const mockLabTestsData: LabTestsData = {
           status: 'low',
           details:
             'Vitamin D is essential for bone health and immune function. Low levels can lead to bone weakness, muscle pain, and increased risk of infections. Consider vitamin D supplementation and increased sun exposure.',
-          lastUpdated: '2024-01-15T08:00:00Z',
+          lastUpdated: '2025-08-15T08:00:00Z',
         },
       ],
     },
     {
       id: 'test-2',
       name: 'Test 2',
-      date: '2024-01-10',
+      date: '2025-08-10',
       status: 'completed',
       summary: 'Lipid panel and cardiovascular markers',
       items: [
@@ -62,7 +62,7 @@ export const mockLabTestsData: LabTestsData = {
           status: 'normal',
           details:
             'Total cholesterol measures all cholesterol in your blood. Your level is within the desirable range, which helps reduce risk of heart disease. Continue maintaining a healthy diet and regular exercise.',
-          lastUpdated: '2024-01-10T09:15:00Z',
+          lastUpdated: '2025-08-10T09:15:00Z',
         },
         {
           id: 'hdl-2',
@@ -73,14 +73,14 @@ export const mockLabTestsData: LabTestsData = {
           status: 'normal',
           details:
             'HDL (good) cholesterol helps remove other forms of cholesterol from your bloodstream. Higher levels are better for heart health. Your level indicates good cardiovascular protection.',
-          lastUpdated: '2024-01-10T09:15:00Z',
+          lastUpdated: '2025-08-10T09:15:00Z',
         },
       ],
     },
     {
       id: 'test-3',
       name: 'Test 3',
-      date: '2024-01-05',
+      date: '2025-08-05',
       status: 'completed',
       summary: 'Thyroid function and hormone levels',
       items: [
@@ -93,7 +93,7 @@ export const mockLabTestsData: LabTestsData = {
           status: 'normal',
           details:
             'Thyroid Stimulating Hormone (TSH) regulates your thyroid gland function. Your level is within normal range, indicating proper thyroid function and metabolism regulation.',
-          lastUpdated: '2024-01-05T07:30:00Z',
+          lastUpdated: '2025-08-05T07:30:00Z',
         },
         {
           id: 'cortisol-3',
@@ -104,7 +104,7 @@ export const mockLabTestsData: LabTestsData = {
           status: 'normal',
           details:
             "Cortisol is your body's main stress hormone. Normal levels indicate healthy stress response and adrenal function. Continue managing stress through relaxation techniques and adequate sleep.",
-          lastUpdated: '2024-01-05T07:30:00Z',
+          lastUpdated: '2025-08-05T07:30:00Z',
         },
       ],
     },
