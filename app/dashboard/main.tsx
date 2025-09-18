@@ -2,7 +2,6 @@ import { CircularProgressRing } from '@/components/CircularProgressRing';
 import { LiquidGauge } from 'react-native-liquid-gauge';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
-import { useActionCompletions } from '@/hooks/useActionCompletions';
 import { useGoals } from '@/hooks/useGoals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -153,27 +152,11 @@ function MainDashboard() {
     fetchStreak();
   };
   const closeStreakModal = () => setShowStreakModal(false);
-  const { goals, loadGoals } = useGoals({ userEmail });
-  const { completionStats, getGoalCompletionPercentage, markCompletion, loadCompletionStats } =
-    useActionCompletions(userEmail);
+  const { goals, markCompletion, todaysItems } = useGoals({ userEmail });
   // Walkthrough state management
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   const [showAllTodayItems, setShowAllTodayItems] = useState(false);
   const [recentInteractions, setRecentInteractions] = useState<Map<string, number>>(new Map());
-
-  // Refresh goals data when screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      if (userEmail) {
-        if (loadGoals) {
-          loadGoals();
-        }
-        if (loadCompletionStats) {
-          loadCompletionStats();
-        }
-      }
-    }, [userEmail, loadGoals, loadCompletionStats]),
-  );
 
   // Removed local demo tasks; weekly goals are now sourced from API via useGoals
 
@@ -263,14 +246,6 @@ function MainDashboard() {
   // Note: We now use AsyncStorage for walkthrough triggers instead of URL parameters
   // This avoids issues with tab navigation clearing parameters
 
-  type TodayItem = {
-    id: string;
-    title: string;
-    start_time?: string;
-    end_time?: string;
-    goalTitle?: string;
-  };
-
   // Helper to format time into HH:MM
   const formatTimeHM = (t?: string): string => {
     if (!t) return '';
@@ -284,68 +259,6 @@ function MainDashboard() {
     if (h && /^\d{1,2}$/.test(h)) return `${h.padStart(2, '0')}:00`;
     return t;
   };
-
-  // Build today's action items from goals data
-  const todaysItems: TodayItem[] = useMemo(() => {
-    const items: TodayItem[] = [];
-
-    const normalizeTime = (t?: string): string => formatTimeHM(t);
-
-    const makeKey = (title: string, goalTitle: string | undefined, start?: string, end?: string) => {
-      const normTitle = (title || '').trim().toLowerCase();
-      const normGoal = (goalTitle || '').trim().toLowerCase();
-      const normStart = normalizeTime(start);
-      const normEnd = normalizeTime(end);
-      return `${normGoal}|${normTitle}|${normStart}|${normEnd}`;
-    };
-
-    const seen = new Set<string>();
-
-    (goals as any[]).forEach((g: any) => {
-      // 1) From goal.weekly_schedule.daily_schedules[dayKey]
-      const ds = g?.weekly_schedule?.daily_schedules?.[dayKey];
-      if (ds?.time_slots?.length) {
-        ds.time_slots.forEach((ts: any, idx: number) => {
-          const title = ts.action_item || g.title;
-          const key = makeKey(title, g.title, ts.start_time, ts.end_time);
-          if (!seen.has(key)) {
-            seen.add(key);
-            items.push({
-              id: `${g.id}-top-${dayKey}-${idx}`,
-              title,
-              start_time: ts.start_time,
-              end_time: ts.end_time,
-              goalTitle: g.title,
-            });
-          }
-        });
-      }
-
-      // 2) From goal.action_plan.action_items[].weekly_schedule[dayKey].time_slots
-      const actionItems = g?.action_plan?.action_items || [];
-      actionItems.forEach((ai: any, aIdx: number) => {
-        const w = ai?.weekly_schedule?.[dayKey];
-        const slots = w?.time_slots || [];
-        slots.forEach((ts: any, sIdx: number) => {
-          const key = makeKey(ai.title, g.title, ts.start_time, ts.end_time);
-          if (!seen.has(key)) {
-            seen.add(key);
-            items.push({
-              id: `${g.id}-ai-${aIdx}-${dayKey}-${sIdx}`,
-              title: ai.title,
-              start_time: ts.start_time,
-              end_time: ts.end_time,
-              goalTitle: g.title,
-            });
-          }
-        });
-      });
-    });
-
-    // Sort by normalized time if available
-    items.sort((a, b) => formatTimeHM(a.start_time).localeCompare(formatTimeHM(b.start_time)));
-    return items;
-  }, [goals, dayKey]);
 
   // Helper to check if an action item is completed for the current week
   const isActionItemCompletedThisWeek = useCallback((actionItem: any): boolean => {
@@ -370,76 +283,6 @@ function MainDashboard() {
 
     return isComplete;
   }, []);
-
-  // Sync completed items from backend completion stats (with delay to allow backend processing)
-  useEffect(() => {
-    if (!todaysItems.length) return;
-
-    // Add a small delay to allow recent API calls to complete
-    const timeoutId = setTimeout(() => {
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-      const now = Date.now();
-      const newCompletedItems = new Set(completedItems); // Start with current state
-
-      // Check each today's item against completion stats and weekly completion status
-      todaysItems.forEach((item) => {
-        const goalId = item.id.split('-')[0];
-        const goalStats = completionStats?.[goalId];
-
-        // Skip if this item was recently interacted with (within last 5 seconds)
-        const lastInteraction = recentInteractions.get(item.id);
-        if (lastInteraction && now - lastInteraction < 5000) {
-          return; // Don't override recent user interaction
-        }
-
-        // First check weekly completion status from action items
-        let isCompletedByWeeklyStatus = false;
-        const goal = (goals as any[]).find((g: any) => g.id === goalId);
-        if (goal?.action_plan?.action_items) {
-          const actionItem = goal.action_plan.action_items.find((ai: any) => ai.title === item.title);
-          if (actionItem) {
-            isCompletedByWeeklyStatus = isActionItemCompletedThisWeek(actionItem);
-          }
-        }
-
-        // Then check daily completion stats as fallback
-        let isCompletedByDailyStats = false;
-        if (goalStats?.daily_stats) {
-          // Find today's stats
-          const todayStats = goalStats.daily_stats.find((ds: any) => {
-            const statsDate = new Date(ds.date).toISOString().split('T')[0];
-            return statsDate === today;
-          });
-
-          // If this action item is in today's completed items list, mark as completed
-          if (todayStats?.action_items?.includes(item.title)) {
-            isCompletedByDailyStats = true;
-          }
-        }
-
-        // Use either weekly completion status or daily stats
-        const shouldBeCompleted = isCompletedByWeeklyStatus || isCompletedByDailyStats;
-        const isCurrentlyCompleted = completedItems.has(item.id);
-
-        // Only update if the state actually changed
-        if (shouldBeCompleted && !isCurrentlyCompleted) {
-          newCompletedItems.add(item.id);
-        } else if (!shouldBeCompleted && isCurrentlyCompleted) {
-          newCompletedItems.delete(item.id);
-        }
-      });
-
-      // Only update state if there were actual changes
-      if (
-        newCompletedItems.size !== completedItems.size ||
-        [...newCompletedItems].some((id) => !completedItems.has(id))
-      ) {
-        setCompletedItems(newCompletedItems);
-      }
-    }, 100); // 100ms delay
-
-    return () => clearTimeout(timeoutId);
-  }, [completionStats, todaysItems, recentInteractions, goals, isActionItemCompletedThisWeek, completedItems]);
 
   // Clean up old interactions
   useEffect(() => {
@@ -478,54 +321,19 @@ function MainDashboard() {
   //   // Cap at 100
   //   return Math.min(Math.round(averageCompletion + streakBonus), 100);
   // }, [goals, getGoalCompletionPercentage, streak]);
-
   const toggleItemCompleted = async (id: string) => {
-    // Find the action item details from todaysItems
     const actionItem = todaysItems.find((item) => item.id === id);
     if (!actionItem) return;
 
-    // Extract goal ID from the item ID (format: goalId-top-dayKey-index or goalId-ai-aIdx-dayKey-sIdx)
-    const goalId = actionItem.id.split('-')[0];
-
-    // Mark this item as recently interacted with
-    setRecentInteractions((prev) => {
-      const newMap = new Map(prev);
-      newMap.set(id, Date.now());
-      return newMap;
-    });
-
-    // Toggle local state immediately for UI responsiveness
-    setCompletedItems((prev) => {
-      const next = new Set(prev);
-      const isCompleted = next.has(id);
-
-      if (isCompleted) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-
-      // Call API to mark completion
-      markCompletion(goalId, actionItem.title, !isCompleted)
-        .then(() => {
-          // Add a small delay to allow backend processing to complete
-        })
-        .catch((error) => {
-          console.error('Failed to mark completion:', error);
-          // Revert local state on error
-          setCompletedItems((prevState) => {
-            const revertSet = new Set(prevState);
-            if (isCompleted) {
-              revertSet.add(id);
-            } else {
-              revertSet.delete(id);
-            }
-            return revertSet;
-          });
-        });
-
-      return next;
-    });
+    const isComplete = actionItem.complete;
+    markCompletion(id, !isComplete)
+      .then(() => {
+        console.log(`✅ Successfully marked action item ${id} as ${!isComplete ? 'completed' : 'not completed'}`);
+        // loadTodaysItems();
+      })
+      .catch((error) => {
+        console.error('Failed to mark completion:', error);
+      });
   };
 
   return (
@@ -1138,7 +946,6 @@ function MainDashboard() {
                   ) : (
                     <View>
                       {(goals as any[]).slice(0, 5).map((g: any) => {
-                        const completionPercentage = getGoalCompletionPercentage(g.id);
                         return (
                           <View
                             key={g.id}
@@ -1162,11 +969,11 @@ function MainDashboard() {
                                 <CircularProgressRing
                                   size={44}
                                   strokeWidth={3}
-                                  progress={completionPercentage}
+                                  progress={g.completion_percentage || 0}
                                   color={
-                                    completionPercentage >= 80
+                                    g.completion_percentage >= 80
                                       ? '#10b981' // Green for high completion
-                                      : completionPercentage >= 50
+                                      : g.completion_percentage >= 50
                                         ? '#f59e0b' // Yellow for medium completion
                                         : '#ef4444' // Red for low completion
                                   }
@@ -1192,7 +999,7 @@ function MainDashboard() {
                                     color: isDarkMode ? '#9ca3af' : '#6b7280',
                                   }}
                                 >
-                                  {completionPercentage.toFixed(0)}% completed this week
+                                  {g.completion_percentage}% completed this week
                                 </Text>
                               </View>
                             </View>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { X } from 'lucide-react-native';
@@ -14,6 +14,11 @@ const ActionItemScheduleModal: React.FC<ActionItemScheduleModalProps> = ({
   setSelectedActionItem,
 }) => {
   const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    console.log('Selected Action Item:', JSON.stringify(selectedActionItem, null, 2));
+  }, [selectedActionItem]);
+
   return (
     <View
       style={{
@@ -135,7 +140,7 @@ const ActionItemScheduleModal: React.FC<ActionItemScheduleModalProps> = ({
             </Text>
 
             {Object.entries(selectedActionItem?.weekly_schedule || {}).map(([day, schedule]: [string, any]) =>
-              schedule && schedule.time_slots && schedule.time_slots.length > 0 ? (
+              schedule ? (
                 <View key={day} style={{ marginBottom: 16 }}>
                   <View
                     style={{
@@ -158,78 +163,55 @@ const ActionItemScheduleModal: React.FC<ActionItemScheduleModalProps> = ({
                     </Text>
                   </View>
 
-                  {schedule.time_slots.map((slot: any, index: number) => (
+                  <View
+                    style={{
+                      backgroundColor: isDarkMode ? '#374151' : '#f9fafb',
+                      padding: 16,
+                      borderRadius: 12,
+                      marginBottom: 8,
+                      borderLeftWidth: 4,
+                      borderLeftColor: isDarkMode ? '#34d399' : '#10b981',
+                    }}
+                  >
                     <View
-                      key={index}
                       style={{
-                        backgroundColor: isDarkMode ? '#374151' : '#f9fafb',
-                        padding: 16,
-                        borderRadius: 12,
-                        marginBottom: 8,
-                        borderLeftWidth: 4,
-                        borderLeftColor: isDarkMode ? '#34d399' : '#10b981',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: 4,
                       }}
                     >
-                      <View
+                      <Text
                         style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: 4,
+                          fontSize: 16,
+                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                          fontWeight: '600',
                         }}
                       >
-                        <Text
-                          style={{
-                            fontSize: 16,
-                            color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                            fontWeight: '600',
-                          }}
-                        >
-                          {slot.start_time} - {slot.end_time}
-                        </Text>
-                        <View
-                          style={{
-                            backgroundColor: isDarkMode ? '#065f46' : '#ecfdf5',
-                            paddingHorizontal: 8,
-                            paddingVertical: 2,
-                            borderRadius: 12,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              color: isDarkMode ? '#34d399' : '#059669',
-                              fontWeight: '500',
-                            }}
-                          >
-                            {slot.duration}
-                          </Text>
-                        </View>
-                      </View>
-
-                      {slot.health_notes && slot.health_notes.length > 0 && (
-                        <View
-                          style={{
-                            backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                            padding: 8,
-                            borderRadius: 6,
-                            marginTop: 8,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              color: isDarkMode ? '#9ca3af' : '#6b7280',
-                              fontStyle: 'italic',
-                              lineHeight: 16,
-                            }}
-                          >
-                            💡 {slot.health_notes[0]}
-                          </Text>
-                        </View>
-                      )}
+                        {schedule.start_time} - {schedule.end_time}
+                      </Text>
                     </View>
-                  ))}
+
+                    <View
+                      style={{
+                        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                        padding: 8,
+                        borderRadius: 6,
+                        marginTop: 8,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: isDarkMode ? '#9ca3af' : '#6b7280',
+                          fontStyle: 'italic',
+                          lineHeight: 16,
+                        }}
+                      >
+                        💡 {schedule.notes}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               ) : null,
             )}
