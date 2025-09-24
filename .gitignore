@@ -44,6 +44,5 @@ android
 build-*
 
 ios
-google-services.json
 Evra.app
 package-lock.json

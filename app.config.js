@@ -7,7 +7,7 @@ export default {
     orientation: 'portrait',
     icon: './assets/images/logo.png',
     scheme: 'app',
-    userInterfaceStyle: 'automatic',
+    userInterfaceStyle: 'light',
     newArchEnabled: false,
     ios: {
       bundleIdentifier: 'com.evra.app',
@@ -19,9 +19,11 @@ export default {
         NSHealthShareUsageDescription: 'Your own custom usage description',
         NSHealthUpdateUsageDescription: 'Your own custom usage description',
       },
+      userInterfaceStyle: 'light',
     },
     android: {
       package: 'com.evra.app',
+      userInterfaceStyle: 'light',
       adaptiveIcon: {
         foregroundImage: './assets/images/adaptive-icon.png',
         backgroundColor: '#fdf4de',

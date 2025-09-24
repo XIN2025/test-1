@@ -113,6 +113,7 @@ export default function GoalsScreen() {
   const [, setActivePlan] = useState<any>(null);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [generatingPlanGoalIds, setGeneratingPlanGoalIds] = useState<string[]>([]);
 
   // Use the goals hook for backend integration
   const { goals, loading, createGoal, updateGoalProgress, saveWeeklyReflection, loadGoals } = useGoals({
@@ -297,7 +298,7 @@ export default function GoalsScreen() {
 
   // Inline banner to inform user while plan is being generated
   const GeneratingBanner = () =>
-    generatingPlan ? (
+    generatingPlanGoalIds.length > 0 ? (
       <View
         className={`mx-4 mb-1 mt-3 flex-row items-center rounded-lg border px-3 py-2 ${
           isDarkMode ? 'border-emerald-900 bg-emerald-950/50' : 'border-emerald-200 bg-emerald-50'
@@ -398,7 +399,10 @@ export default function GoalsScreen() {
       },
     };
 
-    setGeneratingPlan(true);
+    if (generatingPlanGoalIds.includes(goalId)) {
+      return;
+    }
+    setGeneratingPlanGoalIds((prev) => (prev.includes(goalId) ? prev : [...prev, goalId]));
 
     try {
       // Debug log
@@ -437,7 +441,7 @@ export default function GoalsScreen() {
         },
       );
     } finally {
-      setGeneratingPlan(false);
+      setGeneratingPlanGoalIds((prev) => prev.filter((id) => id !== goalId));
     }
   };
 
@@ -680,7 +684,7 @@ export default function GoalsScreen() {
                     {!(goal.action_items && goal.action_items.length > 0) && (
                       <TouchableOpacity
                         onPress={() => handleGeneratePlan(goal.id, goal)}
-                        disabled={generatingPlan}
+                        disabled={generatingPlanGoalIds.includes(goal.id)}
                         style={{
                           paddingHorizontal: 16,
                           paddingVertical: 12,
@@ -689,12 +693,12 @@ export default function GoalsScreen() {
                           flexDirection: 'row',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          opacity: generatingPlan ? 0.5 : 1,
+                          opacity: generatingPlanGoalIds.includes(goal.id) ? 0.5 : 1,
                           marginBottom: 8,
                         }}
                         activeOpacity={0.7}
                       >
-                        {generatingPlan ? (
+                        {generatingPlanGoalIds.includes(goal.id) ? (
                           <ActivityIndicator size="small" color="#ffffff" />
                         ) : (
                           <View style={{ marginRight: 8 }}>
@@ -708,7 +712,7 @@ export default function GoalsScreen() {
                             fontWeight: '600',
                           }}
                         >
-                          {generatingPlan ? 'Generating…' : 'Generate Plan'}
+                          {generatingPlanGoalIds.includes(goal.id) ? 'Generating…' : 'Generate Plan'}
                         </Text>
                       </TouchableOpacity>
                     )}
