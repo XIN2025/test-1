@@ -337,7 +337,7 @@ function MainDashboard() {
   };
 
   return (
-    <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
+    <>
       <View>
         {/* Fixed Header */}
         <View className={`z-10 px-4 py-4 shadow-sm ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
@@ -1060,7 +1060,7 @@ function MainDashboard() {
           </View>
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </>
   );
 }
 

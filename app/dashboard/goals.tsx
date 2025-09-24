@@ -485,7 +485,7 @@ export default function GoalsScreen() {
   }
 
   return (
-    <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
+    <>
       <GoalsHeader
         weekStart={weekStart}
         weekEnd={weekEnd}
@@ -869,6 +869,6 @@ export default function GoalsScreen() {
           dedupeFiles={dedupeFiles}
         />
       )}
-    </SafeAreaView>
+    </>
   );
 }

@@ -323,7 +323,7 @@ export default function OrdersPage() {
   const { isDarkMode } = useTheme();
 
   return (
-    <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
+    <>
       {/* Fixed Header */}
       <View>
         <View
@@ -1836,6 +1836,6 @@ export default function OrdersPage() {
           </View>
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </>
   );
 }

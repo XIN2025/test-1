@@ -343,25 +343,62 @@ export function useHealthConnect() {
       try {
         console.log(`Fetching ${recordType} from Health Connect`);
 
+        // Use 24-hour window for consistency with iOS
+        const now = new Date();
+        const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
         const records = await readRecords(recordType, {
           timeRangeFilter: timeRange || {
             operator: 'between',
-            startTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Last 24 hours
-            endTime: new Date().toISOString(),
+            startTime: twentyFourHoursAgo.toISOString(),
+            endTime: now.toISOString(),
           },
         });
 
         if (records && records.records.length > 0) {
-          // For cumulative metrics like steps, sum all values
+          // Special handling for Sleep: aggregate all sleep sessions in the last 24 hours
+          if (recordType === 'SleepSession') {
+            console.log('Processing sleep sessions for the last 24 hours');
+            console.log('Number of sleep sessions found:', records.records.length);
+
+            let totalSleepMs = 0;
+            let latestEnd: Date | undefined;
+
+            for (const record of records.records) {
+              const sleepRecord = record as any;
+              if (sleepRecord.startTime && sleepRecord.endTime) {
+                const startMs = new Date(sleepRecord.startTime).getTime();
+                const endMs = new Date(sleepRecord.endTime).getTime();
+                const durationMs = Math.max(0, endMs - startMs);
+                totalSleepMs += durationMs;
+
+                if (!latestEnd || endMs > latestEnd.getTime()) {
+                  latestEnd = new Date(endMs);
+                }
+              }
+            }
+
+            const hours = totalSleepMs / (1000 * 60 * 60);
+            console.log('Total sleep hours calculated:', hours);
+
+            return {
+              value: Math.round(hours * 10) / 10,
+              unit: 'hrs',
+              date: latestEnd ?? now,
+              isAvailable: true,
+            };
+          }
+
+          // For cumulative metrics like steps and active energy, sum all values from the last 24 hours
           if (recordType === 'Steps' || recordType === 'ActiveCaloriesBurned') {
             const totalValue = records.records.reduce((sum, record: any) => {
-              return sum + (record.count || record.total || record.value || 0);
+              return sum + (record.count || record.total || record.value || record.steps || 0);
             }, 0);
 
             return {
               value: Math.round(totalValue),
               unit: recordType === 'Steps' ? 'steps' : 'kcal',
-              date: new Date(),
+              date: now,
               isAvailable: true,
             };
           }
@@ -379,7 +416,7 @@ export function useHealthConnect() {
           return {
             value: Math.round(value * 10) / 10,
             unit: 'unknown',
-            date: new Date(),
+            date: now,
             isAvailable: true,
           };
         }
@@ -406,12 +443,12 @@ export function useHealthConnect() {
         return;
       }
 
-      // Get today's date range
+      // Get 24-hour window for consistency with iOS (instead of just "today")
       const now = new Date();
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       const timeRange: TimeRangeFilter = {
         operator: 'between',
-        startTime: startOfToday.toISOString(),
+        startTime: twentyFourHoursAgo.toISOString(),
         endTime: now.toISOString(),
       };
 

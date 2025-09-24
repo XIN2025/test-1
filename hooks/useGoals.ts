@@ -33,20 +33,18 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
 
   const loadActionItemsAndCompletion = useCallback(async () => {
     try {
-      goals.forEach(async (goal) => {
-        console.log('Loading action items for goal:', goal.id);
-        const actionItems = await goalsApi.getGoalActionItems(goal.id);
-        goal.action_items = actionItems;
-        goal.completion_percentage = await getGoalCompletionPercentage(goal.id);
-        console.log(`Goal ${goal.id} - Completion Percentage: ${goal.completion_percentage}%`);
-        setGoals((prevGoals) =>
-          prevGoals.map((g) =>
-            g.id === goal.id
-              ? { ...g, action_items: actionItems, completion_percentage: goal.completion_percentage }
-              : g,
-          ),
-        );
-      });
+      // Fetch action items and completion for all goals, then update state ONCE
+      const updatedGoals = await Promise.all(
+        goals.map(async (goal) => {
+          console.log('Loading action items for goal:', goal.id);
+          const actionItems = await goalsApi.getGoalActionItems(goal.id);
+          const completionPercentage = await getGoalCompletionPercentage(goal.id);
+          console.log(`Goal ${goal.id} - Completion Percentage: ${completionPercentage}%`);
+          return { ...goal, action_items: actionItems, completion_percentage: completionPercentage } as Goal;
+        }),
+      );
+
+      setGoals(updatedGoals);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load action items';
       setError(message);
@@ -322,7 +320,11 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
   }, [userEmail, autoLoad, loadGoals, loadStats]);
 
   useEffect(() => {
-    if (goals.length > 0) {
+    // Only enrich goals if they don't already have action items or completion calculated
+    if (
+      goals.length > 0 &&
+      goals.some((g) => !('action_items' in g) || g.action_items == null || g.completion_percentage == null)
+    ) {
       loadActionItemsAndCompletion();
     }
   }, [goals, loadActionItemsAndCompletion]);

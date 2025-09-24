@@ -5,12 +5,14 @@ import {
   isHealthDataAvailable,
   getMostRecentQuantitySample,
   getMostRecentCategorySample,
+  queryCategorySamples,
   queryQuantitySamples,
   subscribeToChanges,
   QuantityTypeIdentifier,
   CategoryTypeIdentifier,
   useHealthkitAuthorization,
   AuthorizationRequestStatus,
+  CategoryValueSleepAnalysis,
 } from '@kingstinct/react-native-healthkit';
 
 export interface HealthMetric {
@@ -392,25 +394,88 @@ export function useHealthKit() {
       const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
 
       if (isCategory) {
-        const sample = await getMostRecentCategorySample(type as CategoryTypeIdentifier);
-        if (sample) {
-          console.log(`Successfully fetched category ${type}:`, sample.value);
-          // For sleep, calculate duration in hours
-          if (type.includes('Sleep')) {
+        // Special handling for Sleep: aggregate all sleep segments in the last 24 hours
+        if (type.includes('Sleep')) {
+          console.log('yyyyyyyyyyyyyyyyyyyyy');
+          console.log('type', type);
+          const now = new Date();
+          const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          console.log('xxxxxxxxxxxxxxxxxxxxxxxxx');
+          console.log('twentyFourHoursAgo', twentyFourHoursAgo);
+          console.log('xxxxxxxxxxxxxxxxxxxxxxxxx');
+
+          const samples = await queryCategorySamples(type as CategoryTypeIdentifier, {
+            filter: {
+              startDate: twentyFourHoursAgo,
+              endDate: now,
+              strictStartDate: true,
+              strictEndDate: true,
+            },
+            ascending: false,
+          });
+
+          if (samples && samples.length > 0) {
+            // Sum durations for asleep categories only
+            const asleepValues = new Set<number>([
+              CategoryValueSleepAnalysis.asleepUnspecified,
+              CategoryValueSleepAnalysis.asleepCore,
+              CategoryValueSleepAnalysis.asleepDeep,
+              CategoryValueSleepAnalysis.asleepREM,
+            ]);
+            console.log('aaaaaaaaaaaaaaaaaaaaa');
+            console.log('samples', samples);
+            console.log('samples.length', samples.length);
+            console.log('asleepValues', asleepValues);
+            console.log('aaaaaaaaaaaaaaaaaaaaa');
+
+            let totalMs = 0;
+            let latestEnd: Date | undefined;
+
+            for (const s of samples) {
+              if (asleepValues.has(Number(s.value))) {
+                const startMs = new Date(s.startDate).getTime();
+                const endMs = new Date(s.endDate).getTime();
+                totalMs += Math.max(0, endMs - startMs);
+                if (!latestEnd || endMs > latestEnd.getTime()) {
+                  latestEnd = new Date(endMs);
+                }
+              }
+            }
+
+            const hours = totalMs / (1000 * 60 * 60);
+            console.log('zzzzzzzzzzzzzzzzzzz');
+            console.log('hours', hours);
+            console.log('zzzzzzzzzzzzzzzzzzz');
+            return {
+              value: Math.round(hours * 10) / 10,
+              unit: 'hrs',
+              date: latestEnd ?? now,
+              isAvailable: true,
+            };
+          }
+
+          // Fallback: most recent category sample (legacy behavior)
+          const recent = await getMostRecentCategorySample(type as CategoryTypeIdentifier);
+          if (recent) {
             const duration =
-              (new Date(sample.endDate).getTime() - new Date(sample.startDate).getTime()) / (1000 * 60 * 60);
+              (new Date(recent.endDate).getTime() - new Date(recent.startDate).getTime()) / (1000 * 60 * 60);
             return {
               value: Math.round(duration * 10) / 10,
               unit: 'hrs',
+              date: new Date(recent.endDate),
+              isAvailable: true,
+            };
+          }
+        } else {
+          // Non-sleep category: keep most recent value behavior
+          const sample = await getMostRecentCategorySample(type as CategoryTypeIdentifier);
+          if (sample) {
+            return {
+              value: sample.value,
               date: new Date(sample.endDate),
               isAvailable: true,
             };
           }
-          return {
-            value: sample.value,
-            date: new Date(sample.endDate),
-            isAvailable: true,
-          };
         }
       } else {
         // For cumulative metrics like steps and active energy, get today's total
@@ -654,6 +719,10 @@ export function useHealthKit() {
       setIsLoading(false);
     }
   }, [hasPermissions, fetchHealthMetric, verifyPermissions]);
+
+  useEffect(() => {
+    console.log('healthData', healthData);
+  }, [healthData]);
 
   const setupHealthKitSubscriptions = useCallback(() => {
     if (!hasPermissions) return [];

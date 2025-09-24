@@ -358,7 +358,7 @@ export default function ProfileDashboard() {
   ];
 
   return (
-    <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
+    <>
       {/* @ts-ignore - expo-linear-gradient children prop typing issue */}
       <View>
         {/* Fixed Header */}
@@ -1186,6 +1186,6 @@ export default function ProfileDashboard() {
           </View>
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </>
   );
 }

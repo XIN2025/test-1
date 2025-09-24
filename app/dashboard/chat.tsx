@@ -15,20 +15,12 @@ export default function ChatPage() {
     useChat();
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: isDarkMode ? '#111827' : '#FFF',
-      }}
-      edges={['top']}
-    >
+    <>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
       >
-        <ChatHeader />
-
         {/*<TouchableWithoutFeedback onPress={Keyboard.dismiss}>*/}
         <View style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#F0FDF4' }}>
           {messages.length === 0 ? (
@@ -47,6 +39,6 @@ export default function ChatPage() {
           dismissKeyboard={dismissKeyboard}
         />
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </>
   );
 }

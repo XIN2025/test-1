@@ -4,6 +4,9 @@ import React from 'react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { Platform } from 'react-native';
+import ChatHeader from '@/components/chat/ChatHeader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function TabsNavigator() {
   const { isDarkMode } = useTheme();
@@ -14,7 +17,6 @@ function TabsNavigator() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
         tabBarStyle: {
           backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
           borderTopColor: isDarkMode ? '#374151' : '#e5e7eb',
@@ -29,6 +31,8 @@ function TabsNavigator() {
         },
         tabBarActiveTintColor: isDarkMode ? '#34d399' : '#059669',
         tabBarInactiveTintColor: isDarkMode ? '#9ca3af' : '#64748b',
+        animation: Platform.OS === 'ios' ? 'shift' : 'fade',
+        tabBarHideOnKeyboard: true,
       }}
       initialRouteName={initialRoute}
     >
@@ -37,6 +41,7 @@ function TabsNavigator() {
         options={{
           title: 'Dashboard',
           tabBarLabel: 'Dashboard',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <Heart color={color} size={size ?? 22} />,
         }}
       />
@@ -46,6 +51,7 @@ function TabsNavigator() {
           title: 'Chat',
           tabBarLabel: 'Chat',
           tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size ?? 22} />,
+          header: () => <ChatHeader />,
         }}
       />
       <Tabs.Screen
@@ -53,6 +59,7 @@ function TabsNavigator() {
         options={{
           title: 'Goals',
           tabBarLabel: 'Goals',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <Target color={color} size={size ?? 22} />,
         }}
       />
@@ -61,6 +68,7 @@ function TabsNavigator() {
         options={{
           title: 'Orders',
           tabBarLabel: 'Orders',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <ShoppingBag color={color} size={size ?? 22} />,
         }}
       />
@@ -69,6 +77,7 @@ function TabsNavigator() {
         options={{
           title: 'Community',
           tabBarLabel: 'Community',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <Globe color={color} size={size ?? 22} />,
         }}
       />
@@ -76,12 +85,14 @@ function TabsNavigator() {
         name="profile"
         options={{
           title: 'Profile',
+          headerShown: false,
           href: null,
         }}
       />
       <Tabs.Screen
         name="health"
         options={{
+          headerShown: false,
           href: null,
           title: 'Health',
         }}
@@ -89,6 +100,7 @@ function TabsNavigator() {
       <Tabs.Screen
         name="lab-tests"
         options={{
+          headerShown: false,
           href: null,
           title: 'Lab Tests',
         }}
@@ -98,9 +110,19 @@ function TabsNavigator() {
 }
 
 export default function DashboardTabsLayout() {
+  const { isDarkMode } = useTheme();
+
   return (
     <ProtectedRoute>
-      <TabsNavigator />
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: isDarkMode ? '#111827' : '#FFF',
+        }}
+        edges={['top', 'bottom']}
+      >
+        <TabsNavigator />
+      </SafeAreaView>
     </ProtectedRoute>
   );
 }
