@@ -24,14 +24,13 @@ import {
 import React, { useEffect, useState, useCallback } from 'react';
 import { Alert, Image, Platform, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { healthScoreApi } from '../../services/healthScoreApi';
 
 export default function ProfileDashboard() {
   const { user } = useAuth();
   const actualEmail = user?.email || '';
   const router = useRouter();
   const { logout } = useAuth();
-  console.log('Profile user:', user);
-  console.log('Using email:', actualEmail);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
@@ -52,12 +51,31 @@ export default function ProfileDashboard() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { isDarkMode, toggleDarkMode } = useTheme();
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://localhost:8000';
+  const [healthScore, setHealthScore] = useState<number>(0);
+  const [healthScoreLoading, setHealthScoreLoading] = useState<boolean>(false);
+
+  const loadHealthScore = useCallback(async () => {
+    if (!actualEmail) return;
+    setHealthScoreLoading(true);
+    try {
+      const score = await healthScoreApi.getHealthScore(actualEmail);
+      setHealthScore(typeof score === 'number' ? Math.max(0, Math.min(100, Math.round(score))) : 0);
+    } catch (e) {
+      setHealthScore(0);
+    } finally {
+      setHealthScoreLoading(false);
+    }
+  }, [actualEmail]);
+
+  useEffect(() => {
+    if (actualEmail) {
+      loadHealthScore();
+    }
+  }, [actualEmail, loadHealthScore]);
 
   const { isLoading: notificationLoading, toggleNotifications } = useNotifications();
 
-  useEffect(() => {
-    console.log('API Base URL:', API_BASE_URL);
-  }, [API_BASE_URL]);
+  useEffect(() => {}, [API_BASE_URL]);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -280,7 +298,7 @@ export default function ProfileDashboard() {
   const healthStats = [
     {
       label: 'Health Score',
-      value: '45',
+      value: healthScoreLoading ? '—' : String(healthScore),
       icon: Heart,
       color: 'text-green-700',
     },
@@ -540,7 +558,7 @@ export default function ProfileDashboard() {
                   <View
                     key={index}
                     style={{
-                      width: '48%',
+                      width: '45%',
                       padding: 14,
                       borderRadius: 12,
                       backgroundColor: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb',
@@ -1065,7 +1083,6 @@ export default function ProfileDashboard() {
               </View>
             </View>
 
-            {/* Menu Items */}
             <View
               style={{
                 backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',

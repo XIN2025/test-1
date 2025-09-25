@@ -14,8 +14,12 @@ import { CopilotProvider, CopilotStep, walkthroughable, useCopilot } from 'react
 import { goalsApi } from '../../services/goalsApi';
 import PlatformHealthCard from '../../components/health/PlatformHealthCard';
 import SimpleLabTestsCard from '../../components/SimpleLabTestsCard';
+import CriticalRiskAlertsCard from '../../components/CriticalRiskAlertsCard';
 import UserAvatar from '@/components/UserAvatar';
 import Greeting from '@/components/Greeting';
+import { healthAlertsApi } from '../../services/healthAlertsApi';
+import { CriticalRiskAlert } from '../../types/criticalRiskAlerts';
+import { healthScoreApi } from '../../services/healthScoreApi';
 
 const { width } = Dimensions.get('window');
 
@@ -111,9 +115,6 @@ function MainDashboard() {
   const userEmail = user?.email || '';
   const userName = user?.name || '';
 
-  // Debug logging for walkthrough
-  console.log('🏠 MainDashboard loaded for user:', userEmail?.substring(0, 10) + '...');
-  // --- Daily Completion for Streak Calendar ---
   const [dailyCompletion, setDailyCompletion] = useState<Record<string, number>>({});
   const router = useRouter();
   const { isDarkMode } = useTheme();
@@ -153,11 +154,49 @@ function MainDashboard() {
   };
   const closeStreakModal = () => setShowStreakModal(false);
   const { goals, markCompletion, todaysItems } = useGoals({ userEmail });
+  const [healthScore, setHealthScore] = useState<number>(0);
+  const [healthScoreLoading, setHealthScoreLoading] = useState<boolean>(false);
+
+  const loadHealthScore = useCallback(async () => {
+    if (!userEmail) return;
+    setHealthScoreLoading(true);
+    try {
+      const score = await healthScoreApi.getHealthScore(userEmail);
+      setHealthScore(typeof score === 'number' ? Math.max(0, Math.min(100, Math.round(score))) : 0);
+    } catch (e) {
+      setHealthScore(0);
+    } finally {
+      setHealthScoreLoading(false);
+    }
+  }, [userEmail]);
   // Walkthrough state management
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
+  // Critical Risk Alerts state
+  const [criticalRiskAlerts, setCriticalRiskAlerts] = useState<CriticalRiskAlert[]>([]);
   const [showAllTodayItems, setShowAllTodayItems] = useState(false);
   const [recentInteractions, setRecentInteractions] = useState<Map<string, number>>(new Map());
 
+  // Load critical risk alerts
+  const loadCriticalRiskAlerts = useCallback(async () => {
+    if (!userEmail) return;
+    try {
+      const alerts = await healthAlertsApi.getActiveAlerts(userEmail);
+      setCriticalRiskAlerts(alerts);
+    } catch (error) {
+      console.error('Failed to load critical risk alerts:', error);
+      setCriticalRiskAlerts([]);
+    }
+  }, [userEmail]);
+
+  // Refresh goals data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (userEmail) {
+        loadCriticalRiskAlerts();
+        loadHealthScore();
+      }
+    }, [userEmail, loadCriticalRiskAlerts, loadHealthScore]),
+  );
   // Removed local demo tasks; weekly goals are now sourced from API via useGoals
 
   // Determine the key for today's day name used in schedules
@@ -322,18 +361,15 @@ function MainDashboard() {
   //   return Math.min(Math.round(averageCompletion + streakBonus), 100);
   // }, [goals, getGoalCompletionPercentage, streak]);
   const toggleItemCompleted = async (id: string) => {
-    const actionItem = todaysItems.find((item) => item.id === id);
+    const actionItem = todaysItems.find((item: any) => item.id === id);
     if (!actionItem) return;
 
-    const isComplete = actionItem.complete;
-    markCompletion(id, !isComplete)
-      .then(() => {
-        console.log(`✅ Successfully marked action item ${id} as ${!isComplete ? 'completed' : 'not completed'}`);
-        // loadTodaysItems();
-      })
-      .catch((error) => {
-        console.error('Failed to mark completion:', error);
-      });
+    const isComplete = !!actionItem.complete;
+    try {
+      await markCompletion(id, !isComplete);
+    } catch (error) {
+      console.error('Failed to mark completion:', error);
+    }
   };
 
   return (
@@ -614,7 +650,7 @@ function MainDashboard() {
                   >
                     {/* Liquid Gauge for Health Score */}
                     <LiquidGauge
-                      value={72}
+                      value={healthScore}
                       width={width * 0.35}
                       height={width * 0.35}
                       config={{
@@ -648,7 +684,7 @@ function MainDashboard() {
                         marginTop: 8,
                       }}
                     >
-                      Health Score
+                      {healthScoreLoading ? 'Loading…' : 'Health Score'}
                     </Text>
                   </WalkthroughableView>
                 </CopilotStep>
@@ -696,6 +732,21 @@ function MainDashboard() {
                 height={width * 0.3}
               />
             </View>
+
+            {/* Critical Risk Alerts Card */}
+            {criticalRiskAlerts.length > 0 && (
+              <View style={{ marginBottom: 24 }}>
+                <CriticalRiskAlertsCard
+                  isDarkMode={isDarkMode}
+                  alerts={criticalRiskAlerts}
+                  width={width - 32}
+                  onAlertPress={(alert) => {
+                    // Handle alert press - could navigate to detailed view
+                    console.log('Alert pressed:', alert);
+                  }}
+                />
+              </View>
+            )}
 
             {/* Today's Action Items (collapsible) */}
             <View style={{ marginBottom: 24 }}>

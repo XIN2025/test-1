@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "278865321581",
+    "project_id": "evra-health",
+    "storage_bucket": "evra-health.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278865321581:android:370068f740ad1ddf34a964",
+        "android_client_info": {
+          "package_name": "com.evra.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAv4Ef4NHxZJAZSwOakw-w93m0-dNbTLqY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

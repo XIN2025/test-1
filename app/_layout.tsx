@@ -4,6 +4,7 @@ import { AuthProvider } from '../context/AuthContext';
 import { ThemeProvider } from '../context/ThemeContext';
 import { useFonts } from '../hooks/useFonts';
 import './global.css';
+import { HeadlessBackgroundSync } from '../components/HeadlessBackgroundSync';
 
 export default function RootLayout() {
   const fontsLoaded = useFonts();
@@ -30,7 +31,10 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Stack screenOptions={{ headerShown: false }} />
+        <>
+          <HeadlessBackgroundSync />
+          <Stack screenOptions={{ headerShown: false }} />
+        </>
       </AuthProvider>
     </ThemeProvider>
   );

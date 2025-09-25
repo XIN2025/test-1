@@ -151,6 +151,7 @@ export default {
       '@react-native-firebase/app',
       '@react-native-firebase/messaging',
       'expo-health-connect',
+      'expo-background-task',
     ],
     experiments: {
       typedRoutes: true,

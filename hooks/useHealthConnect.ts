@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -77,6 +77,12 @@ export function useHealthConnect() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasPermissions, setHasPermissions] = useState(false);
 
+  // Ref to prevent concurrent data fetches
+  const isFetchingRef = useRef(false);
+
+  // Remove this log as it's causing noise in the loop
+  // console.log('🏥 Health Connect hook initialized');
+
   const [healthData, setHealthData] = useState<HealthConnectData>({
     // Core metrics
     steps: { value: 0, isAvailable: false },
@@ -131,15 +137,35 @@ export function useHealthConnect() {
     dietaryFolate: { value: 0, unit: 'μg', isAvailable: false },
   });
 
+  const initializingRef = useRef(false);
   const verifyPermissions = useCallback(async (useCache = false) => {
     try {
-      if (Platform.OS !== 'android') return false;
+      if (!useCache) {
+        // quiet
+      }
+      if (Platform.OS !== 'android') {
+        console.log('❌ Health Connect: Not Android platform, returning false');
+        return false;
+      }
+
+      // Debounce initialize to reduce repeated init/log spam
+      if (initializingRef.current) {
+        const permissions = await getGrantedPermissions();
+        return !!permissions && Object.keys(permissions).length > 0;
+      }
+      initializingRef.current = true;
       const isInitialized = await initialize();
-      if (!isInitialized) return false;
+      initializingRef.current = false;
+
+      if (!isInitialized) {
+        console.log('❌ Health Connect: Initialization failed');
+        return false;
+      }
 
       // If using cache, check stored permission status first
       if (useCache) {
         const cachedPermissionStatus = await AsyncStorage.getItem('healthconnect_permissions_granted');
+
         if (cachedPermissionStatus === 'true') {
           // Verify permissions are still valid
           try {
@@ -147,11 +173,13 @@ export function useHealthConnect() {
             const hasAccess = permissions && Object.keys(permissions).length > 0;
 
             if (!hasAccess) {
+              console.log('❌ Health Connect: Cache invalid, removing cached permissions');
               await AsyncStorage.removeItem('healthconnect_permissions_granted');
               return false;
             }
             return true;
-          } catch {
+          } catch (error) {
+            console.log('❌ Health Connect: Error verifying cached permissions:', error);
             await AsyncStorage.removeItem('healthconnect_permissions_granted');
             return false;
           }
@@ -171,12 +199,13 @@ export function useHealthConnect() {
         }
 
         return hasAccess;
-      } catch {
+      } catch (error) {
+        console.log('❌ Health Connect: Error in full permission check:', error);
         await AsyncStorage.removeItem('healthconnect_permissions_granted');
         return false;
       }
     } catch (error) {
-      console.error('Error verifying Health Connect permissions:', error);
+      console.error('❌ Health Connect: Error verifying permissions:', error);
       try {
         await AsyncStorage.removeItem('healthconnect_permissions_granted');
       } catch {}
@@ -187,6 +216,7 @@ export function useHealthConnect() {
   const checkHealthDataAvailability = useCallback(async () => {
     try {
       if (Platform.OS !== 'android') {
+        console.log('❌ Health Connect: Not Android platform in availability check');
         setIsAvailable(false);
         setIsLoading(false);
         return;
@@ -198,10 +228,12 @@ export function useHealthConnect() {
       if (available) {
         const isAuthorized = await verifyPermissions(true);
         setHasPermissions(isAuthorized);
-        console.log('Health Connect available, authorized:', isAuthorized);
+      } else {
+        console.log('❌ Health Connect: Not initialized, setting hasPermissions to false');
+        setHasPermissions(false);
       }
     } catch (error) {
-      console.error('Error checking Health Connect availability:', error);
+      console.error('❌ Health Connect: Availability check failed:', error);
       setIsAvailable(false);
       setHasPermissions(false);
     } finally {
@@ -211,12 +243,13 @@ export function useHealthConnect() {
 
   const requestHealthConnectPermissions = useCallback(
     async (requestAllPermissions = false) => {
-      if (!isAvailable) return false;
+      if (!isAvailable) {
+        console.log('❌ Health Connect: Not available, cannot request permissions');
+        return false;
+      }
 
       try {
         setIsLoading(true);
-
-        console.log('Requesting Health Connect permissions');
 
         // Request permissions for all the health data types we need
         const permissions = await requestPermission([
@@ -341,23 +374,34 @@ export function useHealthConnect() {
   const fetchHealthMetric = useCallback(
     async (recordType: RecordType, timeRange?: TimeRangeFilter): Promise<HealthMetric> => {
       try {
-        console.log(`Fetching ${recordType} from Health Connect`);
+        console.log(`📊 Health Connect: Fetching ${recordType} from Health Connect`);
+        console.log(`📅 Health Connect: Time range for ${recordType}:`, timeRange);
 
-        // Use 24-hour window for consistency with iOS
-        const now = new Date();
-        const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const startTime = new Date();
+        startTime.setHours(0, 0, 0, 0);
+        const endTime = new Date().toISOString();
 
-        const records = await readRecords(recordType, {
+        const readOptions = {
           timeRangeFilter: timeRange || {
             operator: 'between',
-            startTime: twentyFourHoursAgo.toISOString(),
-            endTime: now.toISOString(),
+            startTime: startTime.toISOString(), // Last 24 hours
+            endTime: endTime,
           },
+        };
+
+        console.log(`🔍 Health Connect: Reading records for ${recordType} with options:`, readOptions);
+        const records = await readRecords(recordType, readOptions);
+
+        console.log(`📋 Health Connect: Records response for ${recordType}:`, {
+          recordCount: records?.records?.length || 0,
+          hasRecords: !!records?.records?.length,
+          firstRecord: records?.records?.[0],
+          lastRecord: records?.records?.[records?.records?.length - 1],
         });
 
         if (records && records.records.length > 0) {
           // Special handling for Sleep: aggregate all sleep sessions in the last 24 hours
-          if (recordType === 'SleepSession') {
+          if ((recordType as string) === 'SleepSession') {
             console.log('Processing sleep sessions for the last 24 hours');
             console.log('Number of sleep sessions found:', records.records.length);
 
@@ -384,7 +428,7 @@ export function useHealthConnect() {
             return {
               value: Math.round(hours * 10) / 10,
               unit: 'hrs',
-              date: latestEnd ?? now,
+              date: latestEnd ?? new Date(),
               isAvailable: true,
             };
           }
@@ -395,35 +439,97 @@ export function useHealthConnect() {
               return sum + (record.count || record.total || record.value || record.steps || 0);
             }, 0);
 
+            console.log(`✅ Health Connect: Calculated total for ${recordType}:`, totalValue);
             return {
               value: Math.round(totalValue),
               unit: recordType === 'Steps' ? 'steps' : 'kcal',
-              date: now,
+              date: new Date(),
+              isAvailable: true,
+            };
+          }
+
+          // Special handling for sleep sessions
+          if (recordType === 'SleepSession') {
+            let totalSleepHours = 0;
+
+            records.records.forEach((record: any, index: number) => {
+              if (record.startTime && record.endTime) {
+                const start = new Date(record.startTime);
+                const end = new Date(record.endTime);
+                const durationMs = end.getTime() - start.getTime();
+                const hours = durationMs / (1000 * 60 * 60); // Convert to hours
+                console.log(
+                  `💤 Sleep session ${index + 1}: ${start.toLocaleString()} to ${end.toLocaleString()} = ${hours.toFixed(2)} hours`,
+                );
+                totalSleepHours += hours;
+              }
+            });
+
+            console.log(`✅ Health Connect: Calculated total sleep hours:`, totalSleepHours);
+            return {
+              value: Math.round(totalSleepHours * 10) / 10, // Round to 1 decimal place
+              unit: 'hours',
+              date: new Date(),
               isAvailable: true,
             };
           }
 
           // For instantaneous metrics, get the most recent
           const latestRecord = records.records[records.records.length - 1];
-          const value =
-            (latestRecord as any).count ||
-            (latestRecord as any).total ||
-            (latestRecord as any).value ||
-            (latestRecord as any).energy?.kilocalories ||
-            (latestRecord as any).steps ||
-            0;
+          let value = 0;
+
+          // Handle different record types with specific field mapping
+          if (recordType === 'Weight') {
+            value = (latestRecord as any).weight?.inKilograms || 0;
+          } else if (recordType === 'BodyFat') {
+            value = (latestRecord as any).percentage || 0;
+          } else if (recordType === 'HeartRate') {
+            value = (latestRecord as any).beatsPerMinute || 0;
+          } else if (recordType === 'BloodGlucose') {
+            value = (latestRecord as any).level?.inMilligramsPerDeciliter || 0;
+          } else if (recordType === 'OxygenSaturation') {
+            value = (latestRecord as any).percentage || 0;
+          } else if (recordType === 'Distance') {
+            value = (latestRecord as any).distance?.inMeters ? (latestRecord as any).distance.inMeters / 1000 : 0; // Convert to km
+          } else if (recordType === 'Hydration') {
+            value = (latestRecord as any).volume?.inLiters || 0;
+          } else if (recordType === 'Nutrition') {
+            value = (latestRecord as any).energy?.inKilocalories || 0;
+          } else {
+            // Fallback for generic fields
+            value =
+              (latestRecord as any).count ||
+              (latestRecord as any).total ||
+              (latestRecord as any).value ||
+              (latestRecord as any).energy?.kilocalories ||
+              (latestRecord as any).steps ||
+              0;
+          }
+
+          console.log(`✅ Health Connect: Latest value for ${recordType}:`, value);
+
+          // Determine appropriate unit
+          let unit = 'unknown';
+          if (recordType === 'Weight') unit = 'kg';
+          else if (recordType === 'BodyFat' || recordType === 'OxygenSaturation') unit = '%';
+          else if (recordType === 'HeartRate') unit = 'bpm';
+          else if (recordType === 'BloodGlucose') unit = 'mg/dL';
+          else if (recordType === 'Distance') unit = 'km';
+          else if (recordType === 'Hydration') unit = 'L';
+          else if (recordType === 'Nutrition') unit = 'kcal';
 
           return {
             value: Math.round(value * 10) / 10,
-            unit: 'unknown',
-            date: now,
+            unit: unit,
+            date: new Date(),
             isAvailable: true,
           };
         }
 
+        console.log(`❌ Health Connect: No data found for ${recordType}`);
         return { value: 0, isAvailable: false, error: 'No data available' };
       } catch (error) {
-        console.warn(`Health Connect metric ${recordType} is not available:`, error);
+        console.warn(`❌ Health Connect: Error fetching ${recordType}:`, error);
         return { value: 0, isAvailable: false, error: 'Metric not supported or no data available' };
       }
     },
@@ -431,26 +537,49 @@ export function useHealthConnect() {
   );
 
   const fetchAllHealthData = useCallback(async () => {
-    if (!hasPermissions) return;
+    console.log('📊 Health Connect: Starting to fetch all health data...');
+    console.log('📊 Health Connect: hasPermissions:', hasPermissions);
 
+    if (!hasPermissions) {
+      console.log('❌ Health Connect: No permissions, skipping data fetch');
+      return;
+    }
+
+    // Prevent concurrent fetches
+    if (isFetchingRef.current) {
+      console.log('⏸️ Health Connect: Already fetching data, skipping');
+      return;
+    }
+
+    isFetchingRef.current = true;
+    console.log('⏳ Health Connect: Setting loading to true');
     setIsLoading(true);
     try {
-      // Re-verify permissions before fetching data
-      const stillHasPermissions = await verifyPermissions(false);
+      // Re-verify permissions before fetching data (use cache to avoid excessive calls)
+      console.log('🔐 Health Connect: Re-verifying permissions before fetch...');
+      const stillHasPermissions = await verifyPermissions(true);
+      console.log('✅ Health Connect: Re-verification result:', stillHasPermissions);
+
       if (!stillHasPermissions) {
+        console.log('❌ Health Connect: Permissions lost, stopping fetch');
         setHasPermissions(false);
         setIsLoading(false);
         return;
       }
 
       // Get 24-hour window for consistency with iOS (instead of just "today")
-      const now = new Date();
-      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const nowDate = new Date();
+      const twentyFourHoursAgo = new Date(nowDate.getTime() - 24 * 60 * 60 * 1000);
       const timeRange: TimeRangeFilter = {
         operator: 'between',
         startTime: twentyFourHoursAgo.toISOString(),
-        endTime: now.toISOString(),
+        endTime: nowDate.toISOString(),
       };
+
+      console.log('📅 Health Connect: Fetching data for time range:', {
+        start: twentyFourHoursAgo.toISOString(),
+        end: nowDate.toISOString(),
+      });
 
       const [
         steps,
@@ -493,6 +622,13 @@ export function useHealthConnect() {
         fetchHealthMetric('Nutrition', timeRange),
         fetchHealthMetric('Hydration', timeRange),
       ]);
+
+      console.log('📊 Health Connect: Data fetch completed. Sample results:');
+      console.log('🚶 Steps:', steps);
+      console.log('❤️ Heart Rate:', heartRate);
+      console.log('🔥 Active Energy:', activeEnergy);
+      console.log('😴 Sleep:', sleep);
+      console.log('😴 Sleep value specifically:', sleep?.value, sleep?.unit, 'isAvailable:', sleep?.isAvailable);
 
       if (__DEV__) {
         console.log('Health Connect data fetched successfully');
@@ -556,16 +692,27 @@ export function useHealthConnect() {
       }
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
   }, [hasPermissions, fetchHealthMetric, verifyPermissions]);
 
+  // Create a stable verifyPermissions function reference
+  const verifyPermissionsPublic = useCallback(() => verifyPermissions(false), [verifyPermissions]);
+
   useEffect(() => {
+    console.log('🔄 Health Connect: useEffect - Running availability check (initial)...');
     checkHealthDataAvailability();
   }, [checkHealthDataAvailability]);
 
   useEffect(() => {
-    if (hasPermissions) {
+    console.log('🔄 Health Connect: useEffect - Permissions changed, hasPermissions:', hasPermissions);
+    if (hasPermissions && !isFetchingRef.current) {
+      console.log('📊 Health Connect: useEffect - Fetching health data...');
       fetchAllHealthData();
+    } else if (!hasPermissions) {
+      console.log('❌ Health Connect: useEffect - No permissions, skipping data fetch');
+    } else {
+      console.log('⏸️ Health Connect: useEffect - Already fetching, skipping');
     }
   }, [hasPermissions, fetchAllHealthData]);
 
@@ -576,7 +723,7 @@ export function useHealthConnect() {
     healthData,
     requestPermissions: requestHealthConnectPermissions,
     refreshData: fetchAllHealthData,
-    verifyPermissions: () => verifyPermissions(false),
+    verifyPermissions: verifyPermissionsPublic,
     resetPermissions: resetHealthConnectPermissions,
   };
 }

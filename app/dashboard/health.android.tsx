@@ -16,6 +16,13 @@ export default function HealthDashboardAndroid() {
   const { isAvailable, isLoading, hasPermissions, healthData, requestPermissions, refreshData, resetPermissions } =
     useHealthConnect();
 
+  console.log('🏥 Android Health Dashboard - State:', {
+    isAvailable,
+    isLoading,
+    hasPermissions,
+    healthData: healthData ? Object.keys(healthData) : 'null',
+  });
+
   const onRefresh = async () => {
     setRefreshing(true);
     try {

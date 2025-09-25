@@ -19,6 +19,14 @@ export default function AndroidHealthCard({
   const { isAvailable, hasPermissions, healthData, requestPermissions, isLoading, verifyPermissions } =
     useHealthConnect();
 
+  // Reduce logging to prevent render loops
+  // console.log('📱 Android Health Card - State:', {
+  //   isAvailable,
+  //   hasPermissions,
+  //   isLoading,
+  //   healthDataKeys: healthData ? Object.keys(healthData) : 'null',
+  // });
+
   // Periodically verify permissions to catch revoked access
   const checkPermissionsStatus = useCallback(async () => {
     if (hasPermissions && isAvailable) {
