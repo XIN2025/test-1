@@ -50,8 +50,9 @@ function TabsNavigator() {
         options={{
           title: 'Chat',
           tabBarLabel: 'Chat',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size ?? 22} />,
-          header: () => <ChatHeader />,
+          // header: () => <ChatHeader />,
         }}
       />
       <Tabs.Screen
@@ -114,15 +115,15 @@ export default function DashboardTabsLayout() {
 
   return (
     <ProtectedRoute>
-      <SafeAreaView
+      {/* <SafeAreaView
         style={{
           flex: 1,
           backgroundColor: isDarkMode ? '#111827' : '#FFF',
         }}
         edges={['top', 'bottom']}
-      >
-        <TabsNavigator />
-      </SafeAreaView>
+      > */}
+      <TabsNavigator />
+      {/* </SafeAreaView> */}
     </ProtectedRoute>
   );
 }

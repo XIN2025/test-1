@@ -153,7 +153,7 @@ function MainDashboard() {
     fetchStreak();
   };
   const closeStreakModal = () => setShowStreakModal(false);
-  const { goals, markCompletion, todaysItems } = useGoals({ userEmail });
+  const { goals, markCompletion, todaysItems, loadTodaysItems } = useGoals({ userEmail });
   const [healthScore, setHealthScore] = useState<number>(0);
   const [healthScoreLoading, setHealthScoreLoading] = useState<boolean>(false);
 
@@ -194,8 +194,9 @@ function MainDashboard() {
       if (userEmail) {
         loadCriticalRiskAlerts();
         loadHealthScore();
+        loadTodaysItems?.();
       }
-    }, [userEmail, loadCriticalRiskAlerts, loadHealthScore]),
+    }, [userEmail, loadCriticalRiskAlerts, loadHealthScore, loadTodaysItems]),
   );
   // Removed local demo tasks; weekly goals are now sourced from API via useGoals
 
@@ -364,16 +365,19 @@ function MainDashboard() {
     const actionItem = todaysItems.find((item: any) => item.id === id);
     if (!actionItem) return;
 
-    const isComplete = !!actionItem.complete;
+    const isComplete = !!actionItem.completed;
     try {
-      await markCompletion(id, !isComplete);
+      const ok = await markCompletion(id, !isComplete);
+      if (ok) {
+        actionItem.completed = !isComplete;
+      }
     } catch (error) {
       console.error('Failed to mark completion:', error);
     }
   };
 
   return (
-    <>
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
       <View>
         {/* Fixed Header */}
         <View className={`z-10 px-4 py-4 shadow-sm ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
@@ -826,15 +830,11 @@ function MainDashboard() {
                               marginRight: 12,
                               alignItems: 'center',
                               justifyContent: 'center',
-                              backgroundColor: completedItems.has(it.id)
-                                ? isDarkMode
-                                  ? '#10b981'
-                                  : '#059669'
-                                : 'transparent',
+                              backgroundColor: it.completed ? (isDarkMode ? '#10b981' : '#059669') : 'transparent',
                             }}
                             activeOpacity={0.7}
                           >
-                            {completedItems.has(it.id) && (
+                            {it.completed && (
                               <Text
                                 style={{
                                   color: 'white',
@@ -851,14 +851,14 @@ function MainDashboard() {
                               style={{
                                 fontSize: 14,
                                 fontWeight: '500',
-                                color: completedItems.has(it.id)
+                                color: it.completed
                                   ? isDarkMode
                                     ? '#6b7280'
                                     : '#6b7280'
                                   : isDarkMode
                                     ? '#f3f4f6'
                                     : '#1f2937',
-                                textDecorationLine: completedItems.has(it.id) ? 'line-through' : 'none',
+                                textDecorationLine: it.completed ? 'line-through' : 'none',
                               }}
                             >
                               {it.title}
@@ -1111,7 +1111,7 @@ function MainDashboard() {
           </View>
         </ScrollView>
       </View>
-    </>
+    </SafeAreaView>
   );
 }
 

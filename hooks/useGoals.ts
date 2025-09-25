@@ -60,7 +60,14 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     try {
       const items = await goalsApi.getTodaysActionItems(userEmail);
       console.log("Today's action items:", items);
-      setTodaysItems(items);
+      // Normalize shape for UI: use start_time/end_time and completed
+      const normalized = (items || []).map((it: any) => ({
+        ...it,
+        start_time: it.start_time ?? it.startTime,
+        end_time: it.end_time ?? it.endTime,
+        completed: it.completed ?? it.complete ?? false,
+      }));
+      setTodaysItems(normalized);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load today's action items";
       setError(message);
@@ -79,7 +86,8 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
 
       console.log(`Marking action item ${actionItemId} as ${completed ? 'completed' : 'not completed'}`);
 
-      const weekDayIndex = new Date().getDay() - 1;
+      // Map JS weekday (0=Sun..6=Sat) to API weekday (0=Mon..6=Sun)
+      const weekDayIndex = (new Date().getDay() + 6) % 7;
 
       try {
         const res = await goalsApi.markActionItemCompletion(actionItemId, weekDayIndex, completed);
@@ -88,6 +96,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
           const actionItem = todaysItems.find((item) => item.id === actionItemId);
           if (actionItem) {
             actionItem.completed = completed;
+            actionItem.complete = completed;
             setTodaysItems([...todaysItems]);
           }
           return true;
@@ -112,7 +121,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     let completedItems = 0;
     actionItems.forEach((item) => {
       const weeklySchedule = item.weekly_schedule || {};
-      const todayIndex = new Date().getDay() - 1;
+      const todayIndex = (new Date().getDay() + 6) % 7;
       const todayKey = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][todayIndex];
       const isComplete = weeklySchedule[todayKey] && weeklySchedule[todayKey].complete;
       if (isComplete) completedItems++;
@@ -348,5 +357,6 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     getCurrentWeekGoals,
     getGoalCompletionPercentage,
     markCompletion,
+    loadTodaysItems,
   };
 };

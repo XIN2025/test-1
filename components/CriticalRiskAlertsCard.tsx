@@ -104,7 +104,7 @@ export default function CriticalRiskAlertsCard({
           </View>
           <Text
             style={{
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: '700',
               color: textColor,
             }}

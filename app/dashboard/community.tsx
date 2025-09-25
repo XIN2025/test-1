@@ -359,7 +359,7 @@ export default function HealthHubPage() {
   const { isDarkMode } = useTheme();
 
   return (
-    <>
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
       {/* Fixed Header */}
       <View>
         <View
@@ -1142,6 +1142,6 @@ export default function HealthHubPage() {
           )}
         </View>
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }

@@ -489,390 +489,394 @@ export default function GoalsScreen() {
   }
 
   return (
-    <>
-      <GoalsHeader
-        weekStart={weekStart}
-        weekEnd={weekEnd}
-        openPreferences={openPreferences}
-        setShowUploadModal={setShowUploadModal}
-        setShowAddGoal={setShowAddGoal}
-      />
-      <ScrollView
-        style={{
-          height: '100%',
-          backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
-        }}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={{ paddingTop: 16, gap: 16 }}>
-          <GeneratingBanner />
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
+      <View>
+        <GoalsHeader
+          weekStart={weekStart}
+          weekEnd={weekEnd}
+          openPreferences={openPreferences}
+          setShowUploadModal={setShowUploadModal}
+          setShowAddGoal={setShowAddGoal}
+        />
+        <ScrollView
+          style={{
+            height: '100%',
+            backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
+          }}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={{ paddingTop: 16, gap: 16 }}>
+            <GeneratingBanner />
 
-          {/* Show loading indicator while refreshing (when goals exist) */}
-          {loading && goals.length > 0 && (
-            <View
-              style={{
-                backgroundColor: isDarkMode ? '#1e40af' : '#dbeafe',
-                borderRadius: 12,
-                padding: 12,
-                marginHorizontal: 16,
-                marginTop: 16,
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <ActivityIndicator size="small" color={isDarkMode ? '#60a5fa' : '#1d4ed8'} />
-              <Text
-                style={{
-                  color: isDarkMode ? '#93c5fd' : '#1e40af',
-                  marginLeft: 12,
-                  fontSize: 13,
-                  fontWeight: '500',
-                }}
-              >
-                Refreshing goals...
-              </Text>
-            </View>
-          )}
-
-          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-            {/* Week Navigation (hidden) */}
-            {false && (
-              <Card className="border-0">
-                <View className="flex-row items-center justify-between p-4">
-                  <TouchableOpacity onPress={() => handleWeekChange('prev')} className="p-2">
-                    <ChevronLeft size={20} color="#059669" />
-                  </TouchableOpacity>
-                  <View className="items-center">
-                    <Text className="font-semibold text-gray-800">Week of {formatDate(weekStart)}</Text>
-                    <Text className="text-sm text-gray-600">
-                      {completedGoals}/{totalGoals} goals completed
-                    </Text>
-                  </View>
-                  <TouchableOpacity onPress={() => handleWeekChange('next')} className="p-2">
-                    <ChevronRight size={20} color="#059669" />
-                  </TouchableOpacity>
-                </View>
-              </Card>
-            )}
-
-            {/* Progress Overview (hidden) */}
-            {false && (
-              <Card className="border-0">
-                <View className="p-4">
-                  <View className="mb-3 flex-row items-center">
-                    <BarChart3 size={20} color="#059669" className="mr-2" />
-                    <Text className="text-lg font-semibold text-gray-800">Weekly Progress</Text>
-                  </View>
-                  <View className="mb-2 flex-row items-center justify-between">
-                    <Text className="text-sm text-gray-600">Completion Rate</Text>
-                    <Text className="text-sm font-semibold text-gray-800">{completionRate.toFixed(0)}%</Text>
-                  </View>
-                  <View className="h-3 rounded-full bg-gray-200">
-                    <View
-                      className="h-3 rounded-full"
-                      style={{
-                        backgroundColor: '#114131',
-                        width: `${completionRate}%`,
-                      }}
-                    />
-                  </View>
-                  <View className="mt-3 flex-row justify-between">
-                    <View className="items-center">
-                      <Text className="text-2xl font-bold" style={{ color: '#114131' }}></Text>
-                      <Text className="text-xs text-gray-600">Completed</Text>
-                    </View>
-                    <View className="items-center">
-                      <Text className="text-2xl font-bold text-gray-400"></Text>
-                      <Text className="text-xs text-gray-600">Remaining</Text>
-                    </View>
-                    <View className="items-center">
-                      <Text className="text-2xl font-bold text-blue-600"></Text>
-                      <Text className="text-xs text-gray-600">Total</Text>
-                    </View>
-                  </View>
-                </View>
-              </Card>
-            )}
-
-            {/* Goals Summary (hidden) */}
-            {false && goals && goals.length > 0 && (
-              <WeeklyGoalsSummary
-                goals={goals.map((goal) => ({
-                  id: goal.id,
-                  title: goal.title,
-                  currentValue: goal.current_value || 0,
-                  targetValue: goal.target_value || 1,
-                  completed: goal.completed,
-                  category: goal.category,
-                }))}
-                onViewAll={() => {
-                  // Scroll to goals list or show all goals
-                  console.log('View all goals');
-                }}
-              />
-            )}
-
-            {/* Empty State */}
-            {!loading && goals.length === 0 && <EmptyGoals setShowAddGoal={setShowAddGoal} />}
-
-            {/* Goals List */}
-            {goals.map((goal: any) => (
+            {/* Show loading indicator while refreshing (when goals exist) */}
+            {loading && goals.length > 0 && (
               <View
-                key={goal.id}
                 style={{
-                  backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                  borderRadius: 16,
-                  padding: 16,
-                  marginBottom: 16,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                  shadowRadius: 4,
-                  elevation: 3,
+                  backgroundColor: isDarkMode ? '#1e40af' : '#dbeafe',
+                  borderRadius: 12,
+                  padding: 12,
+                  marginHorizontal: 16,
+                  marginTop: 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
                 }}
               >
-                <View>
-                  <View style={{ marginBottom: 16 }}>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        marginBottom: 12,
-                      }}
-                    >
+                <ActivityIndicator size="small" color={isDarkMode ? '#60a5fa' : '#1d4ed8'} />
+                <Text
+                  style={{
+                    color: isDarkMode ? '#93c5fd' : '#1e40af',
+                    marginLeft: 12,
+                    fontSize: 13,
+                    fontWeight: '500',
+                  }}
+                >
+                  Refreshing goals...
+                </Text>
+              </View>
+            )}
+
+            <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+              {/* Week Navigation (hidden) */}
+              {false && (
+                <Card className="border-0">
+                  <View className="flex-row items-center justify-between p-4">
+                    <TouchableOpacity onPress={() => handleWeekChange('prev')} className="p-2">
+                      <ChevronLeft size={20} color="#059669" />
+                    </TouchableOpacity>
+                    <View className="items-center">
+                      <Text className="font-semibold text-gray-800">Week of {formatDate(weekStart)}</Text>
+                      <Text className="text-sm text-gray-600">
+                        {completedGoals}/{totalGoals} goals completed
+                      </Text>
+                    </View>
+                    <TouchableOpacity onPress={() => handleWeekChange('next')} className="p-2">
+                      <ChevronRight size={20} color="#059669" />
+                    </TouchableOpacity>
+                  </View>
+                </Card>
+              )}
+
+              {/* Progress Overview (hidden) */}
+              {false && (
+                <Card className="border-0">
+                  <View className="p-4">
+                    <View className="mb-3 flex-row items-center">
+                      <BarChart3 size={20} color="#059669" className="mr-2" />
+                      <Text className="text-lg font-semibold text-gray-800">Weekly Progress</Text>
+                    </View>
+                    <View className="mb-2 flex-row items-center justify-between">
+                      <Text className="text-sm text-gray-600">Completion Rate</Text>
+                      <Text className="text-sm font-semibold text-gray-800">{completionRate.toFixed(0)}%</Text>
+                    </View>
+                    <View className="h-3 rounded-full bg-gray-200">
+                      <View
+                        className="h-3 rounded-full"
+                        style={{
+                          backgroundColor: '#114131',
+                          width: `${completionRate}%`,
+                        }}
+                      />
+                    </View>
+                    <View className="mt-3 flex-row justify-between">
+                      <View className="items-center">
+                        <Text className="text-2xl font-bold" style={{ color: '#114131' }}></Text>
+                        <Text className="text-xs text-gray-600">Completed</Text>
+                      </View>
+                      <View className="items-center">
+                        <Text className="text-2xl font-bold text-gray-400"></Text>
+                        <Text className="text-xs text-gray-600">Remaining</Text>
+                      </View>
+                      <View className="items-center">
+                        <Text className="text-2xl font-bold text-blue-600"></Text>
+                        <Text className="text-xs text-gray-600">Total</Text>
+                      </View>
+                    </View>
+                  </View>
+                </Card>
+              )}
+
+              {/* Goals Summary (hidden) */}
+              {false && goals && goals.length > 0 && (
+                <WeeklyGoalsSummary
+                  goals={goals.map((goal) => ({
+                    id: goal.id,
+                    title: goal.title,
+                    currentValue: goal.current_value || 0,
+                    targetValue: goal.target_value || 1,
+                    completed: goal.completed,
+                    category: goal.category,
+                  }))}
+                  onViewAll={() => {
+                    // Scroll to goals list or show all goals
+                    console.log('View all goals');
+                  }}
+                />
+              )}
+
+              {/* Empty State */}
+              {!loading && goals.length === 0 && <EmptyGoals setShowAddGoal={setShowAddGoal} />}
+
+              {/* Goals List */}
+              {goals.map((goal: any) => (
+                <View
+                  key={goal.id}
+                  style={{
+                    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                    borderRadius: 16,
+                    padding: 16,
+                    marginBottom: 16,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}
+                >
+                  <View>
+                    <View style={{ marginBottom: 16 }}>
                       <View
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
-                          flex: 1,
+                          justifyContent: 'space-between',
+                          marginBottom: 12,
                         }}
                       >
-                        <Text style={{ fontSize: 20, marginRight: 8 }}>{getCategoryIcon(goal.category)}</Text>
-                        <Text
+                        <View
                           style={{
-                            fontSize: 18,
-                            fontWeight: '600',
+                            flexDirection: 'row',
+                            alignItems: 'center',
                             flex: 1,
-                            color: isDarkMode ? '#f3f4f6' : '#1f2937',
                           }}
                         >
-                          {goal.title}
-                        </Text>
-                        {/* Circular Progress Ring */}
-                        <View style={{ marginLeft: 10 }}>
-                          <CircularProgressRing
-                            size={54}
-                            strokeWidth={4}
-                            progress={goal.completion_percentage || 0}
-                            color={
-                              goal.completion_percentage >= 80
-                                ? '#10b981' // Green for high completion
-                                : goal.completion_percentage >= 50
-                                  ? '#f59e0b' // Yellow for medium completion
-                                  : '#ef4444' // Red for low completion
-                            }
-                            backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
-                            showPercentage={true}
-                            textColor={isDarkMode ? '#d1d5db' : '#374151'}
-                          />
+                          <Text style={{ fontSize: 20, marginRight: 8 }}>{getCategoryIcon(goal.category)}</Text>
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              fontWeight: '600',
+                              flex: 1,
+                              color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                            }}
+                          >
+                            {goal.title}
+                          </Text>
+                          {/* Circular Progress Ring */}
+                          <View style={{ marginLeft: 10 }}>
+                            <CircularProgressRing
+                              size={54}
+                              strokeWidth={4}
+                              progress={goal.completion_percentage || 0}
+                              color={
+                                goal.completion_percentage >= 80
+                                  ? '#10b981' // Green for high completion
+                                  : goal.completion_percentage >= 50
+                                    ? '#f59e0b' // Yellow for medium completion
+                                    : '#ef4444' // Red for low completion
+                              }
+                              backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
+                              showPercentage={true}
+                              textColor={isDarkMode ? '#d1d5db' : '#374151'}
+                            />
+                          </View>
                         </View>
                       </View>
-                    </View>
-                    {!(goal.action_items && goal.action_items.length > 0) && (
-                      <TouchableOpacity
-                        onPress={() => handleGeneratePlan(goal.id, goal)}
-                        disabled={generatingPlanGoalIds.includes(goal.id)}
-                        style={{
-                          paddingHorizontal: 16,
-                          paddingVertical: 12,
-                          backgroundColor: '#10b981',
-                          borderRadius: 12,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          opacity: generatingPlanGoalIds.includes(goal.id) ? 0.5 : 1,
-                          marginBottom: 8,
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        {generatingPlanGoalIds.includes(goal.id) ? (
-                          <ActivityIndicator size="small" color="#ffffff" />
-                        ) : (
-                          <View style={{ marginRight: 8 }}>
-                            <BarChart3 size={18} color="#ffffff" />
-                          </View>
-                        )}
+                      {!(goal.action_items && goal.action_items.length > 0) && (
+                        <TouchableOpacity
+                          onPress={() => handleGeneratePlan(goal.id, goal)}
+                          disabled={generatingPlanGoalIds.includes(goal.id)}
+                          style={{
+                            paddingHorizontal: 16,
+                            paddingVertical: 12,
+                            backgroundColor: '#10b981',
+                            borderRadius: 12,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            opacity: generatingPlanGoalIds.includes(goal.id) ? 0.5 : 1,
+                            marginBottom: 8,
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          {generatingPlanGoalIds.includes(goal.id) ? (
+                            <ActivityIndicator size="small" color="#ffffff" />
+                          ) : (
+                            <View style={{ marginRight: 8 }}>
+                              <BarChart3 size={18} color="#ffffff" />
+                            </View>
+                          )}
+                          <Text
+                            style={{
+                              color: 'white',
+                              fontSize: 14,
+                              fontWeight: '600',
+                            }}
+                          >
+                            {generatingPlanGoalIds.includes(goal.id) ? 'Generating…' : 'Generate Plan'}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text
                           style={{
-                            color: 'white',
-                            fontSize: 14,
+                            fontSize: 12,
                             fontWeight: '600',
+                            color:
+                              goal.priority === 'high' ? '#ef4444' : goal.priority === 'medium' ? '#f59e0b' : '#10b981',
                           }}
                         >
-                          {generatingPlanGoalIds.includes(goal.id) ? 'Generating…' : 'Generate Plan'}
+                          {goal.priority.toUpperCase()} PRIORITY
                         </Text>
-                      </TouchableOpacity>
-                    )}
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          fontWeight: '600',
-                          color:
-                            goal.priority === 'high' ? '#ef4444' : goal.priority === 'medium' ? '#f59e0b' : '#10b981',
-                        }}
-                      >
-                        {goal.priority.toUpperCase()} PRIORITY
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Action Items */}
-                  {(goal.action_items?.length ?? 0) > 0 && (
-                    <View className="mt-4">
-                      <Text className={`mb-2 text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
-                        Action Items
-                      </Text>
-                      <View>
-                        {goal.action_items?.map((item: any) => (
-                          <ActionItemCard key={item.id} item={item} onPress={() => setSelectedActionItem(item)} />
-                        ))}
                       </View>
                     </View>
-                  )}
 
-                  {/* Use GoalProgressTracker component for measurable goals */}
-                  {goal.target_value && (
-                    <GoalProgressTracker
-                      goalId={goal.id}
-                      title=""
-                      currentValue={goal.current_value || 0}
-                      targetValue={goal.target_value}
-                      unit={goal.unit || ''}
-                      onProgressUpdate={handleUpdateProgress}
-                      showQuickActions={true}
-                    />
-                  )}
-                </View>
-              </View>
-            ))}
+                    {/* Action Items */}
+                    {(goal.action_items?.length ?? 0) > 0 && (
+                      <View className="mt-4">
+                        <Text
+                          className={`mb-2 text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}
+                        >
+                          Action Items
+                        </Text>
+                        <View>
+                          {goal.action_items?.map((item: any) => (
+                            <ActionItemCard key={item.id} item={item} onPress={() => setSelectedActionItem(item)} />
+                          ))}
+                        </View>
+                      </View>
+                    )}
 
-            {/* Weekend Reflection */}
-            {new Date().getDay() === 0 && ( // Sunday
-              <Card className="border-0 bg-blue-50">
-                <View className="p-4">
-                  <View className="mb-3 flex-row items-center">
-                    <BookOpen size={20} color="#3b82f6" className="mr-2" />
-                    <Text className="text-lg font-semibold text-blue-800">Weekly Reflection</Text>
+                    {/* Use GoalProgressTracker component for measurable goals */}
+                    {goal.target_value && (
+                      <GoalProgressTracker
+                        goalId={goal.id}
+                        title=""
+                        currentValue={goal.current_value || 0}
+                        targetValue={goal.target_value}
+                        unit={goal.unit || ''}
+                        onProgressUpdate={handleUpdateProgress}
+                        showQuickActions={true}
+                      />
+                    )}
                   </View>
-                  <Text className="mb-3 text-sm text-blue-700">
-                    Take a moment to reflect on your week and plan for the next one.
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setShowReflection(true)}
-                    className="self-start rounded-lg bg-blue-600 px-4 py-2"
-                  >
-                    <Text className="font-medium text-white">Start Reflection</Text>
-                  </TouchableOpacity>
                 </View>
-              </Card>
-            )}
+              ))}
 
-            {/* Habit Integration (hidden) */}
-            {false && goals.length > 0 && (
-              <HabitGoalIntegration
-                goalId={goals[0].id}
-                goalTitle={goals[0].title}
-                suggestedHabits={[
-                  'Set a daily reminder',
-                  'Track progress in the morning',
-                  'Review goals before bed',
-                  'Celebrate small wins',
-                ]}
-                completedHabits={['Set a daily reminder']}
-                onHabitToggle={(habit) => {
-                  // Handle habit toggle
-                  console.log('Habit toggled:', habit);
-                }}
-              />
-            )}
+              {/* Weekend Reflection */}
+              {new Date().getDay() === 0 && ( // Sunday
+                <Card className="border-0 bg-blue-50">
+                  <View className="p-4">
+                    <View className="mb-3 flex-row items-center">
+                      <BookOpen size={20} color="#3b82f6" className="mr-2" />
+                      <Text className="text-lg font-semibold text-blue-800">Weekly Reflection</Text>
+                    </View>
+                    <Text className="mb-3 text-sm text-blue-700">
+                      Take a moment to reflect on your week and plan for the next one.
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setShowReflection(true)}
+                      className="self-start rounded-lg bg-blue-600 px-4 py-2"
+                    >
+                      <Text className="font-medium text-white">Start Reflection</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Card>
+              )}
+
+              {/* Habit Integration (hidden) */}
+              {false && goals.length > 0 && (
+                <HabitGoalIntegration
+                  goalId={goals[0].id}
+                  goalTitle={goals[0].title}
+                  suggestedHabits={[
+                    'Set a daily reminder',
+                    'Track progress in the morning',
+                    'Review goals before bed',
+                    'Celebrate small wins',
+                  ]}
+                  completedHabits={['Set a daily reminder']}
+                  onHabitToggle={(habit) => {
+                    // Handle habit toggle
+                    console.log('Habit toggled:', habit);
+                  }}
+                />
+              )}
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
 
-      {/* Add Goal Modal */}
-      {showAddGoal && (
-        <AddGoalModal
-          showAddGoal={showAddGoal}
-          setShowAddGoal={setShowAddGoal}
-          setShowSuggestions={setShowSuggestions}
-          formData={formData}
-          setFormData={setFormData}
-          showSuggestions={showSuggestions}
-          handleAddGoal={handleAddGoal}
-        />
-      )}
+        {/* Add Goal Modal */}
+        {showAddGoal && (
+          <AddGoalModal
+            showAddGoal={showAddGoal}
+            setShowAddGoal={setShowAddGoal}
+            setShowSuggestions={setShowSuggestions}
+            formData={formData}
+            setFormData={setFormData}
+            showSuggestions={showSuggestions}
+            handleAddGoal={handleAddGoal}
+          />
+        )}
 
-      {/* Weekly Reflection Modal */}
-      {showReflection && (
-        <WeeklyReflection
-          weekStart={weekStart}
-          weekEnd={weekEnd}
-          completedGoals={completedGoals}
-          totalGoals={totalGoals}
-          onSave={handleSaveReflection}
-          onClose={() => setShowReflection(false)}
-          isDarkMode={isDarkMode}
-        />
-      )}
+        {/* Weekly Reflection Modal */}
+        {showReflection && (
+          <WeeklyReflection
+            weekStart={weekStart}
+            weekEnd={weekEnd}
+            completedGoals={completedGoals}
+            totalGoals={totalGoals}
+            onSave={handleSaveReflection}
+            onClose={() => setShowReflection(false)}
+            isDarkMode={isDarkMode}
+          />
+        )}
 
-      {/* Action Item Schedule Modal */}
-      {selectedActionItem && (
-        <ActionItemScheduleModal
-          selectedActionItem={selectedActionItem}
-          setSelectedActionItem={setSelectedActionItem}
-        />
-      )}
+        {/* Action Item Schedule Modal */}
+        {selectedActionItem && (
+          <ActionItemScheduleModal
+            selectedActionItem={selectedActionItem}
+            setSelectedActionItem={setSelectedActionItem}
+          />
+        )}
 
-      {/* Preferences Modal */}
-      {showPreferencesModal && (
-        <PreferencesModal
-          isDarkMode={isDarkMode}
-          preferencesLoading={preferencesLoading}
-          timePreferences={timePreferences}
-          updatePrefField={updatePrefField}
-          toggleDay={toggleDay}
-          savePreferences={savePreferences}
-          showPreferencesModal={showPreferencesModal}
-          setShowPreferencesModal={setShowPreferencesModal}
-        />
-      )}
+        {/* Preferences Modal */}
+        {showPreferencesModal && (
+          <PreferencesModal
+            isDarkMode={isDarkMode}
+            preferencesLoading={preferencesLoading}
+            timePreferences={timePreferences}
+            updatePrefField={updatePrefField}
+            toggleDay={toggleDay}
+            savePreferences={savePreferences}
+            showPreferencesModal={showPreferencesModal}
+            setShowPreferencesModal={setShowPreferencesModal}
+          />
+        )}
 
-      {/* Upload Modal */}
-      {showUploadModal && (
-        <UploadModal
-          uploadMonitorActiveRef={uploadMonitorActiveRef}
-          isUploading={isUploading}
-          setIsUploading={setIsUploading}
-          uploadedFiles={uploadedFiles}
-          setUploadedFiles={setUploadedFiles}
-          generatingPlan={generatingPlan}
-          uploadingFileId={uploadingFileId}
-          setUploadingFileId={setUploadingFileId}
-          setUploadingUploadId={setUploadingUploadId}
-          userEmail={userEmail}
-          uploadProgress={uploadProgress}
-          setUploadProgress={setUploadProgress}
-          showUploadModal={showUploadModal}
-          setShowUploadModal={setShowUploadModal}
-          isDarkMode={isDarkMode}
-          pickDocument={pickDocument}
-          dedupeFiles={dedupeFiles}
-        />
-      )}
-    </>
+        {/* Upload Modal */}
+        {showUploadModal && (
+          <UploadModal
+            uploadMonitorActiveRef={uploadMonitorActiveRef}
+            isUploading={isUploading}
+            setIsUploading={setIsUploading}
+            uploadedFiles={uploadedFiles}
+            setUploadedFiles={setUploadedFiles}
+            generatingPlan={generatingPlan}
+            uploadingFileId={uploadingFileId}
+            setUploadingFileId={setUploadingFileId}
+            setUploadingUploadId={setUploadingUploadId}
+            userEmail={userEmail}
+            uploadProgress={uploadProgress}
+            setUploadProgress={setUploadProgress}
+            showUploadModal={showUploadModal}
+            setShowUploadModal={setShowUploadModal}
+            isDarkMode={isDarkMode}
+            pickDocument={pickDocument}
+            dedupeFiles={dedupeFiles}
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
