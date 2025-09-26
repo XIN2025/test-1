@@ -54,6 +54,18 @@ class HealthAlertsApiService {
       return [];
     }
   }
+
+  async resolveHealthAlert(healthAlertId: string): Promise<boolean> {
+    try {
+      await this.makeRequest<null>(`/api/health-alert/${encodeURIComponent(healthAlertId)}/resolve`, {
+        method: 'POST',
+      });
+      return true;
+    } catch (error) {
+      console.error('Failed to resolve health alert:', error);
+      return false;
+    }
+  }
 }
 
 export const healthAlertsApi = new HealthAlertsApiService();

@@ -743,6 +743,7 @@ function MainDashboard() {
                 <CriticalRiskAlertsCard
                   isDarkMode={isDarkMode}
                   alerts={criticalRiskAlerts}
+                  loadCriticalRiskAlert={loadCriticalRiskAlerts}
                   width={width - 32}
                   onAlertPress={(alert) => {
                     // Handle alert press - could navigate to detailed view

@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { TriangleAlert, AlertTriangle } from 'lucide-react-native';
 import { CriticalRiskAlert } from '../types/criticalRiskAlerts';
+import { healthAlertsApi } from '../services/healthAlertsApi';
 
 interface CriticalRiskAlertsCardProps {
   isDarkMode: boolean;
   alerts: CriticalRiskAlert[];
   width?: number;
   onAlertPress?: (alert: CriticalRiskAlert) => void;
+  loadCriticalRiskAlert: () => void;
 }
 
 export default function CriticalRiskAlertsCard({
@@ -15,6 +17,7 @@ export default function CriticalRiskAlertsCard({
   alerts,
   width,
   onAlertPress,
+  loadCriticalRiskAlert,
 }: CriticalRiskAlertsCardProps) {
   const cardBackgroundColor = isDarkMode ? '#374151' : '#ffffff';
   const textColor = isDarkMode ? '#f3f4f6' : '#1f2937';
@@ -66,6 +69,10 @@ export default function CriticalRiskAlertsCard({
         return <AlertTriangle size={size} color={color} />;
     }
   };
+
+  useEffect(() => {
+    console.log(alerts);
+  }, [alerts]);
 
   if (alerts.length === 0) {
     return null;
@@ -169,25 +176,63 @@ export default function CriticalRiskAlertsCard({
                 </View>
               </View>
 
-              {/* Severity Badge */}
-              <View
-                style={{
-                  backgroundColor: getSeverityColor(alert.severity),
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  borderRadius: 6,
-                }}
-              >
-                <Text
+              {/* Severity Badge and Resolve Button */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View
                   style={{
-                    fontSize: 10,
-                    fontWeight: '600',
-                    color: '#ffffff',
-                    textTransform: 'uppercase',
+                    backgroundColor: getSeverityColor(alert.severity),
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 6,
                   }}
                 >
-                  {alert.severity}
-                </Text>
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: '600',
+                      color: '#ffffff',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {alert.severity}
+                  </Text>
+                </View>
+                {/* Check Mark Button */}
+                <TouchableOpacity
+                  onPress={async () => {
+                    const ok = await healthAlertsApi.resolveHealthAlert(alert.id);
+                    if (ok) {
+                      loadCriticalRiskAlert();
+                    } else {
+                      console.error('Failed to resolve health alert');
+                    }
+                  }}
+                  style={{
+                    marginLeft: 4,
+                    backgroundColor: getSeverityBackgroundColor(alert.severity) + '80', // add alpha for translucency
+                    borderRadius: 16,
+                    padding:
+                      alert.severity === 'Critical' || alert.severity === 'high'
+                        ? 8
+                        : alert.severity === 'Warning' || alert.severity === 'medium'
+                          ? 6
+                          : 4,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    // border removed
+                  }}
+                  accessibilityLabel="Mark as resolved"
+                >
+                  <Text
+                    style={{
+                      color: getSeverityColor(alert.severity),
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    ✓
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
 
