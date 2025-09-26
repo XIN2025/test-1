@@ -1,6 +1,6 @@
 export default {
   expo: {
-    name: 'Evra',
+    name: 'evra',
     slug: 'evra',
     owner: 'gamma-heizen',
     version: '1.0.5',
@@ -159,12 +159,12 @@ export default {
     extra: {
       API_BASE_URL: 'https://api.evra.opengig.work',
       eas: {
-        projectId: 'e25ba26a-90e5-4708-a76c-63ba61de3089',
+        projectId: 'c41c4d5e-cf0b-4fc7-b62f-abab08fd108c',
       },
     },
   },
   updates: {
-    url: 'https://u.expo.dev/e25ba26a-90e5-4708-a76c-63ba61de3089',
+    url: 'https://u.expo.dev/c41c4d5e-cf0b-4fc7-b62f-abab08fd108c',
   },
   runtimeVersion: {
     policy: 'appVersion',
