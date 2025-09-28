@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useOptimistic, useTransition, startTransition } from 'react';
 import { goalsApi } from '../services/goalsApi';
 import { Goal, GoalCreate, GoalStats, GoalUpdate, WeeklyReflection } from '../types/goals';
 
@@ -13,7 +13,12 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<GoalStats | null>(null);
   const [todaysItems, setTodaysItems] = useState<Array<any>>([]);
-
+  const [optimisticTodaysItems, setOptimisticTodaysItems] = useOptimistic(
+    todaysItems,
+    (draft: any[], newItems: any[]) => {
+      return newItems;
+    },
+  );
   const loadGoals = useCallback(async () => {
     if (!userEmail) return;
 
@@ -79,6 +84,16 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
 
   const markCompletion = useCallback(
     async (actionItemId: string, completed: boolean = true) => {
+      startTransition(() => {
+        const actionItem = todaysItems.find((item) => item.id === actionItemId);
+        if (actionItem) {
+          actionItem.completed = completed;
+          actionItem.complete = completed;
+        }
+        const updatedItems = [...todaysItems];
+        setOptimisticTodaysItems(updatedItems);
+      });
+
       if (!actionItemId) {
         setError('Action item ID is required');
         return false;
@@ -101,11 +116,17 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
           }
           return true;
         }
+        startTransition(() => {
+          setOptimisticTodaysItems(todaysItems);
+        });
         return false;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to mark completion';
         setError(message);
         console.error('Error marking completion:', err);
+        startTransition(() => {
+          setOptimisticTodaysItems(todaysItems);
+        });
         return false;
       }
     },
