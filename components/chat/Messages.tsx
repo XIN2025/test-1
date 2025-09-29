@@ -9,15 +9,19 @@ interface MessagesProps {
 }
 
 export default function Messages({ messages, onSuggestionClick }: MessagesProps) {
-  const flatListRef = useRef<FlatList>(null);
-
+  const flatListRef = useRef<FlatList<Message>>(null);
+  const isAtBottomRef = useRef(true);
+  const handleScroll = (e: any) => {
+    const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
+    const threshold = 24;
+    isAtBottomRef.current = contentOffset.y + layoutMeasurement.height >= contentSize.height - threshold;
+  };
   return (
     <FlatList
       ref={flatListRef}
       data={messages}
       renderItem={({ item, index }) => (
         <MessageComponent
-          key={item.id}
           message={item}
           showAvatar={index === 0 || messages[index - 1].sender !== item.sender}
           onSuggestionClick={onSuggestionClick}
@@ -31,8 +35,12 @@ export default function Messages({ messages, onSuggestionClick }: MessagesProps)
       }}
       keyboardShouldPersistTaps="handled"
       onContentSizeChange={() => {
-        flatListRef.current?.scrollToEnd({ animated: false });
+        if (isAtBottomRef.current) {
+          flatListRef.current?.scrollToEnd({ animated: false });
+        }
       }}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
     />
   );
 }
