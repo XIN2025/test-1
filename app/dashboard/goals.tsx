@@ -14,16 +14,15 @@ import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useGoals } from '@/hooks/useGoals';
 import { goalsApi } from '@/services/goalsApi';
-import { ActionItem, ActionPlan, Goal, GoalCategory, GoalFormData, GoalPriority } from '@/types/goals';
+import { ActionItem, Goal, GoalCategory, GoalFormData, GoalPriority } from '@/types/goals';
 import { PillarTimePreferences, PillarType, TimePreference } from '@/types/preferences';
 import * as DocumentPicker from 'expo-document-picker';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { BarChart3, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { BarChart3, BookOpen, ChevronLeft, ChevronRight, Trash } from 'lucide-react-native';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AddGoalModal from '@/components/goals/AddGoalModal';
 import UploadModal from '@/components/goals/UploadModal';
-import { Trash } from 'lucide-react-native';
 
 // Extend the Goal interface to include action_plan
 interface ExtendedGoal extends Goal {
@@ -107,11 +106,10 @@ export default function GoalsScreen() {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [showReflection, setShowReflection] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [generatingPlan, setGeneratingPlan] = useState(false);
+  const [generatingPlan] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [selectedActionItem, setSelectedActionItem] = useState<ActionItem | null>(null);
-  const [, setActivePlan] = useState<any>(null);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [generatingPlanGoalIds, setGeneratingPlanGoalIds] = useState<string[]>([]);
