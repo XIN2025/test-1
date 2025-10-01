@@ -1,6 +1,6 @@
 export default {
   expo: {
-    name: 'evra',
+    name: 'Evra',
     slug: 'evra',
     owner: 'gamma-heizen',
     version: '1.0.5',
