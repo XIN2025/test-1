@@ -166,6 +166,7 @@ export interface GoalStats {
   completion_rate: number;
   average_rating?: number;
   weekly_streak: number;
+  total_weekly_streak_count?: number;
 }
 
 export interface GoalResponse {

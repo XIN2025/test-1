@@ -118,9 +118,14 @@ function MainDashboard() {
   const [dailyCompletion, setDailyCompletion] = useState<Record<string, number>>({});
   const router = useRouter();
   const { isDarkMode } = useTheme();
+  const [calendarMonth, setCalendarMonth] = useState<number | null>(null);
+  const [calendarYear, setCalendarYear] = useState<number | null>(null);
+
   useEffect(() => {
     if (!userEmail) return;
     const today = new Date();
+    setCalendarMonth(today.getMonth());
+    setCalendarYear(today.getFullYear());
     goalsApi
       .getDailyCompletion(userEmail, today.getMonth() + 1, today.getFullYear())
       .then((completionData) => {
@@ -129,9 +134,44 @@ function MainDashboard() {
       .catch(() => setDailyCompletion({}));
   }, [userEmail]);
 
+  const handlePrevDailyCompletion = () => {
+    const currentDate = new Date(calendarYear || new Date().getFullYear(), calendarMonth || new Date().getMonth(), 1);
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    setCalendarMonth(currentDate.getMonth());
+    setCalendarYear(currentDate.getFullYear());
+
+    console.log('📅 Sending to API:', {
+      month: currentDate.getMonth(),
+      year: currentDate.getFullYear(),
+      userEmail,
+    });
+
+    goalsApi
+      .getDailyCompletion(userEmail, currentDate.getMonth() + 1, currentDate.getFullYear())
+      .then((completionData) => {
+        console.log('📊 Received completion data:', completionData);
+        setDailyCompletion(completionData);
+      })
+      .catch(() => setDailyCompletion({}));
+  };
+
+  const handleNextDailyCompletion = () => {
+    const currentDate = new Date(calendarYear || new Date().getFullYear(), calendarMonth || new Date().getMonth(), 1);
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    setCalendarMonth(currentDate.getMonth());
+    setCalendarYear(currentDate.getFullYear());
+    goalsApi
+      .getDailyCompletion(userEmail, currentDate.getMonth() + 1, currentDate.getFullYear())
+      .then((completionData) => {
+        setDailyCompletion(completionData);
+      })
+      .catch(() => setDailyCompletion({}));
+  };
+
   // --- Streak Modal State and Logic ---
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [streak, setStreak] = useState<number | null>(null);
+  const [totalStreakCount, setTotalStreakCount] = useState<number | null>(null);
   const [streakLoading, setStreakLoading] = useState(false);
   const [streakError, setStreakError] = useState<string | null>(null);
   const [streakTab, setStreakTab] = useState<'calendar' | 'achievements'>('calendar');
@@ -142,6 +182,7 @@ function MainDashboard() {
     try {
       const stats = await goalsApi.getGoalStats(userEmail, 12);
       setStreak(stats?.weekly_streak ?? 0);
+      setTotalStreakCount(stats?.total_weekly_streak_count ?? 0);
     } catch {
       setStreakError('Failed to load streak');
     } finally {
@@ -488,7 +529,14 @@ function MainDashboard() {
                         >
                           Weekly Streak Calendar
                         </Text>
-                        <StreakCalendar isDarkMode={isDarkMode} dailyCompletion={dailyCompletion} />
+                        <StreakCalendar
+                          isDarkMode={isDarkMode}
+                          dailyCompletion={dailyCompletion}
+                          currentMonth={calendarMonth}
+                          currentYear={calendarYear}
+                          handlePrevDailyCompletion={handlePrevDailyCompletion}
+                          handleNextDailyCompletion={handleNextDailyCompletion}
+                        />
                       </View>
                     </>
                   ) : (
@@ -510,7 +558,7 @@ function MainDashboard() {
                       >
                         Streak Achievements
                       </Text>
-                      {renderStreakAchievements(streak, isDarkMode)}
+                      {renderStreakAchievements(totalStreakCount, isDarkMode)}
                     </View>
                   )}
 
@@ -1068,6 +1116,10 @@ function MainDashboard() {
 type StreakCalendarProps = {
   isDarkMode: boolean;
   dailyCompletion: Record<string, number>;
+  currentMonth: number | null;
+  currentYear: number | null;
+  handlePrevDailyCompletion: () => void;
+  handleNextDailyCompletion: () => void;
 };
 
 /**
@@ -1081,11 +1133,23 @@ type StreakCalendarProps = {
  * Expects real completion data via AsyncStorage or props if available.
  */
 
-export function StreakCalendar({ isDarkMode, dailyCompletion }: StreakCalendarProps) {
+export function StreakCalendar({
+  isDarkMode,
+  dailyCompletion,
+  currentMonth,
+  currentYear,
+  handlePrevDailyCompletion,
+  handleNextDailyCompletion,
+}: StreakCalendarProps & {
+  currentMonth: number | null;
+  currentYear: number | null;
+  handlePrevDailyCompletion: () => void;
+  handleNextDailyCompletion: () => void;
+}) {
   // Map dailyCompletion (YYYY-MM-DD) to day number for current month
   const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
+  const month = currentMonth !== null ? currentMonth : today.getMonth();
+  const year = currentYear !== null ? currentYear : today.getFullYear();
   const completedPerDay = useMemo(() => {
     const map: Record<number, number> = {};
     Object.entries(dailyCompletion).forEach(([date, count]) => {
@@ -1159,8 +1223,48 @@ export function StreakCalendar({ isDarkMode, dailyCompletion }: StreakCalendarPr
           marginBottom: 6,
         }}
       >
-        {today.toLocaleString('default', { month: 'long' })} {year}
+        {/* Month navigation */}
       </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        <TouchableOpacity
+          onPress={handlePrevDailyCompletion}
+          style={{
+            padding: 8,
+            borderRadius: 8,
+            backgroundColor: isDarkMode ? 'rgba(251, 191, 36, 0.1)' : 'rgba(245, 158, 66, 0.1)',
+          }}
+        >
+          <Text style={{ color: isDarkMode ? '#fbbf24' : '#f59e42', fontSize: 16, fontWeight: 'bold' }}>‹</Text>
+        </TouchableOpacity>
+
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text
+            style={{
+              color: isDarkMode ? '#fbbf24' : '#f59e42',
+              fontWeight: 'bold',
+              fontSize: 17,
+            }}
+          >
+            {currentMonth !== null && currentYear !== null
+              ? `${new Date(currentYear, currentMonth).toLocaleString('default', {
+                  month: 'long',
+                })} ${currentYear}`
+              : `${today.toLocaleString('default', { month: 'long' })} ${year}`}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={handleNextDailyCompletion}
+          style={{
+            padding: 8,
+            borderRadius: 8,
+            backgroundColor: isDarkMode ? 'rgba(251, 191, 36, 0.1)' : 'rgba(245, 158, 66, 0.1)',
+          }}
+        >
+          <Text style={{ color: isDarkMode ? '#fbbf24' : '#f59e42', fontSize: 16, fontWeight: 'bold' }}>›</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Weekday headers */}
       <View style={{ flexDirection: 'row', marginBottom: 4 }}>
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => (
