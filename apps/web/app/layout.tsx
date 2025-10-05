@@ -1,0 +1,30 @@
+import '@repo/ui/globals.css';
+import Providers from '@/app/providers';
+import { Suspense } from 'react';
+import { Metadata } from 'next';
+import { ReactQueryClientProvider } from '@/lib/tanstack-provider';
+import { dmSans } from '@/lib/fonts';
+import GlobalLoading from './loading';
+
+export const metadata: Metadata = {
+  title: 'Founders Form',
+  description: 'Founders Form',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <ReactQueryClientProvider>
+      <html lang='en' suppressHydrationWarning>
+        <body className={`${dmSans.className} antialiased`}>
+          <Suspense fallback={<GlobalLoading />}>
+            <Providers>{children}</Providers>
+          </Suspense>
+        </body>
+      </html>
+    </ReactQueryClientProvider>
+  );
+}

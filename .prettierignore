@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+.turbo
+.next
+.env
+pnpm-lock.yaml
+packages/db/generated

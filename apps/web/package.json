@@ -1,0 +1,43 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack --port 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "format:check": "prettier --check 'app/**/*.tsx' 'app/**/*.ts' \"components/**/*.tsx\"",
+    "format:fix": "prettier --write 'app/**/*.tsx' 'app/**/*.ts' \"components/**/*.tsx\""
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.1.1",
+    "@repo/shared-types": "workspace:*",
+    "@repo/ui": "workspace:*",
+    "next": "^15.3.0",
+    "next-auth": "^4.24.11",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@tailwindcss/postcss": "^4.0.8",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.1",
+    "jest": "^30.0.0",
+    "jest-environment-jsdom": "^30.0.2",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^4.0.8",
+    "ts-node": "^10.9.2",
+    "typescript": "5.8.2"
+  }
+}
