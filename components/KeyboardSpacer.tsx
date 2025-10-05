@@ -1,5 +1,5 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Platform, View, Keyboard, Dimensions } from 'react-native';
 
 interface KeyboardSpacerProps {
@@ -10,7 +10,9 @@ interface KeyboardSpacerProps {
 const KeyboardSpacer: React.FC<KeyboardSpacerProps> = ({ topSpacing = 0, onToggle }) => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [shouldShowSpacer, setShouldShowSpacer] = useState(false);
   const insets = useSafeAreaInsets();
+  const initialWindowHeight = useRef(Dimensions.get('window').height);
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -18,7 +20,8 @@ const KeyboardSpacer: React.FC<KeyboardSpacerProps> = ({ topSpacing = 0, onToggl
 
     const onKeyboardShow = (event: any) => {
       const { height } = event.endCoordinates;
-      const screenHeight = Dimensions.get('window').height;
+      const currentWindowHeight = Dimensions.get('window').height;
+      const screenHeight = Dimensions.get('screen').height;
 
       let adjustedHeight = height;
 
@@ -28,14 +31,20 @@ const KeyboardSpacer: React.FC<KeyboardSpacerProps> = ({ topSpacing = 0, onToggl
 
       adjustedHeight = Math.max(0, Math.min(adjustedHeight, screenHeight * 0.5));
 
+      const heightDifference = initialWindowHeight.current - currentWindowHeight;
+      const isOverlapping = heightDifference < adjustedHeight * 0.7;
+
       setKeyboardHeight(adjustedHeight);
       setIsKeyboardVisible(true);
-      onToggle?.(true, adjustedHeight);
+      setShouldShowSpacer(isOverlapping);
+
+      onToggle?.(isOverlapping, isOverlapping ? adjustedHeight : 0);
     };
 
     const onKeyboardHide = () => {
       setKeyboardHeight(0);
       setIsKeyboardVisible(false);
+      setShouldShowSpacer(false);
       onToggle?.(false, 0);
     };
 
@@ -48,7 +57,7 @@ const KeyboardSpacer: React.FC<KeyboardSpacerProps> = ({ topSpacing = 0, onToggl
     };
   }, [insets.bottom, onToggle]);
 
-  if (!isKeyboardVisible || keyboardHeight === 0) {
+  if (!isKeyboardVisible || keyboardHeight === 0 || !shouldShowSpacer) {
     return null;
   }
 
