@@ -8,7 +8,6 @@ import ChatInput from '../../components/chat/ChatInput';
 import EmptyState from '../../components/chat/EmptyState';
 // import { KeyboardAvoiderView } from '@good-react-native/keyboard-avoider';
 import Messages from '../../components/chat/Messages';
-import KeyboardSpacer from '@/components/KeyboardSpacer';
 
 export default function ChatPage() {
   const { isDarkMode } = useTheme();
@@ -18,23 +17,28 @@ export default function ChatPage() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
-      <ChatHeader />
-      <View style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#F0FDF4' }}>
-        {messages.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <Messages messages={messages} onSuggestionClick={handleSuggestionClick} />
-        )}
-      </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={0}
+      >
+        <ChatHeader />
+        <View style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#F0FDF4' }}>
+          {messages.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <Messages messages={messages} onSuggestionClick={handleSuggestionClick} />
+          )}
+        </View>
 
-      <ChatInput
-        inputText={inputText}
-        setInputText={setInputText}
-        onSendMessage={handleSendMessage}
-        isTyping={isTyping}
-        dismissKeyboard={dismissKeyboard}
-      />
-      <KeyboardSpacer topSpacing={0} />
+        <ChatInput
+          inputText={inputText}
+          setInputText={setInputText}
+          onSendMessage={handleSendMessage}
+          isTyping={isTyping}
+          dismissKeyboard={dismissKeyboard}
+        />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
