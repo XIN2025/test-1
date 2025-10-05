@@ -1,15 +1,11 @@
 FROM node:22.16.0-slim AS base
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
 WORKDIR /app
 
 COPY . .
 
-RUN pnpm install
+RUN npm install
 
-RUN pnpm db:generate
+RUN npm run build
 
-RUN pnpm build
-
-CMD pnpm db:deploy && pnpm start
+CMD ["npm", "run", "start"]

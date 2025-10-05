@@ -5,13 +5,7 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "engines": {
-    "node": ">=20.17.0",
-    "npm": "only-allow pnpm",
-    "yarn": "only-allow pnpm"
-  },
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
     "build": "nest build",
     "format:fix": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -27,8 +21,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/shared-types": "workspace:*",
-    "@repo/db": "workspace:*",
+    "@repo/shared-types": "*",
+    "@repo/db": "*",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
@@ -56,8 +50,8 @@
     "multer": "^2.0.1"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",

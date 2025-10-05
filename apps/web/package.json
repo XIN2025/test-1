@@ -14,16 +14,16 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
-    "@repo/shared-types": "workspace:*",
-    "@repo/ui": "workspace:*",
+    "@repo/shared-types": "*",
+    "@repo/ui": "*",
     "next": "^15.3.0",
     "next-auth": "^4.24.11",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
     "@tailwindcss/postcss": "^4.0.8",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",

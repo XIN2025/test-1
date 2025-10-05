@@ -16,11 +16,15 @@
     "format:fix": "prettier --write \"**/*.{ts,tsx,md,json,css,scss,js,jsx,html,mdx,yml,yaml}\"",
     "typecheck": "turbo run typecheck"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
     "eslint": "^9.29.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.0",
@@ -29,12 +33,12 @@
     "turbo": "^2.5.4",
     "typescript": "5.8.2"
   },
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "npm@10.9.2",
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
-    "@repo/shared-types": "workspace:*",
+    "@repo/shared-types": "*",
     "@tanstack/react-query": "^5.80.7",
     "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",

@@ -35,8 +35,8 @@
     "@radix-ui/react-tooltip": "^1.2.7"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
     "@tailwindcss/postcss": "^4.0.8",
     "@turbo/gen": "^2.4.2",
     "@types/node": "^20",

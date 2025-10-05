@@ -11,28 +11,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.0.0
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: '23'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: npm install
 
       - name: Run linting
-        run: pnpm lint
+        run: npm run lint
 
       - name: Check formatting
-        run: pnpm format:check
+        run: npm run format:check
 
       - name: Generate Prisma client
-        run: pnpm db:generate
+        run: npm run db:generate
 
       - name: Check types
-        run: pnpm typecheck
+        run: npm run typecheck
