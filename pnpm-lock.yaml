@@ -216,6 +216,9 @@ importers:
       '@types/react':
         specifier: ~19.0.10
         version: 19.0.14
+      '@types/react-native-keyboard-spacer':
+        specifier: ^0.4.6
+        version: 0.4.6(@babel/core@7.28.3)(react@19.0.0)
       eslint:
         specifier: ^9.25.0
         version: 9.34.0(jiti@1.21.7)
@@ -1836,6 +1839,9 @@ packages:
 
   '@types/node@24.3.0':
     resolution: {integrity: sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow==}
+
+  '@types/react-native-keyboard-spacer@0.4.6':
+    resolution: {integrity: sha512-XDMNjBKOfP/BxWD3Uf7nYJGzUU3K1Kfi+5TPYaX2PBgQ+cGAG8TIxbch3fNapHZJbKCaRyNqhGLB4XKhl7C0ZA==}
 
   '@types/react@19.0.14':
     resolution: {integrity: sha512-ixLZ7zG7j1fM0DijL9hDArwhwcCb4vqmePgwtV0GfnkHRSCUEv4LvzarcTdhoqgyMznUx/EhoTUv31CKZzkQlw==}
@@ -8714,6 +8720,18 @@ snapshots:
   '@types/node@24.3.0':
     dependencies:
       undici-types: 7.10.0
+
+  '@types/react-native-keyboard-spacer@0.4.6(@babel/core@7.28.3)(react@19.0.0)':
+    dependencies:
+      '@types/react': 19.0.14
+      react-native: 0.79.5(@babel/core@7.28.3)(@types/react@19.0.14)(react@19.0.0)
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@react-native-community/cli'
+      - bufferutil
+      - react
+      - supports-color
+      - utf-8-validate
 
   '@types/react@19.0.14':
     dependencies:
