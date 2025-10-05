@@ -23,7 +23,7 @@ const ErrorPage: React.FC<ErrorProps> = ({ error, reset }) => {
         </CardHeader>
         <CardContent className='space-y-6'>
           <div className='bg-muted/50 rounded-lg p-4'>
-            <p className='text-muted-foreground break-words text-sm'>{error.message || 'An unknown error occurred'}</p>
+            <p className='text-muted-foreground text-sm break-words'>{error.message || 'An unknown error occurred'}</p>
             {error.digest && <p className='text-muted-foreground mt-2 text-xs'>Error ID: {error.digest}</p>}
           </div>
 

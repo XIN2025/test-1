@@ -37,7 +37,7 @@ const Page = () => {
         <div className='space-y-4'>
           <div>
             {session?.user && (
-              <pre className='bg-muted mt-2 space-y-2 overflow-x-auto whitespace-break-spaces rounded-md p-4'>
+              <pre className='bg-muted mt-2 space-y-2 overflow-x-auto rounded-md p-4 whitespace-break-spaces'>
                 {JSON.stringify(session.user, null, 2)}
               </pre>
             )}
