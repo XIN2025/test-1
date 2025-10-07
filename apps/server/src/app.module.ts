@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
-import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
+import { AstrologyApiModule } from './astrology-apis/astrology-api.module';
 
 @Module({
   imports: [
@@ -30,14 +29,9 @@ import { AuthModule } from './auth/auth.module';
       },
     }),
     AuthModule,
+    AstrologyApiModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}
