@@ -22,7 +22,7 @@ export default function LabTestsPage() {
   } | null>(null);
   const userEmail = user?.email || '';
 
-  const fetchReports = async () => {
+  const fetchReports = React.useCallback(async () => {
     if (!userEmail) return;
     try {
       const data = await labReportsApi.getAll(userEmail);
@@ -34,12 +34,12 @@ export default function LabTestsPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [userEmail]);
 
   useEffect(() => {
     setLoading(true);
     fetchReports();
-  }, [userEmail]);
+  }, [userEmail, fetchReports]);
 
   const onRefresh = async () => {
     setRefreshing(true);

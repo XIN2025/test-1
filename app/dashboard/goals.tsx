@@ -14,11 +14,11 @@ import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useGoals } from '@/hooks/useGoals';
 import { goalsApi } from '@/services/goalsApi';
-import { ActionItem, ActionPlan, Goal, GoalCategory, GoalFormData, GoalPriority } from '@/types/goals';
+import { ActionItem, Goal, GoalCategory, GoalFormData, GoalPriority } from '@/types/goals';
 import { PillarTimePreferences, PillarType, TimePreference } from '@/types/preferences';
 import * as DocumentPicker from 'expo-document-picker';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { BarChart3, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { BarChart3, BookOpen, ChevronLeft, ChevronRight, Trash } from 'lucide-react-native';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AddGoalModal from '@/components/goals/AddGoalModal';
@@ -106,17 +106,16 @@ export default function GoalsScreen() {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [showReflection, setShowReflection] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [generatingPlan, setGeneratingPlan] = useState(false);
+  const [generatingPlan] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [selectedActionItem, setSelectedActionItem] = useState<ActionItem | null>(null);
-  const [, setActivePlan] = useState<any>(null);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [generatingPlanGoalIds, setGeneratingPlanGoalIds] = useState<string[]>([]);
 
   // Use the goals hook for backend integration
-  const { goals, loading, createGoal, updateGoalProgress, saveWeeklyReflection, loadGoals } = useGoals({
+  const { goals, loading, createGoal, updateGoalProgress, saveWeeklyReflection, loadGoals, deleteGoal } = useGoals({
     userEmail,
   }) as {
     goals: ExtendedGoal[];
@@ -127,6 +126,7 @@ export default function GoalsScreen() {
     addGoalNote: Function;
     saveWeeklyReflection: Function;
     loadGoals: Function;
+    deleteGoal: Function;
   };
 
   useEffect(() => {
@@ -670,16 +670,45 @@ export default function GoalsScreen() {
                               progress={goal.completion_percentage || 0}
                               color={
                                 goal.completion_percentage >= 80
-                                  ? '#10b981' // Green for high completion
+                                  ? '#10b981'
                                   : goal.completion_percentage >= 50
-                                    ? '#f59e0b' // Yellow for medium completion
-                                    : '#ef4444' // Red for low completion
+                                    ? '#f59e0b'
+                                    : '#ef4444'
                               }
                               backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
                               showPercentage={true}
                               textColor={isDarkMode ? '#d1d5db' : '#374151'}
                             />
                           </View>
+                          {/* Delete Button */}
+                          <TouchableOpacity
+                            onPress={() => {
+                              Alert.alert(
+                                'Delete Goal',
+                                'Are you sure you want to delete this goal?',
+                                [
+                                  { text: 'Cancel', style: 'cancel' },
+                                  {
+                                    text: 'Delete',
+                                    style: 'destructive',
+                                    onPress: () => deleteGoal(goal.id),
+                                  },
+                                ],
+                                { cancelable: true },
+                              );
+                            }}
+                            style={{
+                              marginLeft: 12,
+                              padding: 6,
+                              borderRadius: 8,
+                              backgroundColor: isDarkMode ? '#ef4444' : '#fee2e2',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            <Trash size={20} color={isDarkMode ? '#fff' : '#ef4444'} />
+                          </TouchableOpacity>
                         </View>
                       </View>
                       {!(goal.action_items && goal.action_items.length > 0) && (

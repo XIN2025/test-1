@@ -5,8 +5,6 @@ import ProtectedRoute from '../../components/ProtectedRoute';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { Platform } from 'react-native';
-import ChatHeader from '@/components/chat/ChatHeader';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 function TabsNavigator() {
   const { isDarkMode } = useTheme();
@@ -111,8 +109,6 @@ function TabsNavigator() {
 }
 
 export default function DashboardTabsLayout() {
-  const { isDarkMode } = useTheme();
-
   return (
     <ProtectedRoute>
       {/* <SafeAreaView

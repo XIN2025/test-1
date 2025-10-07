@@ -164,17 +164,15 @@ function MainDashboard() {
       const score = await healthScoreApi.getHealthScore(userEmail);
       setHealthScore(typeof score === 'number' ? Math.max(0, Math.min(100, Math.round(score))) : 0);
     } catch (e) {
+      console.error('Failed to load health score:', e);
       setHealthScore(0);
     } finally {
       setHealthScoreLoading(false);
     }
   }, [userEmail]);
-  // Walkthrough state management
-  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   // Critical Risk Alerts state
   const [criticalRiskAlerts, setCriticalRiskAlerts] = useState<CriticalRiskAlert[]>([]);
   const [showAllTodayItems, setShowAllTodayItems] = useState(false);
-  const [recentInteractions, setRecentInteractions] = useState<Map<string, number>>(new Map());
 
   // Load critical risk alerts
   const loadCriticalRiskAlerts = useCallback(async () => {
@@ -199,12 +197,6 @@ function MainDashboard() {
     }, [userEmail, loadCriticalRiskAlerts, loadHealthScore, loadTodaysItems]),
   );
   // Removed local demo tasks; weekly goals are now sourced from API via useGoals
-
-  // Determine the key for today's day name used in schedules
-  const dayKey = useMemo(() => {
-    const day = new Date().getDay(); // 0=Sun..6=Sat
-    return ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][day] || 'monday';
-  }, []);
 
   // Per-user storage key for walkthrough completion
   const walkthroughStorageKey = useMemo(() => `dashboardWalkthroughSeen:${userEmail || 'guest'}`, [userEmail]);
@@ -299,49 +291,6 @@ function MainDashboard() {
     if (h && /^\d{1,2}$/.test(h)) return `${h.padStart(2, '0')}:00`;
     return t;
   };
-
-  // Helper to check if an action item is completed for the current week
-  const isActionItemCompletedThisWeek = useCallback((actionItem: any): boolean => {
-    if (!actionItem?.weekly_completion) {
-      return false;
-    }
-
-    // Get the start of the current week (Monday)
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Get Monday
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() + mondayOffset);
-    weekStart.setHours(0, 0, 0, 0);
-
-    // Check if there's a completion entry for this week
-    const isComplete = actionItem.weekly_completion.some((completion: any) => {
-      const completionWeekStart = new Date(completion.week_start);
-      const matches = completionWeekStart.toDateString() === weekStart.toDateString();
-      return matches && completion.is_complete;
-    });
-
-    return isComplete;
-  }, []);
-
-  // Clean up old interactions
-  useEffect(() => {
-    const cleanup = setInterval(() => {
-      const now = Date.now();
-      setRecentInteractions((prev) => {
-        const newMap = new Map();
-        prev.forEach((timestamp, id) => {
-          if (now - timestamp < 10000) {
-            // Keep interactions for 10 seconds
-            newMap.set(id, timestamp);
-          }
-        });
-        return newMap;
-      });
-    }, 5000); // Clean up every 5 seconds
-
-    return () => clearInterval(cleanup);
-  }, []);
 
   // Health score calculation (currently using hardcoded value for testing)
   // const healthScore = useMemo(() => {

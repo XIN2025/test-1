@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useHealthDataBackgroundSync } from '../hooks/useHealthDataBackgroundSync';
+// import { useHealthDataBackgroundSync } from '../hooks/useHealthDataBackgroundSync';
 
 const HEALTH_DATA_SYNC_TASK = 'health-data-sync';
 
@@ -14,7 +14,7 @@ interface BackgroundTaskDebuggerProps {
 export const BackgroundTaskDebugger: React.FC<BackgroundTaskDebuggerProps> = ({ className = '' }) => {
   const [debugInfo, setDebugInfo] = useState<any>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { syncStatus } = useHealthDataBackgroundSync();
+  // const { syncStatus } = useHealthDataBackgroundSync();
 
   const collectDebugInfo = async () => {
     setIsRefreshing(true);
@@ -28,8 +28,8 @@ export const BackgroundTaskDebugger: React.FC<BackgroundTaskDebuggerProps> = ({ 
         storage: {},
         permissions: {},
         device: {
-          platform: require('react-native').Platform.OS,
-          version: require('react-native').Platform.Version,
+          platform: Platform.OS,
+          version: Platform.Version,
         },
       };
 
@@ -95,7 +95,8 @@ export const BackgroundTaskDebugger: React.FC<BackgroundTaskDebuggerProps> = ({ 
             await AsyncStorage.removeItem('lastHealthDataSync');
             Alert.alert('Success', 'Debug data cleared');
             collectDebugInfo();
-          } catch (error) {
+          } catch (e) {
+            console.error('Failed to clear data:', e);
             Alert.alert('Error', 'Failed to clear data');
           }
         },
@@ -109,8 +110,8 @@ export const BackgroundTaskDebugger: React.FC<BackgroundTaskDebuggerProps> = ({ 
       try {
         await BackgroundTask.unregisterTaskAsync(HEALTH_DATA_SYNC_TASK);
         console.log('Unregistered existing task');
-      } catch (error) {
-        console.log('No existing task to unregister');
+      } catch (e) {
+        console.warn('No existing task to unregister', e);
       }
 
       // Wait a bit

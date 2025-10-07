@@ -61,6 +61,7 @@ export default function ProfileDashboard() {
       const score = await healthScoreApi.getHealthScore(actualEmail);
       setHealthScore(typeof score === 'number' ? Math.max(0, Math.min(100, Math.round(score))) : 0);
     } catch (e) {
+      console.error('Failed to load health score:', e);
       setHealthScore(0);
     } finally {
       setHealthScoreLoading(false);

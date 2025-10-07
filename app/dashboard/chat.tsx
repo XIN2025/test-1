@@ -1,5 +1,5 @@
-import React from 'react';
-import { KeyboardAvoidingView, Platform, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { KeyboardAvoidingView, Platform, View, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 import { useChat } from '../../hooks/useChat';
@@ -8,17 +8,30 @@ import ChatInput from '../../components/chat/ChatInput';
 import EmptyState from '../../components/chat/EmptyState';
 import Messages from '../../components/chat/Messages';
 
+const TAB_BAR_HEIGHT = 16;
+
 export default function ChatPage() {
   const { isDarkMode } = useTheme();
 
   const { messages, inputText, isTyping, setInputText, handleSendMessage, handleSuggestionClick, dismissKeyboard } =
     useChat();
 
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardOffset(0));
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardOffset(TAB_BAR_HEIGHT));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   return (
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={keyboardOffset}
         style={{ flex: 1 }}
       >
         <ChatHeader />

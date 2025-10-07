@@ -94,10 +94,10 @@ const UploadModal: React.FC<UploadModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Note: Only PDF files can be uploaded */}
+          {/* Note: Only PDF and DOCX files can be uploaded */}
           <View className="mb-3">
             <Text className={`text-xs ${isDarkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>
-              Only PDF files can be uploaded.
+              Only PDF and DOCX files can be uploaded.
             </Text>
           </View>
 
@@ -235,15 +235,20 @@ const UploadModal: React.FC<UploadModalProps> = ({
                   if (!file) return;
 
                   // Check for PDF by mimeType or extension
-                  const isPdf =
-                    (file.mimeType && file.mimeType.toLowerCase() === 'application/pdf') ||
-                    (file.name && file.name.toLowerCase().endsWith('.pdf'));
+                  const isSupported =
+                    (file.mimeType &&
+                      (file.mimeType.toLowerCase() === 'application/pdf' ||
+                        file.mimeType.toLowerCase() ===
+                          'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) ||
+                    (file.name &&
+                      (file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.docx')));
 
-                  if (!isPdf) {
+                  if (!isSupported) {
+                    const message = 'Only PDF and DOCX files can be uploaded. Please select a supported document.';
                     if (Platform.OS === 'web') {
-                      window.alert('Only PDF files can be uploaded. Please select a PDF document.');
+                      window.alert(message);
                     } else {
-                      Alert.alert('Invalid File', 'Only PDF files can be uploaded. Please select a PDF document.');
+                      Alert.alert('Invalid File', message);
                     }
                     return;
                   }
