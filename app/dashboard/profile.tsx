@@ -1198,7 +1198,7 @@ export default function ProfileDashboard() {
                   color: isDarkMode ? '#9ca3af' : '#6b7280',
                 }}
               >
-                Evra Health App v1.0.0
+                Evra Health App v{Constants.expoConfig?.version || '1.0.0'}
               </Text>
             </View>
           </View>
