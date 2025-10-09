@@ -6,6 +6,10 @@ export const config = {
     secret: process.env.JWT_SECRET!,
     expiresIn: process.env.JWT_EXPIRES_IN ?? '10d',
   },
+  urls: {
+    api: process.env.API_URL!,
+    frontend: process.env.FRONTEND_URL!,
+  },
   mail: {
     smtp: {
       host: process.env.SMTP_HOST!,

@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsNumber } from 'class-validator';
+import { IsISO8601, IsNumber } from 'class-validator';
 
 export class GetHoroscopeDto {
-  @ApiProperty({ example: '1999-08-15', description: 'ISO date (YYYY-MM-DD)' })
-  @IsDateString()
+  @ApiProperty({ example: '1999-08-15T00:00:00.000Z', description: 'ISO date (YYYY-MM-DDTHH:MM:SS.SSSZ)' })
+  @IsISO8601()
   dateOfBirth: string;
 
   @ApiProperty({ example: 12.9716 })

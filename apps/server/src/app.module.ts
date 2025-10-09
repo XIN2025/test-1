@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
 import { AstrologyApiModule } from './astrology-apis/astrology-api.module';
-
+import { AgentsModule } from './agents/agents.module';
 @Module({
   imports: [
     LoggerModule.forRoot({
@@ -30,6 +30,7 @@ import { AstrologyApiModule } from './astrology-apis/astrology-api.module';
     }),
     AuthModule,
     AstrologyApiModule,
+    AgentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
