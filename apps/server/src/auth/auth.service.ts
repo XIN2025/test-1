@@ -42,7 +42,7 @@ export class AuthService {
         data: {
           email: normalizedEmail,
           name: 'Pending Verification', // placeholder
-          password: 'temporary', // placeholder
+          password: '', // placeholder
           emailVerificationToken: token,
           isVerified: false,
         },
@@ -66,7 +66,10 @@ export class AuthService {
 
   // Verify user email from token
   async verifyEmail(token: string) {
-    const user = await this.prisma.user.findFirst({
+    if (!token || typeof token !== 'string') {
+      throw new BadRequestException('Verification token is required');
+    }
+    const user = await this.prisma.user.findUnique({
       where: { emailVerificationToken: token },
     });
 
