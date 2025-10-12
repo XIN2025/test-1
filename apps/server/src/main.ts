@@ -30,10 +30,10 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('NestJS API')
-    .setDescription('API for NestJS')
+    .setTitle('Karmi Backend API')
+    .setDescription('Authentication and APIs for Karmi Monorepo')
     .setVersion('1.0')
-    .addTag('API')
+    .addTag('Auth')
     .addBearerAuth()
     .build();
 
