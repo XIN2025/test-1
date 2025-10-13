@@ -33,10 +33,8 @@ async function bootstrap() {
     .setTitle('Karmi Backend API')
     .setDescription('Authentication and APIs for Karmi Monorepo')
     .setVersion('1.0')
-    .addTag('Auth')
     .addBearerAuth()
     .build();
-
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
 

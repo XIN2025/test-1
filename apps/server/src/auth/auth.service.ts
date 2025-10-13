@@ -8,18 +8,18 @@ import { RequestUser } from './dto/request-user.dto';
 import { config } from 'src/common/config';
 import { MailService } from 'src/mail/mail.service';
 import { v4 as uuidv4 } from 'uuid';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import { emailVerifyEmailTemplate } from 'src/mail/templates/verify-email-template';
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-    private mailService: MailService
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly mailService: MailService
   ) {}
 
-  // Send verification email when user enters email
   async sendVerificationEmail(email: string) {
     const normalizedEmail = email.toLowerCase();
 
@@ -32,6 +32,7 @@ export class AuthService {
     }
 
     const token = uuidv4();
+
     if (existing) {
       await this.prisma.user.update({
         where: { email: normalizedEmail },
@@ -41,8 +42,8 @@ export class AuthService {
       await this.prisma.user.create({
         data: {
           email: normalizedEmail,
-          name: 'Pending Verification', // placeholder
-          password: '', // placeholder
+          name: 'Pending Verification',
+          password: '',
           emailVerificationToken: token,
           isVerified: false,
         },
@@ -50,25 +51,23 @@ export class AuthService {
     }
 
     const verifyUrl = `${config.urls.frontend}/verify?token=${token}`;
+    const html = emailVerifyEmailTemplate({ verificationLink: verifyUrl });
 
-    await this.mailService.sendTemplateMail({
+    await this.mailService.sendMail({
       to: normalizedEmail,
       subject: 'Verify your email - Karmi',
-      templateName: 'VERIFY_EMAIL',
-      context: {
-        verificationLink: verifyUrl,
-      },
+      html,
     });
 
     this.logger.log(`Verification email sent to ${normalizedEmail}`);
     return { message: 'Verification email sent successfully' };
   }
 
-  // Verify user email from token
   async verifyEmail(token: string) {
     if (!token || typeof token !== 'string') {
       throw new BadRequestException('Verification token is required');
     }
+
     const user = await this.prisma.user.findUnique({
       where: { emailVerificationToken: token },
     });
@@ -89,7 +88,6 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
-  // Set password after verification
   async register(input: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: input.email.toLowerCase() },
@@ -112,7 +110,7 @@ export class AuthService {
     const user = await this.prisma.user.update({
       where: { email: input.email.toLowerCase() },
       data: {
-        name: input.name,
+        name: input.name.trim(),
         password: hashedPassword,
       },
     });
@@ -120,7 +118,6 @@ export class AuthService {
     return { id: user.id, email: user.email, name: user.name };
   }
 
-  // Login existing user
   async login(input: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: input.email.toLowerCase() },
@@ -148,61 +145,5 @@ export class AuthService {
     });
 
     return { ...payload, token };
-  }
-
-  // Get current user info
-  async updateProfile(user: RequestUser, input: UpdateProfileDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { id: user.id },
-    });
-
-    if (!existingUser) {
-      throw new BadRequestException('User not found');
-    }
-
-    if (!existingUser.isVerified) {
-      throw new UnauthorizedException('Email not verified');
-    }
-
-    const updated = await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        ...(input.name && { name: input.name.trim() }),
-        ...(input.dateOfBirth && { dateOfBirth: new Date(input.dateOfBirth) }),
-        ...(input.timeOfBirth && { timeOfBirth: input.timeOfBirth }),
-        ...(input.placeOfBirth && { placeOfBirth: input.placeOfBirth.trim() }),
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        dateOfBirth: true,
-        timeOfBirth: true,
-        placeOfBirth: true,
-        updatedAt: true,
-      },
-    });
-    this.logger.log(`Profile updated for user ${user.email}`);
-    return updated;
-  }
-
-  // Get current user info
-  async getCurrentUser(user: RequestUser) {
-    const userData = await this.prisma.user.findUnique({
-      where: { id: user.id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    if (!userData) {
-      throw new BadRequestException('User not found');
-    }
-
-    return userData;
   }
 }
