@@ -1,12 +1,1 @@
-import { otpTemplate } from './otp-template';
-import type { OtpTemplateContext } from './otp-template';
-
-export const templates = {
-  OTP: otpTemplate,
-} as const;
-
-export type Template = keyof typeof templates;
-
-export type TemplateContextMap = {
-  OTP: OtpTemplateContext;
-};
+export * from './verify-email-template';
