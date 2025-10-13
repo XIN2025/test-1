@@ -14,14 +14,38 @@ describe('MailService', () => {
     service = module.get<MailService>(MailService);
   });
 
-  it('should send verification email', async () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should send email successfully', async () => {
     mockMailerService.sendMail.mockResolvedValue(true);
 
-    const result = await service.sendVerificationEmail('test@example.com', {
-      verificationLink: 'https://example.com/verify?token=abc123',
+    const result = await service.sendMail({
+      to: 'test@example.com',
+      subject: 'Test Email',
+      html: '<p>This is a test email</p>',
     });
 
     expect(result).toBe(true);
+    expect(mockMailerService.sendMail).toHaveBeenCalledWith({
+      from: expect.any(String),
+      to: 'test@example.com',
+      subject: 'Test Email',
+      html: '<p>This is a test email</p>',
+    });
+  });
+
+  it('should return false if sending email fails', async () => {
+    mockMailerService.sendMail.mockRejectedValue(new Error('SMTP Error'));
+
+    const result = await service.sendMail({
+      to: 'fail@example.com',
+      subject: 'Fail Email',
+      html: '<p>This should fail</p>',
+    });
+
+    expect(result).toBe(false);
     expect(mockMailerService.sendMail).toHaveBeenCalled();
   });
 });
