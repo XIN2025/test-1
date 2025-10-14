@@ -61,12 +61,13 @@ export default function RegisterScreen() {
   }
 
   // Timezone list (short, can be expanded)
-  const timezones = [
+  const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const curatedTimezones = [
     'UTC',
-    'America/New York',
+    'America/New_York',
     'America/Chicago',
     'America/Denver',
-    'America/Los Angeles',
+    'America/Los_Angeles',
     'Europe/London',
     'Europe/Berlin',
     'Europe/Paris',
@@ -75,6 +76,7 @@ export default function RegisterScreen() {
     'Asia/Shanghai',
     'Australia/Sydney',
   ];
+  const timezones = Array.from(new Set(detectedTimezone ? [...curatedTimezones, detectedTimezone] : curatedTimezones));
 
   // Validation functions
   const validateName = (name: string): string | undefined => {
