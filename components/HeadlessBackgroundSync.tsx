@@ -1,11 +1,14 @@
 import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { useHealthDataBackgroundSync } from '../hooks/useHealthDataBackgroundSync';
 
 export const HeadlessBackgroundSync: React.FC = () => {
   const { initializeBackgroundSync, syncStatus } = useHealthDataBackgroundSync();
 
   useEffect(() => {
-    if (!syncStatus.isRegistered) {
+    // Only initialize background sync for Android
+    // iOS uses foreground sync only (handled elsewhere)
+    if (Platform.OS === 'android' && !syncStatus.isRegistered) {
       initializeBackgroundSync();
     }
   }, [syncStatus.isRegistered, initializeBackgroundSync]);

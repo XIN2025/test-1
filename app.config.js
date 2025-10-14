@@ -159,12 +159,12 @@ export default {
     extra: {
       API_BASE_URL: 'https://api.evra.opengig.work',
       eas: {
-        projectId: 'c41c4d5e-cf0b-4fc7-b62f-abab08fd108c',
+        projectId: 'e25ba26a-90e5-4708-a76c-63ba61de3089',
       },
     },
   },
   updates: {
-    url: 'https://u.expo.dev/c41c4d5e-cf0b-4fc7-b62f-abab08fd108c',
+    url: 'https://u.expo.dev/e25ba26a-90e5-4708-a76c-63ba61de3089',
   },
   runtimeVersion: {
     policy: 'appVersion',
