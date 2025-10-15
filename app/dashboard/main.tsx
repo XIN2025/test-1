@@ -380,7 +380,7 @@ function MainDashboard() {
                 userName={userName}
               />
               <View>
-                <Greeting name={userName || 'User'} />
+                <Greeting name={userName || 'Superstar'} />
                 <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Ready for a healthy day?
                 </Text>
