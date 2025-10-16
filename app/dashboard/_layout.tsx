@@ -29,7 +29,6 @@ function TabsNavigator() {
         },
         tabBarActiveTintColor: isDarkMode ? '#34d399' : '#059669',
         tabBarInactiveTintColor: isDarkMode ? '#9ca3af' : '#64748b',
-        animation: Platform.OS === 'ios' ? 'shift' : 'fade',
         tabBarHideOnKeyboard: true,
       }}
       initialRouteName={initialRoute}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, ScrollView } from 'react-native';
 import { MessageCircle } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -7,8 +7,9 @@ export default function EmptyState() {
   const { isDarkMode } = useTheme();
 
   return (
-    <View
-      style={{
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -51,6 +52,6 @@ export default function EmptyState() {
         I&apos;m your AI health assistant. Ask me about nutrition, exercise, medications, or any health-related
         questions.
       </Text>
-    </View>
+    </ScrollView>
   );
 }
