@@ -29,7 +29,6 @@ export const authOptions: AuthOptions = {
     maxAge: 7 * 24 * 60 * 60,
   },
   pages: {
-    signIn: '/auth',
-    error: '/auth',
+    signIn: '/login',
   },
 };

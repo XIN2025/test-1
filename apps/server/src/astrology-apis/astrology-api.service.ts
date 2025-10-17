@@ -14,8 +14,9 @@ export class AstrologyApiService {
 
     const auth = 'Basic ' + Buffer.from(`${userId}:${apiKey}`).toString('base64');
     const url = `https://json.astrologyapi.com/v1/horo_chart/${chart_id}`;
-    const [year, month, day] = dto.dateOfBirth.split('-').map(Number);
-    const [hour, min] = dto.dateOfBirth.split('T')[1].split(':').map(Number);
+    const [datePart, timePart] = dto.dateOfBirth.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, min] = timePart.split(':').map(Number);
 
     const data = JSON.stringify({
       day,

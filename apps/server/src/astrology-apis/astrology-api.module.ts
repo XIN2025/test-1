@@ -6,5 +6,6 @@ import { AstrologyApiController } from './astrology-api.controller';
   imports: [],
   controllers: [AstrologyApiController],
   providers: [AstrologyApiService],
+  exports: [AstrologyApiService],
 })
 export class AstrologyApiModule {}

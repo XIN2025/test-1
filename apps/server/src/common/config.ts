@@ -7,10 +7,9 @@ export const config = {
     expiresIn: process.env.JWT_EXPIRES_IN ?? '10d',
   },
   urls: {
-    api: process.env.API_URL || 'http://localhost:3001/api',
+    api: process.env.API_URL || 'http://localhost:3001',
     frontend: process.env.FRONTEND_URL || 'http://localhost:3000',
   },
-
   mail: {
     smtp: {
       host: process.env.SMTP_HOST || '',
@@ -25,7 +24,6 @@ export const config = {
       fromName: process.env.SMTP_FROM_NAME ?? 'Karmi',
     },
   },
-
   astrology: {
     userId: process.env.ASTROLOGY_API_USER_ID || '',
     apiKey: process.env.ASTROLOGY_API_KEY || '',
