@@ -1,9 +1,9 @@
 services:
-  web:
+  karmi-web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: founders-form-app
+    container_name: karmi-web-app
     ports:
       - '3000:3000'
       - 3001:3001

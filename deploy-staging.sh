@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPO="founders-form-monorepo"
+REPO="karmi"
 echo "$HOME/$REPO"
 cd "$HOME/$REPO"
 sudo su
