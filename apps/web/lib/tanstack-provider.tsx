@@ -17,7 +17,7 @@ export const ReactQueryClientProvider = ({ children }: { children: React.ReactNo
             gcTime: 10 * 60 * 1000,
           },
           mutations: {
-            retry: 1,
+            retry: 0,
           },
         },
       })

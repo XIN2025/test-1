@@ -8,7 +8,7 @@ import {
 } from '@ai-sdk/ui-utils';
 import { Attachment, JSONValue, Message } from 'ai';
 import { Type } from 'class-transformer';
-import { IsEnum, IsIn, IsISO8601, IsNotEmpty, IsOptional, isString, IsString, ValidateNested } from 'class-validator';
+import { IsIn, IsISO8601, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class MessageDto implements Message {
   @IsString()
@@ -51,8 +51,12 @@ export class ChatAgentInputDto {
   message: MessageDto;
 }
 
-export class UpdateChatAgentPromptDto {
+export class UpdateChatAgentConfigDto {
   @IsString()
-  @IsNotEmpty()
-  prompt: string;
+  @IsOptional()
+  prompt?: string;
+
+  @IsIn(['openai', 'gemini'])
+  @IsOptional()
+  model?: 'openai' | 'gemini';
 }

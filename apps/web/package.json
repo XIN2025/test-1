@@ -14,12 +14,15 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
+    "@monaco-editor/react": "^4.7.0",
     "@repo/shared-types": "*",
     "@repo/ui": "*",
     "next": "^15.3.0",
     "next-auth": "^4.24.11",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

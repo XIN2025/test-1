@@ -8,11 +8,16 @@ import {
   streamText,
 } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { prompts } from 'src/prompts';
+import { prompts } from 'src/agents/prompts';
 import { ToolsService } from './tools.service';
 import { Response } from 'express';
+import * as configJson from './config.json';
+import { google } from '@ai-sdk/google';
+import { UpdateChatAgentConfigDto } from './dto/chat-agent.dto';
+import { writeFileSync } from 'fs';
 
 const chatStore = new Map<string, Message[]>();
+const chatConfig: { model: string } = { ...configJson };
 
 @Injectable()
 export class AgentsService {
@@ -37,10 +42,17 @@ export class AgentsService {
       message,
     });
 
+    const model =
+      chatConfig.model === 'openai'
+        ? openai('gpt-4.1')
+        : google('gemini-2.0-flash', {
+            useSearchGrounding: true,
+          });
+
     pipeDataStreamToResponse(res, {
       execute: (dataStream) => {
         const result = streamText({
-          model: openai('gpt-4.1'),
+          model: model,
           system: prompts.getChatAgentPrompt(),
           messages: messages,
           maxSteps: 10,
@@ -78,6 +90,26 @@ export class AgentsService {
       throw new NotFoundException('Chat not found');
     }
     chatStore.delete(chatId);
+    return true;
+  }
+
+  getChatConfig() {
+    const prompt = prompts.getChatAgentPrompt();
+    return {
+      prompt: prompt,
+      model: chatConfig.model,
+    };
+  }
+
+  updateChatConfig(body: UpdateChatAgentConfigDto) {
+    const { prompt, model } = body;
+    if (prompt) {
+      prompts.updateChatAgentPrompt(prompt);
+    }
+    if (model) {
+      chatConfig.model = model;
+    }
+    writeFileSync('src/agents/config.json', JSON.stringify(chatConfig, null, 2));
     return true;
   }
 }

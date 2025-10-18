@@ -3,7 +3,7 @@ import { tool, generateText, Tool } from 'ai';
 import { z } from 'zod';
 import { google } from '@ai-sdk/google';
 import { AstrologyApiService } from 'src/astrology-apis/astrology-api.service';
-import { prompts } from 'src/prompts';
+import { prompts } from 'src/agents/prompts';
 @Injectable()
 export class ToolsService {
   constructor(private readonly astrologyApiService: AstrologyApiService) {}
