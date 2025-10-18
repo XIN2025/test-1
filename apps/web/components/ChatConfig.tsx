@@ -63,7 +63,7 @@ export const ChatConfig: React.FC = () => {
   const hasChanges = markdown !== configData?.prompt || selectedModel !== configData?.model;
 
   return (
-    <div className='flex min-h-screen flex-col gap-4 p-6'>
+    <div className='flex h-dvh flex-col gap-4 p-6'>
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-2xl font-semibold'>Chat Config Editor</h1>
@@ -101,13 +101,13 @@ export const ChatConfig: React.FC = () => {
         </div>
       </div>
 
-      <ResizablePanelGroup direction='horizontal' className='rounded-lg border'>
+      <ResizablePanelGroup direction='horizontal' className='flex-1 rounded-lg border'>
         <ResizablePanel defaultSize={50} minSize={20}>
           <div className='flex h-full flex-col'>
             <div className='flex items-center justify-between border-b p-4'>
               <h2 className='text-lg font-semibold'>Editor</h2>
             </div>
-            <div className='flex-1 overflow-auto'>
+            <div className='flex-1'>
               <Editor
                 height='100%'
                 defaultLanguage='markdown'
@@ -130,7 +130,7 @@ export const ChatConfig: React.FC = () => {
         <ResizableHandle withHandle />
 
         <ResizablePanel defaultSize={50} minSize={20}>
-          <div>
+          <div className='flex h-full flex-col'>
             <h2 className='border-b p-4 text-lg font-semibold'>Preview</h2>
             <div className='flex-1 overflow-auto p-4'>
               <CustomMarkdown message={markdown} />

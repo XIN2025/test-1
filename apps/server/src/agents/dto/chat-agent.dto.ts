@@ -41,10 +41,6 @@ export class MessageDto implements Message {
 }
 
 export class ChatAgentInputDto {
-  @IsString()
-  @IsNotEmpty()
-  sessionId: string;
-
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => MessageDto)

@@ -7,6 +7,19 @@ export const chatKeys = {
   config: () => ['config'] as const,
 };
 
+export const useCreateChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => ChatService.createChat(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: chatKeys.all });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+};
+
 export const useChatConfig = () => {
   return useQuery({
     queryKey: chatKeys.config(),

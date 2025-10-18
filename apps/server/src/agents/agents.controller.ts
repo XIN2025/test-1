@@ -13,7 +13,7 @@ export class AgentsController {
   @Post('chat')
   @ApiOperation({ summary: 'Create a new chat' })
   createChat(@CurrentUser() user: RequestUser) {
-    return this.agentsService.createChat(user.id);
+    return this.agentsService.createChat(user?.id);
   }
 
   @Post('chat/:chatId')

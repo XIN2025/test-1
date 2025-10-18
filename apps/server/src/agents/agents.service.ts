@@ -27,7 +27,7 @@ export class AgentsService {
     console.log('createChat', userId);
     const chatId = Math.random().toString(36).substring(2, 15);
     chatStore.set(chatId, []);
-    return chatId;
+    return { id: chatId };
   }
 
   async chat(chatId: string, message: Message, res: Response): Promise<void> {

@@ -6,19 +6,18 @@ import { useSession } from 'next-auth/react';
 import ChatInput from './ChatInput';
 import ChatMessages from './ChatMessages';
 import Greeting from './Greeting';
+import { useCreateChat } from '@/queries/chat.query';
 
 const ChatPage = () => {
   const { data: session } = useSession();
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const { mutate: createChat, isPending: isCreatingChat } = useCreateChat();
 
-  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
-  useEffect(() => {
-    setSessionId(Math.random().toString(36).substring(2, 15));
-  }, []);
+  const [chatId, setChatId] = useState<string | undefined>(undefined);
 
   const { messages, handleSubmit, input, setInput, status, error, stop } = useChat({
-    id: sessionId,
-    api: `${envConfig.apiUrl}/api/agents/chat`,
+    id: chatId,
+    api: `${envConfig.apiUrl}/api/agents/chat/${chatId}`,
     headers: {
       Authorization: `Bearer ${session?.user.token}`,
     },
@@ -26,8 +25,7 @@ const ChatPage = () => {
     experimental_throttle: 200,
     sendExtraMessageFields: true,
     experimental_prepareRequestBody: (body) => ({
-      sessionId: sessionId,
-      query: input,
+      message: body.messages.at(-1),
     }),
     onFinish: (message) => {
       setChatMessages([...chatMessages, message]);
@@ -37,10 +35,22 @@ const ChatPage = () => {
     },
   });
 
+  const handleCreateChat = () => {
+    createChat(undefined, {
+      onSuccess: (data) => {
+        setChatId(data.id);
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (chatId) {
+      handleSubmit();
+    }
+  }, [chatId]);
+
   if (messages.length === 0) {
-    return (
-      <Greeting query={input} setQuery={setInput} isSubmitting={status === 'streaming'} handleSubmit={handleSubmit} />
-    );
+    return <Greeting query={input} setQuery={setInput} isSubmitting={isCreatingChat} handleSubmit={handleCreateChat} />;
   }
   return (
     <div className='flex h-[calc(100vh-3rem)] w-full flex-col pb-4'>
