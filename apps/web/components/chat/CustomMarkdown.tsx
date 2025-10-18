@@ -14,6 +14,33 @@ const CustomMarkdown = ({ message, className }: { message: string; className?: s
       <Markdown
         remarkPlugins={[remarkGfm]}
         components={{
+          table({ children }) {
+            return (
+              <div className='my-2 w-full overflow-x-auto'>
+                <table className='w-full table-auto border-collapse text-xs sm:text-sm'>{children}</table>
+              </div>
+            );
+          },
+          thead({ children }) {
+            return <thead className='bg-muted/50 text-foreground'>{children}</thead>;
+          },
+          tr({ children }) {
+            return <tr className='border-b'>{children}</tr>;
+          },
+          th({ children }) {
+            return (
+              <th className='bg-background border px-3 py-2 text-left font-semibold'>
+                <div className='break-words whitespace-normal'>{children}</div>
+              </th>
+            );
+          },
+          td({ children }) {
+            return (
+              <td className='border px-3 py-2 align-top'>
+                <div className='break-words whitespace-normal'>{children}</div>
+              </td>
+            );
+          },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           code({ inline, className, children, ...props }: any) {
             const codeString = String(children).replace(/\n$/, '');

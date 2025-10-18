@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import {
   appendClientMessage,
   appendResponseMessages,
@@ -8,17 +8,28 @@ import {
   streamText,
 } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { chatAgentPrompt } from '../prompts/chat-agent';
+import { prompts } from 'src/prompts';
 import { ToolsService } from './tools.service';
 import { Response } from 'express';
 
-const sessionStore = new Map<string, Message[]>();
+const chatStore = new Map<string, Message[]>();
 
 @Injectable()
 export class AgentsService {
   constructor(private readonly toolsService: ToolsService) {}
-  async chat(sessionId: string, message: Message, res: Response): Promise<void> {
-    const history = sessionStore.get(sessionId) || [];
+
+  async createChat(userId: string) {
+    console.log('createChat', userId);
+    const chatId = Math.random().toString(36).substring(2, 15);
+    chatStore.set(chatId, []);
+    return chatId;
+  }
+
+  async chat(chatId: string, message: Message, res: Response): Promise<void> {
+    if (!chatStore.has(chatId)) {
+      throw new NotFoundException('Chat not found');
+    }
+    const history = chatStore.get(chatId) || [];
     history.push(message);
 
     const messages = appendClientMessage({
@@ -30,7 +41,7 @@ export class AgentsService {
       execute: (dataStream) => {
         const result = streamText({
           model: openai('gpt-4.1'),
-          system: chatAgentPrompt(),
+          system: prompts.getChatAgentPrompt(),
           messages: messages,
           maxSteps: 10,
           tools: this.toolsService.getTools(),
@@ -42,7 +53,7 @@ export class AgentsService {
               responseMessages: response.messages,
             });
             history.push(assistantMessage);
-            sessionStore.set(sessionId, history);
+            chatStore.set(chatId, history);
           },
           temperature: 0.6,
         });
@@ -55,11 +66,18 @@ export class AgentsService {
     });
   }
 
-  getSessionMessages(sessionId: string) {
-    return sessionStore.get(sessionId) || [];
+  getChatMessages(chatId: string) {
+    if (!chatStore.has(chatId)) {
+      throw new NotFoundException('Chat not found');
+    }
+    return chatStore.get(chatId) || [];
   }
 
-  clearSession(sessionId: string) {
-    sessionStore.delete(sessionId);
+  deleteChat(chatId: string) {
+    if (!chatStore.has(chatId)) {
+      throw new NotFoundException('Chat not found');
+    }
+    chatStore.delete(chatId);
+    return true;
   }
 }

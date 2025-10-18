@@ -3,8 +3,7 @@ import { tool, generateText, Tool } from 'ai';
 import { z } from 'zod';
 import { google } from '@ai-sdk/google';
 import { AstrologyApiService } from 'src/astrology-apis/astrology-api.service';
-import { webSearchPrompt } from 'src/prompts/web-search';
-
+import { prompts } from 'src/prompts';
 @Injectable()
 export class ToolsService {
   constructor(private readonly astrologyApiService: AstrologyApiService) {}
@@ -22,7 +21,7 @@ export class ToolsService {
               useSearchGrounding: true,
             }),
             prompt: query,
-            system: webSearchPrompt(),
+            system: prompts.getWebSearchPrompt(),
             maxSteps: 10,
           });
           return {
