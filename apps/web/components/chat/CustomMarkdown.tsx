@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 const CustomMarkdown = ({ message, className }: { message: string; className?: string }) => {
   return (
     <div
-      className={`prose max-sm:prose-sm prose-a:break-all dark:prose-invert prose-p:my-1 prose-pre:bg-transparent prose-code:before:content-none prose-code:after:content-none prose-pre:max-w-full prose-pre:p-0 max-w-full ${className}`}
+      className={`prose max-sm:prose-sm prose-a:break-all dark:prose-invert prose-hr:my-5 prose-p:my-1 prose-pre:bg-transparent prose-code:before:content-none prose-code:after:content-none prose-pre:max-w-full prose-pre:p-0 max-w-full ${className}`}
     >
       <Markdown
         remarkPlugins={[remarkGfm]}
