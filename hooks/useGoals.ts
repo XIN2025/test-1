@@ -12,7 +12,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<GoalStats | null>(null);
-  const [todaysItems, setTodaysItems] = useState<Array<any>>([]);
+  const [todaysItems, setTodaysItems] = useState<any[]>([]);
   const [optimisticTodaysItems, setOptimisticTodaysItems] = useOptimistic(
     todaysItems,
     (draft: any[], newItems: any[]) => {
