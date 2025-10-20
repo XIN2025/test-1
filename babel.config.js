@@ -1,21 +1,19 @@
-// babel.config.js
-
 module.exports = function (api) {
-  api.cache(true);
-  const plugins = [
-    [
-      require.resolve('babel-plugin-module-resolver'),
-      {
-        root: ['./'],
-        alias: {
-          '@': './',
-        },
-      },
-    ],
-  ];
+  api.cache(false);
 
   return {
     presets: [['babel-preset-expo', { jsxImportSource: 'nativewind' }], 'nativewind/babel'],
-    plugins,
+    plugins: [
+      [
+        'module-resolver',
+        {
+          root: ['./'],
+          alias: {
+            '@': './',
+          },
+        },
+      ],
+      'react-native-reanimated/plugin',
+    ],
   };
 };

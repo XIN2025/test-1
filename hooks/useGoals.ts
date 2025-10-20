@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useOptimistic, useTransition, startTransition } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { goalsApi } from '../services/goalsApi';
 import { Goal, GoalCreate, GoalStats, GoalUpdate, WeeklyReflection } from '../types/goals';
 
@@ -13,12 +13,6 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<GoalStats | null>(null);
   const [todaysItems, setTodaysItems] = useState<any[]>([]);
-  const [optimisticTodaysItems, setOptimisticTodaysItems] = useOptimistic(
-    todaysItems,
-    (draft: any[], newItems: any[]) => {
-      return newItems;
-    },
-  );
   const loadGoals = useCallback(async () => {
     if (!userEmail) return;
 
@@ -84,22 +78,20 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
 
   const markCompletion = useCallback(
     async (actionItemId: string, completed: boolean = true) => {
-      startTransition(() => {
-        const actionItem = todaysItems.find((item) => item.id === actionItemId);
-        if (actionItem) {
-          actionItem.completed = completed;
-          actionItem.complete = completed;
-        }
-        const updatedItems = [...todaysItems];
-        setOptimisticTodaysItems(updatedItems);
-      });
-
       if (!actionItemId) {
         setError('Action item ID is required');
         return false;
       }
 
       console.log(`Marking action item ${actionItemId} as ${completed ? 'completed' : 'not completed'}`);
+
+      // Optimistically update UI first
+      const actionItem = todaysItems.find((item) => item.id === actionItemId);
+      if (actionItem) {
+        actionItem.completed = completed;
+        actionItem.complete = completed;
+        setTodaysItems([...todaysItems]);
+      }
 
       // Map JS weekday (0=Sun..6=Sat) to API weekday (0=Mon..6=Sun)
       const weekDayIndex = (new Date().getDay() + 6) % 7;
@@ -116,21 +108,27 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
           }
           return true;
         }
-        startTransition(() => {
-          setOptimisticTodaysItems(todaysItems);
-        });
+        // Revert optimistic update on failure
+        if (actionItem) {
+          actionItem.completed = !completed;
+          actionItem.complete = !completed;
+          setTodaysItems([...todaysItems]);
+        }
         return false;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to mark completion';
         setError(message);
         console.error('Error marking completion:', err);
-        startTransition(() => {
-          setOptimisticTodaysItems(todaysItems);
-        });
+        // Revert optimistic update on error
+        if (actionItem) {
+          actionItem.completed = !completed;
+          actionItem.complete = !completed;
+          setTodaysItems([...todaysItems]);
+        }
         return false;
       }
     },
-    [userEmail],
+    [todaysItems],
   );
 
   const getGoalCompletionPercentage = async (goalId: string): Promise<number> => {

@@ -1,5 +1,4 @@
 import { CircularProgressRing } from '@/components/CircularProgressRing';
-import { LiquidGauge } from 'react-native-liquid-gauge';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useGoals } from '@/hooks/useGoals';
@@ -20,6 +19,9 @@ import Greeting from '@/components/Greeting';
 import { healthAlertsApi } from '../../services/healthAlertsApi';
 import { CriticalRiskAlert } from '../../types/criticalRiskAlerts';
 import { healthScoreApi } from '../../services/healthScoreApi';
+
+// Conditionally import LiquidGauge only for native platforms
+const LiquidGauge = Platform.OS !== 'web' ? require('react-native-liquid-gauge').LiquidGauge : null;
 
 const { width } = Dimensions.get('window');
 
@@ -649,44 +651,71 @@ function MainDashboard() {
                       justifyContent: 'center',
                     }}
                   >
-                    {/* Liquid Gauge for Health Score */}
-                    <LiquidGauge
-                      value={healthScore}
-                      width={width * 0.35}
-                      height={width * 0.35}
-                      config={{
-                        circleColor: '#f97316',
-                        textColor: isDarkMode ? '#fff' : '#1f2937',
-                        waveTextColor: isDarkMode ? '#1f2937' : '#fff',
-                        waveColor: '#f97316',
-                        circleThickness: 0.08,
-                        textVertPosition: 0.5,
-                        waveAnimateTime: 3000,
-                        waveRiseTime: 1500,
-                        waveHeight: 0.08,
-                        waveCount: 2,
-                        textSize: 1.2,
-                        waveRise: true,
-                        waveAnimate: true,
-                        waveHeightScaling: true,
-                        valueCountUp: true,
-                        textSuffix: '',
-                        toFixed: 0,
-                      }}
-                    />
-
-                    {/* Label below */}
-                    <Text
-                      style={{
-                        color: isDarkMode ? '#9ca3af' : '#6b7280',
-                        fontSize: 12,
-                        fontWeight: '500',
-                        textAlign: 'center',
-                        marginTop: 8,
-                      }}
-                    >
-                      {healthScoreLoading ? 'Loading…' : 'Health Score'}
-                    </Text>
+                    {/* Health Score Display - Platform specific */}
+                    {Platform.OS !== 'web' && LiquidGauge ? (
+                      // Native: Liquid Gauge
+                      <>
+                        <LiquidGauge
+                          value={healthScore}
+                          width={width * 0.35}
+                          height={width * 0.35}
+                          config={{
+                            circleColor: '#f97316',
+                            textColor: isDarkMode ? '#fff' : '#1f2937',
+                            waveTextColor: isDarkMode ? '#1f2937' : '#fff',
+                            waveColor: '#f97316',
+                            circleThickness: 0.08,
+                            textVertPosition: 0.5,
+                            waveAnimateTime: 3000,
+                            waveRiseTime: 1500,
+                            waveHeight: 0.08,
+                            waveCount: 2,
+                            textSize: 1.2,
+                            waveRise: true,
+                            waveAnimate: true,
+                            waveHeightScaling: true,
+                            valueCountUp: true,
+                            textSuffix: '',
+                            toFixed: 0,
+                          }}
+                        />
+                        <Text
+                          style={{
+                            color: isDarkMode ? '#9ca3af' : '#6b7280',
+                            fontSize: 12,
+                            fontWeight: '500',
+                            textAlign: 'center',
+                            marginTop: 8,
+                          }}
+                        >
+                          {healthScoreLoading ? 'Loading…' : 'Health Score'}
+                        </Text>
+                      </>
+                    ) : (
+                      // Web: Circular Progress Ring
+                      <>
+                        <CircularProgressRing
+                          size={width * 0.35}
+                          strokeWidth={12}
+                          progress={healthScore}
+                          color="#f97316"
+                          backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
+                          showPercentage={true}
+                          textColor={isDarkMode ? '#fff' : '#1f2937'}
+                        />
+                        <Text
+                          style={{
+                            color: isDarkMode ? '#9ca3af' : '#6b7280',
+                            fontSize: 12,
+                            fontWeight: '500',
+                            textAlign: 'center',
+                            marginTop: 8,
+                          }}
+                        >
+                          {healthScoreLoading ? 'Loading…' : 'Health Score'}
+                        </Text>
+                      </>
+                    )}
                   </WalkthroughableView>
                 </CopilotStep>
               </View>
