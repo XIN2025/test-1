@@ -29,9 +29,14 @@ import Constants from 'expo-constants';
 // Base API configuration
 const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://localhost:8000';
 
+// Log the API URL on app start
+console.log('🌐 API_BASE_URL:', API_BASE_URL);
+console.log('📦 Constants.expoConfig?.extra:', Constants.expoConfig?.extra);
+
 // Generic API request function
 export const apiRequest = async <T = any>(endpoint: string, options: RequestInit = {}): Promise<T> => {
   const url = `${API_BASE_URL}${endpoint}`;
+  console.log('📡 API Request:', url);
 
   const defaultOptions: RequestInit = {
     headers: {
@@ -41,11 +46,17 @@ export const apiRequest = async <T = any>(endpoint: string, options: RequestInit
   };
 
   try {
+    // Add timeout for requests (30 seconds)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     const response = await fetch(url, {
       ...defaultOptions,
       ...options,
+      signal: controller.signal,
     });
 
+    clearTimeout(timeoutId);
     const data: ApiResponse<T> = await response.json();
 
     if (!response.ok) {
@@ -54,10 +65,18 @@ export const apiRequest = async <T = any>(endpoint: string, options: RequestInit
 
     return data as T;
   } catch (error) {
+    console.error('❌ API Error:', error);
+    
     if (error instanceof ApiException) {
       throw error;
     }
 
+    // Handle timeout
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new ApiException('Request timeout. Please check your network connection.', 0);
+    }
+
+    // Handle network errors
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new ApiException('Network error. Please check your connection.', 0);
     }

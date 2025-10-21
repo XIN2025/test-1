@@ -157,7 +157,7 @@ export default {
       typedRoutes: true,
     },
     extra: {
-      API_BASE_URL: 'https://api.evra.opengig.work',
+      API_BASE_URL: process.env.API_BASE_URL,
       eas: {
         projectId: 'c41c4d5e-cf0b-4fc7-b62f-abab08fd108c',
       },

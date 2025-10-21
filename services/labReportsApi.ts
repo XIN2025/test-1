@@ -67,26 +67,40 @@ class LabReportsApiService {
 
   async uploadPdf(file: DocumentPickerAsset, userEmail: string): Promise<UploadResponse> {
     const formData = new FormData();
-    // RN web polyfill: ensure filename and type are set when possible
-    formData.append('file', { uri: file.uri, name: file.name, type: file.mimeType } as any);
+
+    // Handle web vs native differently
+    if (file.uri.startsWith('blob:') || file.uri.startsWith('data:')) {
+      // Web: fetch the blob from the URI
+      const response = await fetch(file.uri);
+      const blob = await response.blob();
+      formData.append('file', blob, file.name || 'lab-report.pdf');
+    } else {
+      // Native: use the URI directly
+      formData.append('file', {
+        uri: file.uri,
+        name: file.name || 'lab-report.pdf',
+        type: file.mimeType || 'application/pdf',
+      } as any);
+    }
 
     const url = `${API_BASE_URL}/lab-reports/upload?user_email=${encodeURIComponent(userEmail)}`;
+    console.log('Uploading to:', url);
+    console.log('File info:', { name: file.name, type: file.mimeType, uri: file.uri.substring(0, 50) });
+
     const response = await fetch(url, {
       method: 'POST',
       body: formData,
     });
-    console.log('got response again');
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('Upload error response:', errorData);
       const detail = errorData.detail || errorData.error || (await response.text());
       throw new Error(detail || `HTTP error! status: ${response.status}`);
     }
-    console.log('got response again again');
+
     const data = await response.json();
-    console.log('got data');
-    console.log(data);
-    console.log('url', url);
+    console.log('Upload success:', data);
 
     return data;
   }
