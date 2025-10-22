@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
-import { TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import { Mic, Send } from 'lucide-react-native';
+import React, { useRef, useEffect } from 'react';
+import { TextInput, TouchableOpacity, TouchableWithoutFeedback, View, Text } from 'react-native';
+import { Mic, MicOff, Send } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
+import { useRealtimeTranscription } from '../../hooks/useRealtimeTranscription';
 
 interface ChatInputProps {
   inputText: string;
@@ -20,6 +21,26 @@ export default function ChatInput({
 }: ChatInputProps) {
   const { isDarkMode } = useTheme();
   const inputRef = useRef<TextInput>(null);
+  const { isListening, fullTranscript, startListening, stopListening, resetTranscript } = useRealtimeTranscription();
+
+  // Update input text with real-time transcription
+  useEffect(() => {
+    if (fullTranscript) {
+      setInputText(fullTranscript);
+    }
+  }, [fullTranscript, setInputText]);
+
+  const handleMicPress = async () => {
+    if (isListening) {
+      // Stop listening
+      await stopListening();
+    } else {
+      // Clear previous transcript and start listening
+      resetTranscript();
+      setInputText('');
+      await startListening();
+    }
+  };
 
   return (
     <TouchableWithoutFeedback>
@@ -76,28 +97,66 @@ export default function ChatInput({
             enablesReturnKeyAutomatically={false}
           />
           <View className="flex flex-row gap-1">
+            {/* Listening Indicator */}
+            {isListening && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: -30,
+                  right: 60,
+                  backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 4,
+                  elevation: 4,
+                }}
+              >
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: '#ef4444',
+                  }}
+                />
+                <Text style={{ color: isDarkMode ? '#f3f4f6' : '#1f2937', fontSize: 12, fontWeight: '600' }}>
+                  Listening...
+                </Text>
+              </View>
+            )}
+
             {/* Microphone Button */}
             <TouchableOpacity
-              onPress={() => {
-                // Placeholder for future voice recording functionality
-                console.log('Microphone pressed');
-              }}
+              onPress={handleMicPress}
+              disabled={isTyping}
               style={{
                 width: 48,
                 height: 48,
                 borderRadius: 24,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
+                backgroundColor: isListening ? '#ef4444' : isDarkMode ? '#374151' : '#f3f4f6',
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.1,
                 shadowRadius: 2,
                 elevation: 2,
+                opacity: isTyping ? 0.5 : 1,
               }}
               activeOpacity={0.7}
             >
-              <Mic size={20} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+              {isListening ? (
+                <MicOff size={20} color="#ffffff" />
+              ) : (
+                <Mic size={20} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+              )}
             </TouchableOpacity>
 
             {/* Send Button */}

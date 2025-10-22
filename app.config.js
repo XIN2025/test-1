@@ -18,6 +18,7 @@ export default {
         ITSAppUsesNonExemptEncryption: false,
         NSHealthShareUsageDescription: 'Your own custom usage description',
         NSHealthUpdateUsageDescription: 'Your own custom usage description',
+        NSMicrophoneUsageDescription: 'Allow Evra to access your microphone for voice input in chat',
       },
       userInterfaceStyle: 'light',
     },
@@ -109,6 +110,9 @@ export default {
 
         // Background Access
         'android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND',
+
+        // Audio Recording for voice input
+        'android.permission.RECORD_AUDIO',
       ],
     },
     web: {
