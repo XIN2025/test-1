@@ -7,23 +7,20 @@ import * as FileSystem from 'expo-file-system';
 const RECORDING_OPTIONS = {
   isMeteringEnabled: true,
   android: {
-    extension: '.m4a',
-    outputFormat: Audio.AndroidOutputFormat.MPEG_4,
-    audioEncoder: Audio.AndroidAudioEncoder.AAC,
-    sampleRate: 16000,
+    extension: '.3gp',
+    outputFormat: Audio.AndroidOutputFormat.THREE_GPP,
+    audioEncoder: Audio.AndroidAudioEncoder.AMR_NB,
+    sampleRate: 8000,
     numberOfChannels: 1,
-    bitRate: 64000,
+    bitRate: 12200,
   },
   ios: {
-    extension: '.caf',
-    outputFormat: Audio.IOSOutputFormat.LINEARPCM,
+    extension: '.m4a',
+    outputFormat: Audio.IOSOutputFormat.MPEG4AAC,
     audioQuality: Audio.IOSAudioQuality.HIGH,
     sampleRate: 16000,
     numberOfChannels: 1,
-    bitRate: 128000,
-    linearPCMBitDepth: 16,
-    linearPCMIsBigEndian: false,
-    linearPCMIsFloat: false,
+    bitRate: 64000,
   },
   web: {
     mimeType: 'audio/webm',
@@ -42,7 +39,7 @@ export const useTranscription = (onTranscriptReceived: (transcript: string, isFi
 
   const sendAudioChunk = useCallback(async (uri: string) => {
     if (!websocketRef.current || websocketRef.current.readyState !== WebSocket.OPEN) {
-      console.log('🔌 WebSocket not open, skipping audio chunk.');
+      console.warn('⚠️ WebSocket not open, skipping audio chunk.');
       return;
     }
     try {
@@ -50,7 +47,7 @@ export const useTranscription = (onTranscriptReceived: (transcript: string, isFi
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      if (audioData) {
+      if (audioData && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
         console.log(`📤 Sent audio chunk of size: ${audioData.length}`);
         websocketRef.current.send(JSON.stringify({ type: 'audio', data: audioData }));
       }
@@ -87,28 +84,30 @@ export const useTranscription = (onTranscriptReceived: (transcript: string, isFi
         recordingRef.current = recording;
         console.log('✅ Recording started');
 
-        // Record and send in 1-second chunks (stop/start approach for complete MP4 files)
         intervalRef.current = setInterval(async () => {
           try {
             if (!recordingRef.current || !websocketRef.current || websocketRef.current.readyState !== WebSocket.OPEN) {
               return;
             }
 
-            // Stop and get current recording
-            await recordingRef.current.stopAndUnloadAsync();
             const uri = recordingRef.current.getURI();
+            await recordingRef.current.stopAndUnloadAsync();
 
             if (uri) {
               await sendAudioChunk(uri);
             }
 
-            // Start new recording for next chunk
             if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
               const { recording: newRecording } = await Audio.Recording.createAsync(RECORDING_OPTIONS);
               recordingRef.current = newRecording;
             }
           } catch (error) {
             console.error('❌ Error in recording cycle:', error);
+
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+              intervalRef.current = null;
+            }
           }
         }, 1000);
       };
@@ -135,7 +134,7 @@ export const useTranscription = (onTranscriptReceived: (transcript: string, isFi
 
       ws.onclose = () => {
         console.log('🔌 WebSocket closed');
-        stopTranscription(false); // Stop without sending 'stop' message
+        stopTranscription(false);
       };
     } catch (error) {
       console.error('❌ Error starting transcription:', error);
@@ -149,17 +148,16 @@ export const useTranscription = (onTranscriptReceived: (transcript: string, isFi
       console.log('🛑 Stopping transcription...');
       setIsRecording(false);
 
-      // Clear interval
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
 
-      // Stop and send final chunk
       try {
         if (recordingRef.current) {
-          await recordingRef.current.stopAndUnloadAsync();
           const uri = recordingRef.current.getURI();
+          await recordingRef.current.stopAndUnloadAsync();
+
           if (uri && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
             await sendAudioChunk(uri);
           }

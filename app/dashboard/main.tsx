@@ -661,22 +661,21 @@ function MainDashboard() {
                           height={width * 0.35}
                           config={{
                             circleColor: '#f97316',
-                            textColor: isDarkMode ? '#fff' : '#1f2937',
-                            waveTextColor: isDarkMode ? '#1f2937' : '#fff',
+                            textColor: '#1f2937',
+                            waveTextColor: '#fff',
                             waveColor: '#f97316',
-                            circleThickness: 0.08,
+                            circleThickness: 0.1,
                             textVertPosition: 0.5,
-                            waveAnimateTime: 3000,
-                            waveRiseTime: 1500,
-                            waveHeight: 0.08,
+                            waveAnimateTime: 2000,
+                            waveRiseTime: 1000,
+                            waveHeight: 0.1,
                             waveCount: 2,
-                            textSize: 1.2,
+                            textSize: 1,
                             waveRise: true,
                             waveAnimate: true,
                             waveHeightScaling: true,
-                            valueCountUp: true,
-                            textSuffix: '',
-                            toFixed: 0,
+                            valueCountUp: false,
+                            displayPercent: false,
                           }}
                         />
                         <Text
