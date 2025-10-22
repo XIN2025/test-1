@@ -47,13 +47,15 @@ export class ToolsService {
         dateOfBirth: z.string().describe('The date of birth in the format YYYY-MM-DDTHH:MM:SS.SSSZ'),
         latitude: z.number().describe('The latitude of the place of birth'),
         longitude: z.number().describe('The longitude of the place of birth'),
+        timezoneOffset: z.number().describe('The timezone offset of the place of birth'),
       }),
-      execute: async ({ dateOfBirth, latitude, longitude }) => {
+      execute: async ({ dateOfBirth, latitude, longitude, timezoneOffset }) => {
         try {
           const horoscope = await this.astrologyApiService.getHoroscope({
             dateOfBirth,
             latitude,
             longitude,
+            timezoneOffset,
           });
           return {
             success: true,

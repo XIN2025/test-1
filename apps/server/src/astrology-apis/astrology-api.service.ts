@@ -26,10 +26,10 @@ export class AstrologyApiService {
       min,
       lat: dto.latitude,
       lon: dto.longitude,
-      tzone: 5.5,
+      tzone: dto.timezoneOffset,
     });
 
-    return fetch(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         authorization: auth,
@@ -37,13 +37,18 @@ export class AstrologyApiService {
         'Accept-Language': language,
       },
       body: data,
-    }).then((res) => {
-      if (!res.ok) {
-        return res.json().then((err) => {
-          throw new HttpException(err?.msg || 'Failed to fetch horoscope chart', res.status);
-        });
-      }
-      return res.json();
     });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new HttpException(err?.msg || 'Failed to fetch horoscope chart', response.status);
+    }
+
+    const responseData = await response.json();
+
+    return {
+      success: true,
+      data: responseData,
+    };
   }
 }

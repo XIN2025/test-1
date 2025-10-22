@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsISO8601, IsNumber } from 'class-validator';
 
 export class GetHoroscopeDto {
@@ -13,4 +14,9 @@ export class GetHoroscopeDto {
   @ApiProperty({ example: 77.5946 })
   @IsNumber()
   longitude: number;
+
+  @ApiProperty({ example: 5.5 })
+  @IsNumber()
+  @Type(() => Number)
+  timezoneOffset: number;
 }
