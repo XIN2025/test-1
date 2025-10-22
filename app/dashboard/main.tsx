@@ -20,6 +20,7 @@ import Greeting from '@/components/Greeting';
 import { healthAlertsApi } from '../../services/healthAlertsApi';
 import { CriticalRiskAlert } from '../../types/criticalRiskAlerts';
 import { healthScoreApi } from '../../services/healthScoreApi';
+import TodaysActionItems from '@/components/main/TodaysActionItems';
 
 const { width } = Dimensions.get('window');
 
@@ -194,7 +195,7 @@ function MainDashboard() {
     fetchStreak();
   };
   const closeStreakModal = () => setShowStreakModal(false);
-  const { goals, markCompletion, todaysItems, loadTodaysItems } = useGoals({ userEmail });
+  const { goals, loadTodaysItems } = useGoals({ userEmail });
   const [healthScore, setHealthScore] = useState<number>(0);
   const [healthScoreLoading, setHealthScoreLoading] = useState<boolean>(false);
 
@@ -213,7 +214,6 @@ function MainDashboard() {
   }, [userEmail]);
   // Critical Risk Alerts state
   const [criticalRiskAlerts, setCriticalRiskAlerts] = useState<CriticalRiskAlert[]>([]);
-  const [showAllTodayItems, setShowAllTodayItems] = useState(false);
 
   // Load critical risk alerts
   const loadCriticalRiskAlerts = useCallback(async () => {
@@ -319,20 +319,6 @@ function MainDashboard() {
   // Note: We now use AsyncStorage for walkthrough triggers instead of URL parameters
   // This avoids issues with tab navigation clearing parameters
 
-  // Helper to format time into HH:MM
-  const formatTimeHM = (t?: string): string => {
-    if (!t) return '';
-    const parts = `${t}`.trim().split(':');
-    if (parts.length >= 2) {
-      const hh = (parts[0] ?? '0').padStart(2, '0');
-      const mm = (parts[1] ?? '0').padStart(2, '0');
-      return `${hh}:${mm}`;
-    }
-    const h = parts[0];
-    if (h && /^\d{1,2}$/.test(h)) return `${h.padStart(2, '0')}:00`;
-    return t;
-  };
-
   // Health score calculation (currently using hardcoded value for testing)
   // const healthScore = useMemo(() => {
   //   if (!goals || goals.length === 0) return 0;
@@ -351,20 +337,6 @@ function MainDashboard() {
   //   // Cap at 100
   //   return Math.min(Math.round(averageCompletion + streakBonus), 100);
   // }, [goals, getGoalCompletionPercentage, streak]);
-  const toggleItemCompleted = async (id: string) => {
-    const actionItem = todaysItems.find((item: any) => item.id === id);
-    if (!actionItem) return;
-
-    const isComplete = !!actionItem.completed;
-    try {
-      const ok = await markCompletion(id, !isComplete);
-      if (ok) {
-        actionItem.completed = !isComplete;
-      }
-    } catch (error) {
-      console.error('Failed to mark completion:', error);
-    }
-  };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
@@ -772,149 +744,7 @@ function MainDashboard() {
                     borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
                   }}
                 >
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      marginBottom: 16,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 18,
-                        fontWeight: '600',
-                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                      }}
-                    >
-                      Today&apos;s Action Items
-                    </Text>
-                  </View>
-                  {todaysItems.length === 0 ? (
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        color: isDarkMode ? '#9ca3af' : '#6b7280',
-                      }}
-                    >
-                      No scheduled items for today.
-                    </Text>
-                  ) : (
-                    (showAllTodayItems ? todaysItems : todaysItems.slice(0, 3)).map((it) => (
-                      <View
-                        key={it.id}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          marginBottom: 16,
-                          paddingVertical: 4,
-                        }}
-                      >
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            flex: 1,
-                          }}
-                        >
-                          <TouchableOpacity
-                            onPress={() => toggleItemCompleted(it.id)}
-                            style={{
-                              width: 24,
-                              height: 24,
-                              borderRadius: 4,
-                              borderWidth: 2,
-                              borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
-                              marginRight: 12,
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              backgroundColor: it.completed ? (isDarkMode ? '#10b981' : '#059669') : 'transparent',
-                            }}
-                            activeOpacity={0.7}
-                          >
-                            {it.completed && (
-                              <Text
-                                style={{
-                                  color: 'white',
-                                  fontSize: 16,
-                                  fontWeight: 'bold',
-                                }}
-                              >
-                                ✓
-                              </Text>
-                            )}
-                          </TouchableOpacity>
-                          <View style={{ flex: 1 }}>
-                            <Text
-                              style={{
-                                fontSize: 14,
-                                fontWeight: '500',
-                                color: it.completed
-                                  ? isDarkMode
-                                    ? '#6b7280'
-                                    : '#6b7280'
-                                  : isDarkMode
-                                    ? '#f3f4f6'
-                                    : '#1f2937',
-                                textDecorationLine: it.completed ? 'line-through' : 'none',
-                              }}
-                            >
-                              {it.title}
-                            </Text>
-                            {it.goalTitle && (
-                              <Text
-                                style={{
-                                  fontSize: 12,
-                                  color: isDarkMode ? '#9ca3af' : '#6b7280',
-                                  marginTop: 2,
-                                }}
-                              >
-                                {it.goalTitle}
-                              </Text>
-                            )}
-                          </View>
-                        </View>
-                        <View style={{ alignItems: 'flex-end', marginLeft: 12 }}>
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              fontWeight: '500',
-                              color: isDarkMode ? '#9ca3af' : '#6b7280',
-                            }}
-                          >
-                            {it.start_time && it.end_time
-                              ? `${formatTimeHM(it.start_time)} - ${formatTimeHM(it.end_time)}`
-                              : formatTimeHM(it.start_time) || formatTimeHM(it.end_time) || ''}
-                          </Text>
-                        </View>
-                      </View>
-                    ))
-                  )}
-
-                  {todaysItems.length > 3 && (
-                    <TouchableOpacity
-                      onPress={() => setShowAllTodayItems((v) => !v)}
-                      style={{
-                        marginTop: 8,
-                        alignSelf: 'flex-start',
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
-                        borderRadius: 20,
-                        backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          fontWeight: '600',
-                          color: isDarkMode ? '#34d399' : '#114131',
-                        }}
-                      >
-                        {showAllTodayItems ? 'Show less' : `Show all (${todaysItems.length})`}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
+                  <TodaysActionItems />
                 </WalkthroughableView>
               </CopilotStep>
             </View>
