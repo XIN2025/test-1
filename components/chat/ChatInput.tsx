@@ -3,6 +3,7 @@ import { TextInput, TouchableOpacity, View } from 'react-native';
 import { Mic, Send } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useRawAudioTranscription } from '../../hooks/useRawAudioTranscription';
+import { useRealtimeTranscription } from '../../hooks/useRealtimeTranscription';
 
 interface ChatInputProps {
   inputText: string;
