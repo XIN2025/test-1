@@ -2,7 +2,7 @@ export default {
   expo: {
     name: 'Evra',
     slug: 'evra',
-    owner: 'gamma-heizen',
+    owner: 'jimjamm',
     version: '1.0.5',
     orientation: 'portrait',
     icon: './assets/images/logo.png',
@@ -163,12 +163,12 @@ export default {
     extra: {
       API_BASE_URL: process.env.API_BASE_URL,
       eas: {
-        projectId: 'c41c4d5e-cf0b-4fc7-b62f-abab08fd108c',
+        projectId: 'b1ec0f89-6d86-4441-83b3-7f7b827a0ab6',
       },
     },
   },
   updates: {
-    url: 'https://u.expo.dev/c41c4d5e-cf0b-4fc7-b62f-abab08fd108c',
+    url: 'https://u.expo.dev/b1ec0f89-6d86-4441-83b3-7f7b827a0ab6',
   },
   runtimeVersion: {
     policy: 'appVersion',
