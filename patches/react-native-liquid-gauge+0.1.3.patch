@@ -1,8 +1,0 @@
-diff --git a/node_modules/react-native-liquid-gauge/assets/fonts/Roboto-Bold.ttf b/node_modules/react-native-liquid-gauge/assets/fonts/Roboto-Bold.ttf
-deleted file mode 100644
-index 43da14d..0000000
-Binary files a/node_modules/react-native-liquid-gauge/assets/fonts/Roboto-Bold.ttf and /dev/null differ
-diff --git a/node_modules/react-native-liquid-gauge/lib/assets/fonts/Roboto-Bold.ttf b/node_modules/react-native-liquid-gauge/lib/assets/fonts/Roboto-Bold.ttf
-new file mode 100644
-index 0000000..4658f9a
-Binary files /dev/null and b/node_modules/react-native-liquid-gauge/lib/assets/fonts/Roboto-Bold.ttf differ

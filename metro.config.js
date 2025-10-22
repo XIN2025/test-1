@@ -1,9 +1,15 @@
 const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
 const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
 // Configure path alias resolver
+config.resolver.alias = {
+  '@': path.resolve(__dirname),
+};
+
+// Add resolver request handler
 const { resolver } = config;
 config.resolver = {
   ...resolver,
@@ -15,4 +21,4 @@ config.resolver = {
   sourceExts: [...resolver.sourceExts, 'jsx', 'js', 'ts', 'tsx'],
 };
 
-module.exports = config;
+module.exports = withNativeWind(config, { input: './app/global.css' });

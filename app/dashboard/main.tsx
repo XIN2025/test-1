@@ -1,7 +1,7 @@
-import { CircularProgressRing } from '@/components/CircularProgressRing';
-import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
-import { useGoals } from '@/hooks/useGoals';
+import { CircularProgressRing } from '../../components/CircularProgressRing';
+import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useGoals } from '../../hooks/useGoals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -14,13 +14,12 @@ import { goalsApi } from '../../services/goalsApi';
 import PlatformHealthCard from '../../components/health/PlatformHealthCard';
 import SimpleLabTestsCard from '../../components/SimpleLabTestsCard';
 import CriticalRiskAlertsCard from '../../components/CriticalRiskAlertsCard';
-import UserAvatar from '@/components/UserAvatar';
-import Greeting from '@/components/Greeting';
+import UserAvatar from '../../components/UserAvatar';
+import Greeting from '../../components/Greeting';
 import { healthAlertsApi } from '../../services/healthAlertsApi';
 import { CriticalRiskAlert } from '../../types/criticalRiskAlerts';
 import { healthScoreApi } from '../../services/healthScoreApi';
 
-// Conditionally import LiquidGauge only for native platforms
 const LiquidGauge = Platform.OS !== 'web' ? require('react-native-liquid-gauge').LiquidGauge : null;
 
 const { width } = Dimensions.get('window');
