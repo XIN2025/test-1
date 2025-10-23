@@ -12,9 +12,8 @@ module.exports = function (api) {
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.android.js', '.android.tsx', '.ios.js', '.ios.tsx', '.json'],
       },
     ],
+    'react-native-reanimated/plugin',
   ];
-
-  plugins.push('react-native-reanimated/plugin');
 
   return {
     presets: ['babel-preset-expo', 'nativewind/babel'],

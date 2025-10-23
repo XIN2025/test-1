@@ -18,5 +18,4 @@ config.resolver = {
 
 module.exports = withNativeWind(config, {
   input: './app/global.css',
-  configPath: './tailwind.config.js',
 });
