@@ -311,6 +311,12 @@ export class AuthService {
       redirectUrl = `${config.urls.frontend}/auth/complete-profile`;
     }
 
+    const isAdmin = await this.prisma.adminEmail.findUnique({
+      where: {
+        email: userData?.email,
+      },
+    });
+
     return {
       id: userData?.id,
       email: userData?.email,
@@ -320,6 +326,7 @@ export class AuthService {
       dateOfBirth: userData?.profile?.dateOfBirth,
       timeOfBirth: userData?.profile?.timeOfBirth,
       placeOfBirth: userData?.profile?.placeOfBirth,
+      isAdmin: isAdmin || undefined,
       redirectUrl,
     };
   }

@@ -6,6 +6,7 @@ export type AuthContextType = {
   id: string;
   email: string;
   name: string;
+  isAdmin: boolean | undefined;
   horoscopeDetails: string;
   gender: string;
   dateOfBirth: string;

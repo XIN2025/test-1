@@ -19,6 +19,13 @@ enum Gender {
   OTHER
 }
 
+model AdminEmail {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  email String @unique
+
+  @@map("admin_emails")
+}
+
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
