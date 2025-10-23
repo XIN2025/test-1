@@ -61,8 +61,8 @@
     "expo-system-ui": "~5.0.11",
     "expo-task-manager": "~13.1.6",
     "expo-web-browser": "~14.2.0",
-    "nativewind": "^4.1.23",
     "lucide-react-native": "^0.525.0",
+    "nativewind": "^4.1.23",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
@@ -76,7 +76,7 @@
     "react-native-markdown-display": "^7.0.2",
     "react-native-nitro-modules": "^0.29.2",
     "react-native-progress": "^5.0.1",
-    "react-native-reanimated": "~3.17.4",
+    "react-native-reanimated": "3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
@@ -100,10 +100,7 @@
     "prettier-plugin-tailwindcss": "^0.6.14",
     "typescript": "~5.8.3"
   },
-  "overrides": {
-    "react-native-reanimated": "~3.17.4"
-  },
   "resolutions": {
-    "react-native-reanimated": "~3.17.4"
+    "react-native-reanimated": "3.17.4"
   }
 }

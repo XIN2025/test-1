@@ -4,12 +4,7 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-// Configure path alias resolver
-config.resolver.alias = {
-  '@': path.resolve(__dirname),
-};
-
-// Add resolver request handler
+// Configure path alias resolver properly
 const { resolver } = config;
 config.resolver = {
   ...resolver,

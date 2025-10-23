@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useGoals } from '../../hooks/useGoals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+// import { LiquidGauge } from 'react-native-liquid-gauge';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Bell, Flame, Heart, Target } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -19,8 +19,7 @@ import Greeting from '../../components/Greeting';
 import { healthAlertsApi } from '../../services/healthAlertsApi';
 import { CriticalRiskAlert } from '../../types/criticalRiskAlerts';
 import { healthScoreApi } from '../../services/healthScoreApi';
-
-const LiquidGauge = Platform.OS !== 'web' ? require('react-native-liquid-gauge').LiquidGauge : null;
+import { CustomLiquidGauge } from '../../components/CustomLiquidGauge';
 
 const { width } = Dimensions.get('window');
 
@@ -646,74 +645,62 @@ function MainDashboard() {
                       alignItems: 'center',
                       padding: 20,
                       borderRadius: 16,
-                      minHeight: width * 0.4,
+                      minHeight: width * 0.5,
                       justifyContent: 'center',
                     }}
                   >
-                    {/* Health Score Display - Platform specific */}
-                    {Platform.OS !== 'web' && LiquidGauge ? (
-                      // Native: Liquid Gauge
-                      <>
-                        <LiquidGauge
-                          value={healthScore}
-                          width={width * 0.35}
-                          height={width * 0.35}
-                          config={{
-                            circleColor: '#f97316',
-                            textColor: '#1f2937',
-                            waveTextColor: '#fff',
-                            waveColor: '#f97316',
-                            circleThickness: 0.1,
-                            textVertPosition: 0.5,
-                            waveAnimateTime: 2000,
-                            waveRiseTime: 1000,
-                            waveHeight: 0.1,
-                            waveCount: 2,
-                            textSize: 1,
-                            waveRise: true,
-                            waveAnimate: true,
-                            waveHeightScaling: true,
-                            valueCountUp: false,
-                            displayPercent: false,
-                          }}
-                        />
-                        <Text
-                          style={{
-                            color: isDarkMode ? '#9ca3af' : '#6b7280',
-                            fontSize: 12,
-                            fontWeight: '500',
-                            textAlign: 'center',
-                            marginTop: 8,
-                          }}
-                        >
-                          {healthScoreLoading ? 'Loading…' : 'Health Score'}
-                        </Text>
-                      </>
-                    ) : (
-                      // Web: Circular Progress Ring
-                      <>
-                        <CircularProgressRing
-                          size={width * 0.35}
-                          strokeWidth={12}
-                          progress={healthScore}
-                          color="#f97316"
-                          backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
-                          showPercentage={true}
-                          textColor={isDarkMode ? '#fff' : '#1f2937'}
-                        />
-                        <Text
-                          style={{
-                            color: isDarkMode ? '#9ca3af' : '#6b7280',
-                            fontSize: 12,
-                            fontWeight: '500',
-                            textAlign: 'center',
-                            marginTop: 8,
-                          }}
-                        >
-                          {healthScoreLoading ? 'Loading…' : 'Health Score'}
-                        </Text>
-                      </>
-                    )}
+                    <View
+                      style={{
+                        width: width * 0.45,
+                        height: width * 0.45,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <CustomLiquidGauge
+                        value={healthScore}
+                        width={width * 0.45}
+                        height={width * 0.45}
+                        circleColor="#f97316"
+                        waveColor="#f97316"
+                        textColor="#1f2937"
+                        waveTextColor="#fff"
+                      />
+                    </View>
+                    {/* <LiquidGauge
+                      value={healthScore}
+                      width={width * 0.35}
+                      height={width * 0.35}
+                      config={{
+                        circleColor: '#f97316',
+                        textColor: '#1f2937',
+                        waveTextColor: '#fff',
+                        waveColor: '#f97316',
+                        circleThickness: 0.1,
+                        textVertPosition: 0.5,
+                        waveAnimateTime: 2000,
+                        waveRiseTime: 1000,
+                        waveHeight: 0.1,
+                        waveCount: 2,
+                        textSize: 1,
+                        waveRise: true,
+                        waveAnimate: true,
+                        waveHeightScaling: true,
+                        valueCountUp: false,
+                        // displayPercent: false,
+                      }}
+                    /> */}
+                    <Text
+                      style={{
+                        color: isDarkMode ? '#9ca3af' : '#6b7280',
+                        fontSize: 12,
+                        fontWeight: '500',
+                        textAlign: 'center',
+                        marginTop: 8,
+                      }}
+                    >
+                      {healthScoreLoading ? 'Loading…' : 'Health Score'}
+                    </Text>
                   </WalkthroughableView>
                 </CopilotStep>
               </View>

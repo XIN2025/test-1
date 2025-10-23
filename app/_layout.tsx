@@ -18,7 +18,6 @@ export default function RootLayout() {
               flex: 1,
               justifyContent: 'center',
               alignItems: 'center',
-              // backgroundColor: "#f0fdf4",
             }}
           >
             <Text style={{ color: '#059669', fontSize: 18 }}>Loading...</Text>
@@ -31,10 +30,8 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <>
-          <HeadlessBackgroundSync />
-          <Stack screenOptions={{ headerShown: false }} />
-        </>
+        <HeadlessBackgroundSync />
+        <Stack screenOptions={{ headerShown: false }} />
       </AuthProvider>
     </ThemeProvider>
   );
