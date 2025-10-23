@@ -40,7 +40,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
     paddingVertical: 4,
   },
   checkboxContent: {
@@ -49,8 +48,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   checkbox: {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     borderRadius: 4,
     borderWidth: 2,
     marginRight: 12,
@@ -84,15 +83,16 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 18,
     fontWeight: '600',
+    marginBottom: 4,
   },
   emptyText: {
     fontSize: 14,
   },
   showMoreButton: {
-    marginTop: 8,
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 6,
+    marginTop: 4,
     borderRadius: 20,
   },
   showMoreText: {
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   activityIndicator: {
-    transform: [{ scale: 0.5 }],
+    transform: [{ scale: 0.45 }],
   },
 });
 
@@ -218,19 +218,17 @@ export default function TodaysActionItems() {
   };
 
   return (
-    <>
-      <View style={styles.headerContainer}>
-        <Text
-          style={[
-            styles.headerText,
-            {
-              color: colors.headerText,
-            },
-          ]}
-        >
-          Today&apos;s Action Items
-        </Text>
-      </View>
+    <View className="flex-col gap-2">
+      <Text
+        style={[
+          styles.headerText,
+          {
+            color: colors.headerText,
+          },
+        ]}
+      >
+        Today&apos;s Action Items
+      </Text>
       {todaysItems.length === 0 ? (
         <Text
           style={[
@@ -276,6 +274,6 @@ export default function TodaysActionItems() {
           </Text>
         </TouchableOpacity>
       )}
-    </>
+    </View>
   );
 }
