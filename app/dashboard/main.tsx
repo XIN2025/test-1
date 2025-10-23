@@ -11,7 +11,7 @@ import { Dimensions, Modal, Pressable, ScrollView, Text, TouchableOpacity, View,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CopilotProvider, CopilotStep, walkthroughable, useCopilot } from 'react-native-copilot';
 import { goalsApi } from '../../services/goalsApi';
-import PlatformHealthCard from '../../components/health/PlatformHealthCard';
+import HealthCard from '../../components/health/HealthCard';
 import SimpleLabTestsCard from '../../components/SimpleLabTestsCard';
 import CriticalRiskAlertsCard from '../../components/CriticalRiskAlertsCard';
 import UserAvatar from '@/components/UserAvatar';
@@ -595,12 +595,7 @@ function MainDashboard() {
           }}
         >
           {/* Health Card - Platform specific (iOS HealthKit / Android Health Connect) */}
-          <PlatformHealthCard
-            isDarkMode={isDarkMode}
-            onPress={() => router.push('/dashboard/health')}
-            width={width * 0.44}
-            height={width * 0.4}
-          />
+          <HealthCard onPress={() => router.push('/dashboard/health')} width={width * 0.44} height={width * 0.4} />
 
           {/* Health Score - Right Side */}
           <View className="items-center justify-center">
