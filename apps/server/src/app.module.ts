@@ -5,7 +5,10 @@ import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
 import { AstrologyApiModule } from './astrology-apis/astrology-api.module';
 import { AgentsModule } from './agents/agents.module';
+import { MailModule } from './mail/mail.module';
+import { ProfileModule } from './profile/profile.module';
 import { PrismaModule } from './prisma/prisma.module';
+
 @Module({
   imports: [
     LoggerModule.forRoot({
@@ -30,9 +33,11 @@ import { PrismaModule } from './prisma/prisma.module';
       },
     }),
     PrismaModule,
+    MailModule,
     AuthModule,
     AstrologyApiModule,
     AgentsModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

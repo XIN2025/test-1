@@ -11,7 +11,7 @@ const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
       verifyToken(data.user.token).then((payload) => {
         if (!payload) {
           signOut({
-            callbackUrl: '/login',
+            callbackUrl: '/auth/login',
           });
         }
       });

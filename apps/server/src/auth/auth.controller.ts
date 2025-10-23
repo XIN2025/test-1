@@ -1,35 +1,57 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { RegisterEmailDto, SetPasswordDto } from './dto/register.dto';
+import { LoginEmailDto, LoginGoogleDto } from './dto/login.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CurrentUser } from './decorators/user.decorator';
+import { RequestUser } from './dto/request-user.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('send-verification-email')
-  @ApiOperation({ summary: 'Send verification email to a user' })
-  sendVerificationEmail(@Body('email') email: string) {
-    return this.authService.sendVerificationEmail(email);
+  @Post('login/email')
+  @ApiOperation({ summary: 'Login via email and password' })
+  loginEmail(@Body() body: LoginEmailDto) {
+    return this.authService.loginEmail(body);
   }
 
-  @Get('verify-email')
-  @ApiOperation({ summary: 'Verify a user email using token' })
+  @Post('login/google')
+  @ApiOperation({ summary: 'Login via google' })
+  loginGoogle(@Body() body: LoginGoogleDto) {
+    return this.authService.loginGoogle(body);
+  }
+
+  @Post('register/email')
+  @ApiOperation({ summary: 'Register email' })
+  registerEmail(@Body() body: RegisterEmailDto) {
+    return this.authService.registerEmail(body);
+  }
+
+  @Post('set/password')
+  @ApiOperation({ summary: 'Set a new password using token' })
+  registerPassword(@Body() body: SetPasswordDto) {
+    return this.authService.setPassword(body);
+  }
+
+  @Get('verify/email')
+  @ApiOperation({ summary: 'Verify email' })
   verifyEmail(@Query('token') token: string) {
     return this.authService.verifyEmail(token);
   }
 
-  @Post('register')
-  @ApiOperation({ summary: 'Register a new user after email verification' })
-  register(@Body() body: RegisterDto) {
-    return this.authService.register(body);
+  @Get('set/password/status')
+  @ApiOperation({ summary: 'Check password reset status' })
+  checkPasswordResetStatus(@Query('token') token: string) {
+    return this.authService.checkPasswordResetStatus(token);
   }
 
-  @Post('login')
-  @ApiOperation({ summary: 'Authenticate user with email and password' })
-  login(@Body() body: LoginDto) {
-    return this.authService.login(body);
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get current user' })
+  me(@CurrentUser() user: RequestUser) {
+    return this.authService.me(user);
   }
 }

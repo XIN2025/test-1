@@ -83,7 +83,7 @@ export const ChatConfig: React.FC = () => {
             <SelectContent>
               <SelectItem value='gemini'>
                 <div className='flex items-center gap-2'>
-                  {icons.gemini}
+                  {icons.google}
                   <span>Gemini</span>
                 </div>
               </SelectItem>

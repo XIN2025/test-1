@@ -1,22 +1,18 @@
 import '@repo/ui/globals.css';
-import Providers from '@/app/providers';
-import { Suspense } from 'react';
+import Providers from './providers';
 import { Metadata } from 'next';
-import { ReactQueryClientProvider } from '@/lib/tanstack-provider';
 import { dmSans } from '@/lib/fonts';
+import { Suspense } from 'react';
 import GlobalLoading from './loading';
+import { ReactQueryClientProvider } from '@/lib/tanstack-provider';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'Karmi',
-  description: 'Karmi - Your Vedic Astrologer',
+  description: 'Karmi',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ReactQueryClientProvider>
       <html lang='en' suppressHydrationWarning>

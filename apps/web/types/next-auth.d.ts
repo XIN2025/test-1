@@ -6,7 +6,7 @@ declare module 'next-auth' {
     email: string;
     name: string;
     avatarUrl?: string;
-    role: string;
+    //role: string;
     token: string;
   }
   interface Session {
@@ -15,7 +15,7 @@ declare module 'next-auth' {
       email: string;
       name: string;
       avatarUrl?: string;
-      role: string;
+      //role: string;
       token: string;
     };
   }

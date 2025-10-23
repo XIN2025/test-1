@@ -1,4 +1,5 @@
 'use client';
+
 import { ThemeProvider } from '@repo/ui/components/theme-provider';
 import { TooltipProvider } from '@repo/ui/components/tooltip';
 import { Toaster } from '@repo/ui/components/sonner';

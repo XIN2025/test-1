@@ -1,7 +1,12 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
-
-export class LoginDto {
+import { LoginInput } from '@repo/shared-types/types';
+export class LoginGoogleDto {
+  @IsNotEmpty()
+  @IsString()
+  idToken: string;
+}
+export class LoginEmailDto implements LoginInput {
   @IsEmail()
   @IsNotEmpty()
   @Transform(({ value }) => value.toLowerCase().trim())
@@ -9,5 +14,6 @@ export class LoginDto {
 
   @IsString()
   @IsNotEmpty()
+  @MinLength(6)
   password: string;
 }

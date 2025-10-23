@@ -8,31 +8,61 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
-  email                  String   @unique
-  password               String
-  name                   String
-  isVerified             Boolean  @default(false)
-  emailVerificationToken String?  @unique
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
 
-  profile                UserProfile?
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  auth    UserAuth?
+  profile UserProfile?
 
   @@map("users")
 }
 
-model UserProfile {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @unique
-  dateOfBirth   DateTime?
-  timeOfBirth   String?
-  placeOfBirth  String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model UserAuth {
+  id                          String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId                      String       @unique @db.ObjectId
+  provider                    AuthProvider
+  verificationToken           String?
+  verificationTokenExpiresAt  DateTime?
+  password                    String?
+  passwordResetToken          String?
+  passwordResetTokenExpiresAt DateTime?
+  isVerified                  Boolean      @default(false)
+  verifiedAt                  DateTime?
+  createdAt                   DateTime     @default(now())
+  updatedAt                   DateTime     @updatedAt
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_auths")
+}
+
+model UserProfile {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @unique @db.ObjectId
+  gender           Gender
+  dateOfBirth      DateTime
+  timeOfBirth      String?
+  placeOfBirth     String
+  horoscopeDetails Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
 }
