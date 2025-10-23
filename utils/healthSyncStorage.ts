@@ -12,16 +12,17 @@ export interface SyncTimestamp {
 /**
  * Get the last successful sync timestamp
  */
-export const getLastSyncTimestamp = async (): Promise<Date | null> => {
+export const getLastSyncTimestamp = async (): Promise<Date> => {
   try {
     const timestampStr = await AsyncStorage.getItem(LAST_SYNC_TIMESTAMP_KEY);
     if (!timestampStr) {
-      return null;
+      // get date one hour ago
+      return new Date(Date.now() - 60 * 60 * 1000);
     }
     return new Date(parseInt(timestampStr));
   } catch (error) {
     console.error('Error getting last sync timestamp:', error);
-    return null;
+    return new Date(Date.now() - 60 * 60 * 1000);
   }
 };
 
