@@ -21,7 +21,7 @@ const CardLayout = ({
   children,
 }: CardLayoutProps) => {
   return (
-    <Card className='w-full'>
+    <Card className='mx-auto w-full max-w-lg'>
       <CardHeader>
         <div className='mx-auto mb-4 flex items-center gap-2'>
           {showLogo && (

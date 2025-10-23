@@ -1,4 +1,4 @@
-import CompleteProfileForm from '@/components/profile/CompleteProfileForm';
+import CompleteProfileForm from '@/components/auth/CompleteProfileForm';
 import { AuthService } from '@/services';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';

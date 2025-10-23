@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import CardLayout from '../auth/CardLayout';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ProfileInput } from '@repo/shared-types/types';
@@ -13,9 +13,11 @@ import { enumToText } from '@repo/shared-types/utils';
 import { useCreateProfile } from '@/queries/profile';
 import { useRouter } from 'next/navigation';
 import LoadingButton from '../general/LoadingButton';
+import ProfileLoader from './ProfileLoader';
 
 const CompleteProfileForm = () => {
   const { mutate: createProfile, isPending: isCreatingProfile } = useCreateProfile();
+  const [showProfileLoader, setShowProfileLoader] = useState(false);
   const router = useRouter();
   const form = useForm<ProfileInput>({
     resolver: zodResolver(ProfileSchema),
@@ -31,10 +33,15 @@ const CompleteProfileForm = () => {
   const onSubmit = (data: ProfileInput) => {
     createProfile(data, {
       onSuccess: () => {
-        router.push('/');
+        setShowProfileLoader(true);
       },
     });
   };
+
+  if (showProfileLoader) {
+    const duration = Math.floor(Math.random() * 5) + 5;
+    return <ProfileLoader duration={duration} onComplete={() => router.push('/')} />;
+  }
 
   return (
     <CardLayout title='Enter your birth details' description="Let's get started with your cosmic journey">
