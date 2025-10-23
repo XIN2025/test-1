@@ -4,7 +4,6 @@ import React from 'react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { Platform } from 'react-native';
 
 function TabsNavigator() {
   const { isDarkMode } = useTheme();
@@ -18,19 +17,11 @@ function TabsNavigator() {
         tabBarStyle: {
           backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
           borderTopColor: isDarkMode ? '#374151' : '#e5e7eb',
-          // height: 55,
           paddingBottom: 12,
-          // paddingTop: 10,
-          // marginBottom: 20,
           paddingHorizontal: 12,
-          // borderTopWidth: 1,
-          // elevation: 0,
-          // shadowOpacity: 0,
         },
         tabBarActiveTintColor: isDarkMode ? '#34d399' : '#059669',
         tabBarInactiveTintColor: isDarkMode ? '#9ca3af' : '#64748b',
-        // animation: Platform.OS === 'ios' ? 'shift' : 'fade',
-        tabBarHideOnKeyboard: true,
       }}
       initialRouteName={initialRoute}
     >

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FlatList } from 'react-native';
 import { Message } from '../../types/chat';
 import MessageComponent from './Message';
@@ -10,12 +10,22 @@ interface MessagesProps {
 
 export default function Messages({ messages, onSuggestionClick }: MessagesProps) {
   const flatListRef = useRef<FlatList<Message>>(null);
-  const isAtBottomRef = useRef(true);
-  const handleScroll = (e: any) => {
-    const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
-    const threshold = 24;
-    isAtBottomRef.current = contentOffset.y + layoutMeasurement.height >= contentSize.height - threshold;
+  const [contentHeight, setContentHeight] = useState(0);
+
+  const scrollToBottom = (animated = true) => {
+    requestAnimationFrame(() => {
+      flatListRef.current?.scrollToEnd({ animated });
+    });
   };
+
+  useEffect(() => {
+    if (flatListRef.current && messages.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 50);
+    }
+  }, [messages]);
+
   return (
     <FlatList
       ref={flatListRef}
@@ -29,18 +39,19 @@ export default function Messages({ messages, onSuggestionClick }: MessagesProps)
       )}
       keyExtractor={(item) => item.id}
       contentContainerStyle={{
+        paddingTop: 16,
         paddingHorizontal: 16,
-        paddingVertical: 16,
-        paddingBottom: 120,
       }}
       keyboardShouldPersistTaps="handled"
-      onContentSizeChange={() => {
-        if (isAtBottomRef.current) {
-          flatListRef.current?.scrollToEnd({ animated: false });
+      onContentSizeChange={(height) => {
+        if (height > contentHeight) {
+          setContentHeight(height);
+          setTimeout(() => {
+            scrollToBottom();
+          }, 50);
         }
       }}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
+      onLayout={() => scrollToBottom()}
     />
   );
 }

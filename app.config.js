@@ -110,6 +110,7 @@ export default {
         // Background Access
         'android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND',
       ],
+      softwareKeyboardLayoutMode: 'pan',
     },
     web: {
       bundler: 'metro',

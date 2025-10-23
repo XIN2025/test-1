@@ -1,4 +1,3 @@
-import { CircularProgressRing } from '@/components/CircularProgressRing';
 import { LiquidGauge } from 'react-native-liquid-gauge';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
