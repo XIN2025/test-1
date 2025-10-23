@@ -1,10 +1,9 @@
-import { CircularProgressRing } from '@/components/CircularProgressRing';
-import { LiquidGauge } from 'react-native-liquid-gauge';
-import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
-import { useGoals } from '@/hooks/useGoals';
+import { CircularProgressRing } from '../../components/CircularProgressRing';
+import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useGoals } from '../../hooks/useGoals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+// import { LiquidGauge } from 'react-native-liquid-gauge';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Bell, Flame, Heart, Target } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -15,11 +14,12 @@ import { goalsApi } from '../../services/goalsApi';
 import PlatformHealthCard from '../../components/health/PlatformHealthCard';
 import SimpleLabTestsCard from '../../components/SimpleLabTestsCard';
 import CriticalRiskAlertsCard from '../../components/CriticalRiskAlertsCard';
-import UserAvatar from '@/components/UserAvatar';
-import Greeting from '@/components/Greeting';
+import UserAvatar from '../../components/UserAvatar';
+import Greeting from '../../components/Greeting';
 import { healthAlertsApi } from '../../services/healthAlertsApi';
 import { CriticalRiskAlert } from '../../types/criticalRiskAlerts';
 import { healthScoreApi } from '../../services/healthScoreApi';
+import { CustomLiquidGauge } from '../../components/CustomLiquidGauge';
 
 const { width } = Dimensions.get('window');
 
@@ -645,37 +645,51 @@ function MainDashboard() {
                       alignItems: 'center',
                       padding: 20,
                       borderRadius: 16,
-                      minHeight: width * 0.4,
+                      minHeight: width * 0.5,
                       justifyContent: 'center',
                     }}
                   >
-                    {/* Liquid Gauge for Health Score */}
-                    <LiquidGauge
+                    <View
+                      style={{
+                        width: width * 0.45,
+                        height: width * 0.45,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <CustomLiquidGauge
+                        value={healthScore}
+                        width={width * 0.45}
+                        height={width * 0.45}
+                        circleColor="#f97316"
+                        waveColor="#f97316"
+                        textColor="#1f2937"
+                        waveTextColor="#fff"
+                      />
+                    </View>
+                    {/* <LiquidGauge
                       value={healthScore}
                       width={width * 0.35}
                       height={width * 0.35}
                       config={{
                         circleColor: '#f97316',
-                        textColor: isDarkMode ? '#fff' : '#1f2937',
-                        waveTextColor: isDarkMode ? '#1f2937' : '#fff',
+                        textColor: '#1f2937',
+                        waveTextColor: '#fff',
                         waveColor: '#f97316',
-                        circleThickness: 0.08,
+                        circleThickness: 0.1,
                         textVertPosition: 0.5,
-                        waveAnimateTime: 3000,
-                        waveRiseTime: 1500,
-                        waveHeight: 0.08,
+                        waveAnimateTime: 2000,
+                        waveRiseTime: 1000,
+                        waveHeight: 0.1,
                         waveCount: 2,
-                        textSize: 1.2,
+                        textSize: 1,
                         waveRise: true,
                         waveAnimate: true,
                         waveHeightScaling: true,
-                        valueCountUp: true,
-                        textSuffix: '',
-                        toFixed: 0,
+                        valueCountUp: false,
+                        // displayPercent: false,
                       }}
-                    />
-
-                    {/* Label below */}
+                    /> */}
                     <Text
                       style={{
                         color: isDarkMode ? '#9ca3af' : '#6b7280',
