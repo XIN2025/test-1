@@ -8,6 +8,7 @@ import { AgentsModule } from './agents/agents.module';
 import { MailModule } from './mail/mail.module';
 import { ProfileModule } from './profile/profile.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { PrismaModule } from './prisma/prisma.module';
     AstrologyApiModule,
     AgentsModule,
     ProfileModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

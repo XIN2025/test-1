@@ -26,6 +26,17 @@ model AdminEmail {
   @@map("admin_emails")
 }
 
+model ChatConfig {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  model           String
+  chatAgentPrompt String
+  webSearchPrompt String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("chat_config")
+}
+
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique

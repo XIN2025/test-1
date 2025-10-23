@@ -1,11 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 import { AgentsService } from './agents.service';
 import { Response } from 'express';
-import { ApiOperation } from '@nestjs/swagger';
-import { ChatAgentInputDto, UpdateChatAgentConfigDto } from './dto/chat-agent.dto';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ChatAgentInputDto } from './dto/chat-agent.dto';
 import { CurrentUser } from 'src/auth/decorators/user.decorator';
 import { RequestUser } from 'src/auth/dto/request-user.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@ApiTags('Agents')
 @Controller('agents')
 export class AgentsController {
   constructor(private readonly agentsService: AgentsService) {}
@@ -32,17 +36,5 @@ export class AgentsController {
   @ApiOperation({ summary: 'Delete a chat' })
   deleteChat(@Param('chatId') chatId: string) {
     return this.agentsService.deleteChat(chatId);
-  }
-
-  @Get('config/chat')
-  @ApiOperation({ summary: 'Get the chat agent prompt' })
-  getChatConfig() {
-    return this.agentsService.getChatConfig();
-  }
-
-  @Put('config/chat')
-  @ApiOperation({ summary: 'Update the chat agent prompt' })
-  updateChatConfig(@Body() body: UpdateChatAgentConfigDto) {
-    return this.agentsService.updateChatConfig(body);
   }
 }

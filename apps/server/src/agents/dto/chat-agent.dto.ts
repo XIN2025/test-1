@@ -46,13 +46,3 @@ export class ChatAgentInputDto {
   @Type(() => MessageDto)
   message: MessageDto;
 }
-
-export class UpdateChatAgentConfigDto {
-  @IsString()
-  @IsOptional()
-  prompt?: string;
-
-  @IsIn(['openai', 'gemini'])
-  @IsOptional()
-  model?: 'openai' | 'gemini';
-}

@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import ChatInput from './ChatInput';
 import ChatMessages from './ChatMessages';
 import Greeting from './Greeting';
-import { useCreateChat } from '@/queries/chat.query';
+import { useCreateChat } from '@/queries/chat';
 
 const ChatPage = () => {
   const { data: session } = useSession();

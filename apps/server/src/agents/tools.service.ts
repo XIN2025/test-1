@@ -3,10 +3,13 @@ import { tool, generateText, Tool } from 'ai';
 import { z } from 'zod';
 import { google } from '@ai-sdk/google';
 import { AstrologyApiService } from 'src/astrology-apis/astrology-api.service';
-import { prompts } from 'src/agents/prompts';
+import { ChatConfigService } from './chat-config.service';
 @Injectable()
 export class ToolsService {
-  constructor(private readonly astrologyApiService: AstrologyApiService) {}
+  constructor(
+    private readonly astrologyApiService: AstrologyApiService,
+    private readonly chatConfigService: ChatConfigService
+  ) {}
   websiteSearchTool(): Tool {
     return tool({
       description:
@@ -21,7 +24,7 @@ export class ToolsService {
               useSearchGrounding: true,
             }),
             prompt: query,
-            system: prompts.getWebSearchPrompt(),
+            system: this.chatConfigService.getChatConfig().webSearchPrompt,
             maxSteps: 10,
           });
           return {

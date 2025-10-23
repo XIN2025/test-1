@@ -5,14 +5,14 @@ import Editor from '@monaco-editor/react';
 import { Button } from '@repo/ui/components/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui/components/select';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@repo/ui/components/resizable';
-import { useChatConfig, useUpdateChatConfig } from '@/queries';
+import { useGetChatConfig, useUpdateChatConfig } from '@/queries';
 import { toast } from 'sonner';
-import LoadingButton from './general/LoadingButton';
+import LoadingButton from '../general/LoadingButton';
 import { AlertTriangle } from 'lucide-react';
-import { DataLoader } from './general/DataLoader';
-import EmptyMessage from './general/EmptyMessage';
-import CustomMarkdown from './chat/CustomMarkdown';
-import { icons } from './icons';
+import { DataLoader } from '../general/DataLoader';
+import EmptyMessage from '../general/EmptyMessage';
+import CustomMarkdown from '../chat/CustomMarkdown';
+import { icons } from '../icons';
 
 type AIModel = 'gemini' | 'openai';
 
@@ -20,13 +20,13 @@ export const ChatConfig: React.FC = () => {
   const [markdown, setMarkdown] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<AIModel>('openai');
 
-  const { data: configData, isLoading, error } = useChatConfig();
+  const { data: configData, isLoading, error } = useGetChatConfig();
   const { mutate: updateConfig, isPending: isSaving } = useUpdateChatConfig();
 
   useEffect(() => {
     if (configData) {
-      setMarkdown(configData.prompt);
-      setSelectedModel(configData.model);
+      setMarkdown(configData.chatAgentPrompt);
+      setSelectedModel(configData.model as AIModel);
     }
   }, [configData]);
 
@@ -35,13 +35,13 @@ export const ChatConfig: React.FC = () => {
       toast.error('Config cannot be empty');
       return;
     }
-    updateConfig({ prompt: markdown, model: selectedModel });
+    updateConfig({ chatAgentPrompt: markdown, model: selectedModel as 'openai' | 'gemini' });
   };
 
   const handleReset = () => {
     if (configData) {
-      setMarkdown(configData.prompt);
-      setSelectedModel(configData.model);
+      setMarkdown(configData.chatAgentPrompt);
+      setSelectedModel(configData.model as AIModel);
       toast.info('Changes are reset');
     }
   };
@@ -60,7 +60,7 @@ export const ChatConfig: React.FC = () => {
     );
   }
 
-  const hasChanges = markdown !== configData?.prompt || selectedModel !== configData?.model;
+  const hasChanges = markdown !== configData?.chatAgentPrompt || selectedModel !== (configData?.model as AIModel);
 
   return (
     <div className='flex h-dvh flex-col gap-4 p-6'>

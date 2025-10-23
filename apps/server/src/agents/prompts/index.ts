@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync } from 'fs';
 
-export const prompts = {
+export const fallbackPrompts = {
   getChatAgentPrompt: () => {
     const chatAgentPrompt = readFileSync(`src/agents/prompts/chat-agent.md`, 'utf8');
     return chatAgentPrompt;
@@ -8,9 +8,5 @@ export const prompts = {
   getWebSearchPrompt: () => {
     const webSearchPrompt = readFileSync(`src/agents/prompts/web-search.md`, 'utf8');
     return webSearchPrompt;
-  },
-  updateChatAgentPrompt: (prompt: string) => {
-    writeFileSync(`src/agents/prompts/chat-agent.md`, prompt);
-    return true;
   },
 };

@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterEmailDto, SetPasswordDto } from './dto/register.dto';
 import { LoginEmailDto, LoginGoogleDto } from './dto/login.dto';
@@ -50,6 +50,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user' })
   me(@CurrentUser() user: RequestUser) {
     return this.authService.me(user);
