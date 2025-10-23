@@ -13,7 +13,7 @@ interface MessageProps {
 }
 
 const LoadingMessage = ({ isDarkMode }: { isDarkMode: boolean }) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+  <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}>
     <ActivityIndicator size="small" color={isDarkMode ? '#34d399' : '#114131'} />
     <Text style={{ marginLeft: 8, fontSize: 14, color: isDarkMode ? '#d1d5db' : '#6b7280' }}>Evra is thinking...</Text>
   </View>
@@ -32,38 +32,30 @@ export default function Message({ message, showAvatar = true, onSuggestionClick 
       }}
     >
       <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'flex-start',
-          justifyContent: isUser ? 'flex-end' : 'flex-start',
-          maxWidth: '85%',
-        }}
+        style={[
+          {
+            maxWidth: '85%',
+            paddingHorizontal: 16,
+            paddingVertical: 4,
+            backgroundColor: isUser ? (isDarkMode ? '#064e3b' : '#059669') : isDarkMode ? '#1f2937' : '#ffffff',
+            borderRadius: 18,
+            borderWidth: 0,
+            ...shadow.card,
+          },
+          isUser ? { borderBottomRightRadius: 4 } : { borderBottomLeftRadius: 4 },
+        ]}
       >
-        <View
-          style={[
-            {
-              paddingHorizontal: 16,
-              paddingVertical: 4,
-              backgroundColor: isUser ? (isDarkMode ? '#064e3b' : '#059669') : isDarkMode ? '#1f2937' : '#ffffff',
-              borderRadius: 18,
-              borderWidth: 0,
-              ...shadow.card,
-            },
-            isUser ? { borderBottomRightRadius: 4 } : { borderBottomLeftRadius: 4 },
-          ]}
-        >
-          {!isUser && isLoading ? (
-            <LoadingMessage isDarkMode={isDarkMode} />
-          ) : (
-            <Markdown
-              style={{
-                body: { color: isUser ? '#ffffff' : isDarkMode ? '#e5e7eb' : '#111827' },
-              }}
-            >
-              {text}
-            </Markdown>
-          )}
-        </View>
+        {!isUser && isLoading ? (
+          <LoadingMessage isDarkMode={isDarkMode} />
+        ) : (
+          <Markdown
+            style={{
+              body: { color: isUser ? '#ffffff' : isDarkMode ? '#e5e7eb' : '#111827' },
+            }}
+          >
+            {text}
+          </Markdown>
+        )}
       </View>
       {!isUser && suggestions && suggestions.length > 0 && !isLoading && (
         <MessageSuggestions suggestions={suggestions} onSuggestionClick={onSuggestionClick} />
