@@ -14,6 +14,7 @@ import { Response } from 'express';
 import { google } from '@ai-sdk/google';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatConfigService } from './chat-config.service';
+import { RequestUser } from 'src/auth/dto/request-user.dto';
 
 const chatStore = new Map<string, Message[]>();
 
@@ -56,11 +57,25 @@ export class AgentsService {
     return { id: chatId };
   }
 
-  async chat(chatId: string, message: Message, res: Response): Promise<void> {
+  async chat(chatId: string, message: Message, user: RequestUser, res: Response): Promise<void> {
     if (!chatStore.has(chatId)) {
       throw new NotFoundException('Chat not found');
     }
     const history = chatStore.get(chatId) || [];
+    const systemMessage = history.find((msg) => msg.role === 'system');
+    if (!systemMessage) {
+      console.log('creating system message from user profile');
+      const userProfile = await this.prisma.userProfile.findUnique({
+        where: {
+          userId: user.id,
+        },
+      });
+      history.push({
+        role: 'system',
+        content: `User name: ${user.name}\n User Gender: ${userProfile?.gender}\n User DOB: ${userProfile?.dateOfBirth}\n User time of birth: ${userProfile?.timeOfBirth}\n User place of birth: ${userProfile?.placeOfBirth}\n User horoscope details: ${userProfile?.horoscopeDetails}`,
+        id: Math.random().toString(36).substring(2, 15),
+      });
+    }
     history.push(message);
 
     const messages = appendClientMessage({

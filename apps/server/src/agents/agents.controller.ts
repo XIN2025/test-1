@@ -22,8 +22,13 @@ export class AgentsController {
 
   @Post('chat/:chatId')
   @ApiOperation({ summary: 'Chat with the Karmi agent' })
-  async chat(@Body() body: ChatAgentInputDto, @Param('chatId') chatId: string, @Res() res: Response) {
-    return this.agentsService.chat(chatId, body.message, res);
+  async chat(
+    @Body() body: ChatAgentInputDto,
+    @Param('chatId') chatId: string,
+    @CurrentUser() user: RequestUser,
+    @Res() res: Response
+  ) {
+    return this.agentsService.chat(chatId, body.message, user, res);
   }
 
   @Get('chat/:chatId/messages')

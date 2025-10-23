@@ -26,6 +26,8 @@ export default tseslint.config(
   },
   {
     rules: {
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-base-to-string': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',

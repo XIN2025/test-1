@@ -37,7 +37,7 @@ const AIMessage = ({ message }: AIMessageProps) => {
           {message.parts?.map((part, index) => {
             const { type } = part;
             if (type === 'reasoning') {
-              return <CustomMarkdown key={index} className='italic' message={part.reasoning} />;
+              return <CustomMarkdown key={index} className='text-sm italic' message={part.reasoning} />;
             }
             if (type === 'text') {
               return <CustomMarkdown key={index} message={part.text} />;
