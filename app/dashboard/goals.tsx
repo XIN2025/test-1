@@ -3,7 +3,6 @@ import GoalProgressTracker from '@/components/goals/GoalProgressTracker';
 import ActionItemCard from '@/components/goals/ActionItemCard';
 import ActionItemScheduleModal from '@/components/goals/ActionItemScheduleModal';
 import EmptyGoals from '@/components/goals/EmptyGoals';
-import GoalsHeader from '@/components/goals/GoalsHeader';
 import LoadingScreen from '@/components/goals/LoadingScreen';
 import PreferencesModal from '@/components/goals/PreferencesModal';
 import HabitGoalIntegration from '@/components/HabitGoalIntegration';
@@ -18,11 +17,13 @@ import { ActionItem, Goal, GoalCategory, GoalFormData, GoalPriority } from '@/ty
 import { PillarTimePreferences, PillarType, TimePreference } from '@/types/preferences';
 import * as DocumentPicker from 'expo-document-picker';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { BarChart3, BookOpen, ChevronLeft, ChevronRight, Trash } from 'lucide-react-native';
+import { BarChart3, BookOpen, ChevronLeft, ChevronRight, Plus, Star, Target, Trash } from 'lucide-react-native';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AddGoalModal from '@/components/goals/AddGoalModal';
 import UploadModal from '@/components/goals/UploadModal';
+import Header from '@/components/ui/Header';
+import { formatDate } from '@/utils/date';
 
 // Extend the Goal interface to include action_plan
 interface ExtendedGoal extends Goal {
@@ -148,10 +149,6 @@ export default function GoalsScreen() {
     const end = new Date(start);
     end.setDate(end.getDate() + 6);
     return { start, end };
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   const getCategoryIcon = (category: string) => {
@@ -491,12 +488,30 @@ export default function GoalsScreen() {
   return (
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
       <View>
-        <GoalsHeader
-          weekStart={weekStart}
-          weekEnd={weekEnd}
-          openPreferences={openPreferences}
-          setShowUploadModal={setShowUploadModal}
-          setShowAddGoal={setShowAddGoal}
+        <Header
+          title="Weekly Goals"
+          subtitle={formatDate(weekStart) + ' - ' + formatDate(weekEnd)}
+          leftIcon={{ icon: Target }}
+          rightIcons={[
+            {
+              icon: Star,
+              onPress: openPreferences,
+              variant: 'secondary',
+              accessibilityLabel: 'Open Preferences',
+            },
+            {
+              icon: BookOpen,
+              onPress: () => setShowUploadModal(true),
+              variant: 'secondary',
+              accessibilityLabel: 'Upload Plan',
+            },
+            {
+              icon: Plus,
+              onPress: () => setShowAddGoal(true),
+              variant: 'secondary',
+              accessibilityLabel: 'Add Goal',
+            },
+          ]}
         />
         <ScrollView
           style={{

@@ -602,18 +602,17 @@ export default function HealthHubPage() {
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
-                      paddingHorizontal: 16,
-                      paddingVertical: 10,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
                       borderRadius: 24,
                       borderWidth: 1,
                       borderColor: selectedFilter === filter.id ? '#10b981' : isDarkMode ? '#374151' : '#d1d5db',
                       backgroundColor: selectedFilter === filter.id ? '#10b981' : isDarkMode ? '#1f2937' : '#ffffff',
-                      minWidth: 120,
                     }}
                     activeOpacity={0.7}
                   >
                     <filter.icon
-                      size={18}
+                      size={14}
                       color={selectedFilter === filter.id ? '#fff' : isDarkMode ? '#9ca3af' : '#64748b'}
                       style={{ marginRight: 6 }}
                     />

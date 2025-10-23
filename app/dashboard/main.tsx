@@ -5,7 +5,7 @@ import { useGoals } from '@/hooks/useGoals';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Bell, Flame, Heart, Target } from 'lucide-react-native';
+import { Bell, Flame, Heart, Info, Target } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, Modal, Pressable, ScrollView, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +22,7 @@ import { healthScoreApi } from '../../services/healthScoreApi';
 import TodaysActionItems from '@/components/main/TodaysActionItems';
 import { commonStylesDark, commonStylesLight, shadow } from '@/utils/commonStyles';
 import WeeklyGoals from '@/components/main/WeeklyGoals';
+import Header from '@/components/ui/Header';
 
 const { width } = Dimensions.get('window');
 
@@ -342,237 +343,224 @@ function MainDashboard() {
   return (
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
       {/* Fixed Header */}
-      <View className={`z-10 px-4 py-4 shadow-sm ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <UserAvatar
-              showBorder={true}
-              onPress={() => router.push('/dashboard/profile')}
-              className={`${isDarkMode ? 'bg-emerald-900' : 'bg-emerald-800'}`}
-              userName={userName}
-            />
-            <View>
-              <Greeting name={userName || 'Superstar'} />
-              <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Ready for a healthy day?
-              </Text>
-            </View>
-          </View>
-          <View className="flex flex-row items-center gap-4">
-            <Pressable onPress={openStreakModal} accessibilityLabel="Show Streak">
-              <Flame size={22} color={isDarkMode ? '#fbbf24' : '#f59e42'} />
-            </Pressable>
-            <Pressable onPress={() => start()} accessibilityLabel="Start App Tour">
-              <Target size={20} color={isDarkMode ? '#9ca3af' : '#64748b'} />
-            </Pressable>
-            <Pressable accessibilityLabel="Notifications">
-              <Bell size={20} color={isDarkMode ? '#9ca3af' : '#64748b'} />
-            </Pressable>
-          </View>
-          {/* Streak Modal */}
-          <Modal visible={showStreakModal} animationType="slide" transparent onRequestClose={closeStreakModal}>
+
+      <Header
+        title={`Hey, ${userName.split(' ')[0]}!`}
+        subtitle="Ready for a healthy day?"
+        leftComponent={
+          <UserAvatar
+            onPress={() => router.push('/dashboard/profile')}
+            customStyle={{
+              backgroundColor: isDarkMode ? '#1f6f51' : '#114131',
+            }}
+            userName={userName}
+          />
+        }
+        rightIcons={[
+          {
+            icon: Flame,
+            onPress: openStreakModal,
+            variant: 'tertiary',
+            accessibilityLabel: 'Show Streak',
+          },
+          {
+            icon: Info,
+            onPress: start,
+            variant: 'secondary',
+            accessibilityLabel: 'Start App Tour',
+          },
+          {
+            icon: Bell,
+            onPress: () => console.log('Open Notifications'),
+            variant: 'secondary',
+            accessibilityLabel: 'Notifications',
+          },
+        ]}
+      />
+      <Modal visible={showStreakModal} animationType="slide" transparent onRequestClose={closeStreakModal}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: isDarkMode ? '#1e293b' : '#fff',
+              borderRadius: 16,
+              padding: 28,
+              minWidth: 340,
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            {/* Tabs */}
             <View
               style={{
-                flex: 1,
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                justifyContent: 'center',
-                alignItems: 'center',
+                flexDirection: 'row',
+                marginBottom: 18,
+                width: '100%',
               }}
             >
-              <View
+              <TouchableOpacity
                 style={{
-                  backgroundColor: isDarkMode ? '#1e293b' : '#fff',
-                  borderRadius: 16,
-                  padding: 28,
-                  minWidth: 340,
+                  flex: 1,
                   alignItems: 'center',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 8,
-                  elevation: 8,
+                  paddingVertical: 8,
+                  borderBottomWidth: 2,
+                  borderBottomColor: streakTab === 'calendar' ? (isDarkMode ? '#fbbf24' : '#f59e42') : 'transparent',
                 }}
+                onPress={() => setStreakTab('calendar')}
               >
-                {/* Tabs */}
-                <View
+                <Text
                   style={{
-                    flexDirection: 'row',
-                    marginBottom: 18,
-                    width: '100%',
+                    color:
+                      streakTab === 'calendar'
+                        ? isDarkMode
+                          ? '#fbbf24'
+                          : '#f59e42'
+                        : isDarkMode
+                          ? '#e5e7eb'
+                          : '#374151',
+                    fontWeight: 'bold',
+                    fontSize: 16,
                   }}
                 >
-                  <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      alignItems: 'center',
-                      paddingVertical: 8,
-                      borderBottomWidth: 2,
-                      borderBottomColor:
-                        streakTab === 'calendar' ? (isDarkMode ? '#fbbf24' : '#f59e42') : 'transparent',
-                    }}
-                    onPress={() => setStreakTab('calendar')}
-                  >
-                    <Text
-                      style={{
-                        color:
-                          streakTab === 'calendar'
-                            ? isDarkMode
-                              ? '#fbbf24'
-                              : '#f59e42'
-                            : isDarkMode
-                              ? '#e5e7eb'
-                              : '#374151',
-                        fontWeight: 'bold',
-                        fontSize: 16,
-                      }}
-                    >
-                      Calendar
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      alignItems: 'center',
-                      paddingVertical: 8,
-                      borderBottomWidth: 2,
-                      borderBottomColor:
-                        streakTab === 'achievements' ? (isDarkMode ? '#fbbf24' : '#f59e42') : 'transparent',
-                    }}
-                    onPress={() => setStreakTab('achievements')}
-                  >
-                    <Text
-                      style={{
-                        color:
-                          streakTab === 'achievements'
-                            ? isDarkMode
-                              ? '#fbbf24'
-                              : '#f59e42'
-                            : isDarkMode
-                              ? '#e5e7eb'
-                              : '#374151',
-                        fontWeight: 'bold',
-                        fontSize: 16,
-                      }}
-                    >
-                      Achievements
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Tab Content */}
-                {streakTab === 'calendar' ? (
-                  <>
-                    <Flame size={40} color={isDarkMode ? '#fbbf24' : '#f59e42'} />
-                    <Text
-                      style={{
-                        fontSize: 22,
-                        fontWeight: 'bold',
-                        marginTop: 12,
-                        color: isDarkMode ? '#fbbf24' : '#f59e42',
-                      }}
-                    >
-                      {streakLoading ? 'Loading...' : streakError ? streakError : `🔥 ${streak ?? 0} week streak!`}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        color: isDarkMode ? '#e5e7eb' : '#374151',
-                        marginTop: 8,
-                        textAlign: 'center',
-                        maxWidth: 260,
-                      }}
-                    >
-                      {streak && streak > 0
-                        ? `You've completed your goals for ${streak} consecutive week${
-                            streak > 1 ? 's' : ''
-                          }! Keep it up!`
-                        : 'Complete your goals each week to build your streak.'}
-                    </Text>
-                    {/* Calendar Streak View */}
-                    <View style={{ marginTop: 24, marginBottom: 16 }}>
-                      <Text
-                        style={{
-                          color: isDarkMode ? '#fbbf24' : '#f59e42',
-                          fontWeight: 'bold',
-                          fontSize: 16,
-                          marginBottom: 8,
-                          textAlign: 'center',
-                        }}
-                      >
-                        Weekly Streak Calendar
-                      </Text>
-                      <StreakCalendar
-                        isDarkMode={isDarkMode}
-                        dailyCompletion={dailyCompletion}
-                        currentMonth={calendarMonth}
-                        currentYear={calendarYear}
-                        handlePrevDailyCompletion={handlePrevDailyCompletion}
-                        handleNextDailyCompletion={handleNextDailyCompletion}
-                      />
-                    </View>
-                  </>
-                ) : (
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      width: 260,
-                      minHeight: 260,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 20,
-                        fontWeight: 'bold',
-                        color: isDarkMode ? '#fbbf24' : '#f59e42',
-                        marginBottom: 12,
-                        textAlign: 'center',
-                      }}
-                    >
-                      Streak Achievements
-                    </Text>
-                    {renderStreakAchievements(totalStreakCount, isDarkMode)}
-                  </View>
-                )}
-
-                <TouchableOpacity
-                  onPress={closeStreakModal}
+                  Calendar
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  paddingVertical: 8,
+                  borderBottomWidth: 2,
+                  borderBottomColor:
+                    streakTab === 'achievements' ? (isDarkMode ? '#fbbf24' : '#f59e42') : 'transparent',
+                }}
+                onPress={() => setStreakTab('achievements')}
+              >
+                <Text
                   style={{
+                    color:
+                      streakTab === 'achievements'
+                        ? isDarkMode
+                          ? '#fbbf24'
+                          : '#f59e42'
+                        : isDarkMode
+                          ? '#e5e7eb'
+                          : '#374151',
+                    fontWeight: 'bold',
+                    fontSize: 16,
+                  }}
+                >
+                  Achievements
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Tab Content */}
+            {streakTab === 'calendar' ? (
+              <>
+                <Flame size={40} color={isDarkMode ? '#fbbf24' : '#f59e42'} />
+                <Text
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 'bold',
+                    marginTop: 12,
+                    color: isDarkMode ? '#fbbf24' : '#f59e42',
+                  }}
+                >
+                  {streakLoading ? 'Loading...' : streakError ? streakError : `🔥 ${streak ?? 0} week streak!`}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: isDarkMode ? '#e5e7eb' : '#374151',
                     marginTop: 8,
-                    backgroundColor: isDarkMode ? '#059669' : '#e6f4f1',
-                    paddingVertical: 10,
-                    paddingHorizontal: 32,
-                    borderRadius: 8,
+                    textAlign: 'center',
+                    maxWidth: 260,
                   }}
                 >
+                  {streak && streak > 0
+                    ? `You've completed your goals for ${streak} consecutive week${streak > 1 ? 's' : ''}! Keep it up!`
+                    : 'Complete your goals each week to build your streak.'}
+                </Text>
+                {/* Calendar Streak View */}
+                <View style={{ marginTop: 24, marginBottom: 16 }}>
                   <Text
                     style={{
-                      color: isDarkMode ? '#fff' : '#059669',
+                      color: isDarkMode ? '#fbbf24' : '#f59e42',
                       fontWeight: 'bold',
                       fontSize: 16,
+                      marginBottom: 8,
+                      textAlign: 'center',
                     }}
                   >
-                    Close
+                    Weekly Streak Calendar
                   </Text>
-                </TouchableOpacity>
+                  <StreakCalendar
+                    isDarkMode={isDarkMode}
+                    dailyCompletion={dailyCompletion}
+                    currentMonth={calendarMonth}
+                    currentYear={calendarYear}
+                    handlePrevDailyCompletion={handlePrevDailyCompletion}
+                    handleNextDailyCompletion={handleNextDailyCompletion}
+                  />
+                </View>
+              </>
+            ) : (
+              <View
+                style={{
+                  alignItems: 'center',
+                  width: 260,
+                  minHeight: 260,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 'bold',
+                    color: isDarkMode ? '#fbbf24' : '#f59e42',
+                    marginBottom: 12,
+                    textAlign: 'center',
+                  }}
+                >
+                  Streak Achievements
+                </Text>
+                {renderStreakAchievements(totalStreakCount, isDarkMode)}
               </View>
-            </View>
-          </Modal>
+            )}
 
-          {/* --- Streak Calendar Component --- */}
-          {/*
-              Dummy data: Array of last 12 weeks, true = streak, false = missed
-              You can replace this with real data if available.
-            */}
-          {/*
-              Place this at the bottom of your file, outside the MainDashboard component:
-            */}
-          {/*
-            Example usage:
-              <StreakCalendar isDarkMode={isDarkMode} />
-            */}
-          {/* --- End Streak Calendar Component --- */}
+            <TouchableOpacity
+              onPress={closeStreakModal}
+              style={{
+                marginTop: 8,
+                backgroundColor: isDarkMode ? '#059669' : '#e6f4f1',
+                paddingVertical: 10,
+                paddingHorizontal: 32,
+                borderRadius: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: isDarkMode ? '#fff' : '#059669',
+                  fontWeight: 'bold',
+                  fontSize: 16,
+                }}
+              >
+                Close
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </Modal>
 
       {/* Scrollable Content */}
       <ScrollView

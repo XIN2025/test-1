@@ -2,7 +2,6 @@ import React from 'react';
 import { KeyboardAvoidingView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
-import ChatHeader from '../../components/chat/ChatHeader';
 import ChatInput from '../../components/chat/ChatInput';
 import EmptyState from '../../components/chat/EmptyState';
 import Messages from '../../components/chat/Messages';
@@ -10,6 +9,8 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Message } from '../../types/chat';
 import { API_BASE_URL } from '../../utils/api';
+import { MessageCircle } from 'lucide-react-native';
+import Header from '@/components/ui/Header';
 
 const generateUniqueId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -86,7 +87,7 @@ export default function ChatPage() {
   return (
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-        <ChatHeader />
+        <Header title="Chat with Evra" subtitle="Your AI Health Agent" leftIcon={{ icon: MessageCircle }} />
         <View style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#F0FDF4' }}>
           {messages.length === 0 ? (
             <EmptyState />

@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useUser } from '../context/UserContext';
-import { useTheme } from '../context/ThemeContext';
 import { getInitials } from '../utils/string';
 
 interface UserAvatarProps {
@@ -10,7 +9,6 @@ interface UserAvatarProps {
   userName?: string;
   userEmail?: string;
   onPress?: () => void;
-  showBorder?: boolean;
   customStyle?: any;
   className?: string;
 }
@@ -21,12 +19,10 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   userName,
   userEmail,
   onPress,
-  showBorder = false,
   customStyle,
   className,
 }) => {
   const { userName: contextUserName, userEmail: contextUserEmail } = useUser();
-  const { isDarkMode } = useTheme();
 
   // Use props first, then context values
   const displayName = userName || contextUserName || '';
@@ -52,8 +48,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     borderRadius: containerSize / 2,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    borderWidth: showBorder ? 2 : 0,
-    borderColor: isDarkMode ? '#374151' : '#E5E7EB',
     overflow: 'hidden' as const,
     ...customStyle,
   };

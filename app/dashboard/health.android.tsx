@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Activity, RefreshCw, RotateCcw } from 'lucide-react-native';
+import { ArrowLeft, Activity, RefreshCw, RotateCcw, Ban } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useHealthConnect } from '../../hooks/useHealthConnect';
 import HealthDashboardContent from '../../components/health/organisms/HealthDashboardContent';
 import { createHealthSections } from '../../components/health/utils/healthDataTransformers';
+import Header from '@/components/ui/Header';
 
 export default function HealthDashboardAndroid() {
   const { isDarkMode } = useTheme();
@@ -101,52 +102,25 @@ export default function HealthDashboardAndroid() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#f9fafb' }} edges={['top']}>
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 20,
-          paddingVertical: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}
-        >
-          <ArrowLeft size={20} color={isDarkMode ? '#f3f4f6' : '#1f2937'} />
-          <Text style={{ fontSize: 18, fontWeight: '600', color: isDarkMode ? '#f3f4f6' : '#1f2937', marginLeft: 8 }}>
-            Health Dashboard
-          </Text>
-        </TouchableOpacity>
-
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity
-            onPress={onRefresh}
-            style={{
-              padding: 8,
-              marginRight: 8,
-            }}
-          >
-            <RefreshCw size={20} color={isDarkMode ? '#f3f4f6' : '#1f2937'} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={handleResetPermissions}
-            style={{
-              padding: 8,
-            }}
-          >
-            <RotateCcw size={20} color={isDarkMode ? '#f3f4f6' : '#1f2937'} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <Header
+        title="Health Dashboard"
+        subtitle="Track your health"
+        showBackButton
+        rightIcons={[
+          {
+            icon: RefreshCw,
+            onPress: onRefresh,
+            variant: 'secondary',
+            accessibilityLabel: 'Refresh',
+          },
+          {
+            icon: Ban,
+            onPress: handleResetPermissions,
+            variant: 'secondary',
+            accessibilityLabel: 'Reset Permissions',
+          },
+        ]}
+      />
 
       {!hasPermissions ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 60 }}>
