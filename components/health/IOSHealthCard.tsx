@@ -2,6 +2,7 @@ import React, { useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Activity, Heart } from 'lucide-react-native';
 import { useHealthKit } from '../../hooks/useHealthKit';
+import { commonStylesDark, commonStylesLight, shadow } from '@/utils/commonStyles';
 
 interface IOSHealthCardProps {
   isDarkMode?: boolean;
@@ -64,20 +65,15 @@ export default function IOSHealthCard({ isDarkMode = false, onPress, width = 160
   return (
     <TouchableOpacity
       onPress={handlePress}
-      style={{
-        width,
-        height,
-        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-        borderRadius: 16,
-        padding: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: isDarkMode ? 0.3 : 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-      }}
+      style={[
+        (isDarkMode ? commonStylesDark : commonStylesLight).pressableCard,
+        {
+          width,
+          height,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      ]}
       activeOpacity={0.7}
     >
       {isLoading ? (

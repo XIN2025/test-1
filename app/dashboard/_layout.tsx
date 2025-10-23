@@ -18,18 +18,18 @@ function TabsNavigator() {
         tabBarStyle: {
           backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
           borderTopColor: isDarkMode ? '#374151' : '#e5e7eb',
-          // height: 70,
-          // paddingBottom: 20,
+          // height: 55,
+          paddingBottom: 12,
           // paddingTop: 10,
           // marginBottom: 20,
-          // paddingHorizontal: 16,
+          paddingHorizontal: 12,
           // borderTopWidth: 1,
           // elevation: 0,
           // shadowOpacity: 0,
         },
         tabBarActiveTintColor: isDarkMode ? '#34d399' : '#059669',
         tabBarInactiveTintColor: isDarkMode ? '#9ca3af' : '#64748b',
-        animation: Platform.OS === 'ios' ? 'shift' : 'fade',
+        // animation: Platform.OS === 'ios' ? 'shift' : 'fade',
         tabBarHideOnKeyboard: true,
       }}
       initialRouteName={initialRoute}

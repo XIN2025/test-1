@@ -21,6 +21,8 @@ import { healthAlertsApi } from '../../services/healthAlertsApi';
 import { CriticalRiskAlert } from '../../types/criticalRiskAlerts';
 import { healthScoreApi } from '../../services/healthScoreApi';
 import TodaysActionItems from '@/components/main/TodaysActionItems';
+import { commonStylesDark, commonStylesLight, shadow } from '@/utils/commonStyles';
+import WeeklyGoals from '@/components/main/WeeklyGoals';
 
 const { width } = Dimensions.get('window');
 
@@ -195,7 +197,7 @@ function MainDashboard() {
     fetchStreak();
   };
   const closeStreakModal = () => setShowStreakModal(false);
-  const { goals, loadTodaysItems } = useGoals({ userEmail });
+  const { loadTodaysItems } = useGoals({ userEmail });
   const [healthScore, setHealthScore] = useState<number>(0);
   const [healthScoreLoading, setHealthScoreLoading] = useState<boolean>(false);
 
@@ -340,605 +342,392 @@ function MainDashboard() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
-      <View>
-        {/* Fixed Header */}
-        <View className={`z-10 px-4 py-4 shadow-sm ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <UserAvatar
-                showBorder={true}
-                onPress={() => router.push('/dashboard/profile')}
-                className={`${isDarkMode ? 'bg-emerald-900' : 'bg-emerald-800'}`}
-                userName={userName}
-              />
-              <View>
-                <Greeting name={userName || 'Superstar'} />
-                <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Ready for a healthy day?
-                </Text>
-              </View>
+      {/* Fixed Header */}
+      <View className={`z-10 px-4 py-4 shadow-sm ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
+            <UserAvatar
+              showBorder={true}
+              onPress={() => router.push('/dashboard/profile')}
+              className={`${isDarkMode ? 'bg-emerald-900' : 'bg-emerald-800'}`}
+              userName={userName}
+            />
+            <View>
+              <Greeting name={userName || 'Superstar'} />
+              <Text className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Ready for a healthy day?
+              </Text>
             </View>
-            <View className="flex flex-row items-center gap-4">
-              <Pressable onPress={openStreakModal} accessibilityLabel="Show Streak">
-                <Flame size={22} color={isDarkMode ? '#fbbf24' : '#f59e42'} />
-              </Pressable>
-              <Pressable onPress={() => start()} accessibilityLabel="Start App Tour">
-                <Target size={20} color={isDarkMode ? '#9ca3af' : '#64748b'} />
-              </Pressable>
-              <Pressable accessibilityLabel="Notifications">
-                <Bell size={20} color={isDarkMode ? '#9ca3af' : '#64748b'} />
-              </Pressable>
-            </View>
-            {/* Streak Modal */}
-            <Modal visible={showStreakModal} animationType="slide" transparent onRequestClose={closeStreakModal}>
+          </View>
+          <View className="flex flex-row items-center gap-4">
+            <Pressable onPress={openStreakModal} accessibilityLabel="Show Streak">
+              <Flame size={22} color={isDarkMode ? '#fbbf24' : '#f59e42'} />
+            </Pressable>
+            <Pressable onPress={() => start()} accessibilityLabel="Start App Tour">
+              <Target size={20} color={isDarkMode ? '#9ca3af' : '#64748b'} />
+            </Pressable>
+            <Pressable accessibilityLabel="Notifications">
+              <Bell size={20} color={isDarkMode ? '#9ca3af' : '#64748b'} />
+            </Pressable>
+          </View>
+          {/* Streak Modal */}
+          <Modal visible={showStreakModal} animationType="slide" transparent onRequestClose={closeStreakModal}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
               <View
                 style={{
-                  flex: 1,
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  justifyContent: 'center',
+                  backgroundColor: isDarkMode ? '#1e293b' : '#fff',
+                  borderRadius: 16,
+                  padding: 28,
+                  minWidth: 340,
                   alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 8,
+                  elevation: 8,
                 }}
               >
+                {/* Tabs */}
                 <View
                   style={{
-                    backgroundColor: isDarkMode ? '#1e293b' : '#fff',
-                    borderRadius: 16,
-                    padding: 28,
-                    minWidth: 340,
-                    alignItems: 'center',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 8,
-                    elevation: 8,
+                    flexDirection: 'row',
+                    marginBottom: 18,
+                    width: '100%',
                   }}
                 >
-                  {/* Tabs */}
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      marginBottom: 18,
-                      width: '100%',
-                    }}
-                  >
-                    <TouchableOpacity
-                      style={{
-                        flex: 1,
-                        alignItems: 'center',
-                        paddingVertical: 8,
-                        borderBottomWidth: 2,
-                        borderBottomColor:
-                          streakTab === 'calendar' ? (isDarkMode ? '#fbbf24' : '#f59e42') : 'transparent',
-                      }}
-                      onPress={() => setStreakTab('calendar')}
-                    >
-                      <Text
-                        style={{
-                          color:
-                            streakTab === 'calendar'
-                              ? isDarkMode
-                                ? '#fbbf24'
-                                : '#f59e42'
-                              : isDarkMode
-                                ? '#e5e7eb'
-                                : '#374151',
-                          fontWeight: 'bold',
-                          fontSize: 16,
-                        }}
-                      >
-                        Calendar
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{
-                        flex: 1,
-                        alignItems: 'center',
-                        paddingVertical: 8,
-                        borderBottomWidth: 2,
-                        borderBottomColor:
-                          streakTab === 'achievements' ? (isDarkMode ? '#fbbf24' : '#f59e42') : 'transparent',
-                      }}
-                      onPress={() => setStreakTab('achievements')}
-                    >
-                      <Text
-                        style={{
-                          color:
-                            streakTab === 'achievements'
-                              ? isDarkMode
-                                ? '#fbbf24'
-                                : '#f59e42'
-                              : isDarkMode
-                                ? '#e5e7eb'
-                                : '#374151',
-                          fontWeight: 'bold',
-                          fontSize: 16,
-                        }}
-                      >
-                        Achievements
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Tab Content */}
-                  {streakTab === 'calendar' ? (
-                    <>
-                      <Flame size={40} color={isDarkMode ? '#fbbf24' : '#f59e42'} />
-                      <Text
-                        style={{
-                          fontSize: 22,
-                          fontWeight: 'bold',
-                          marginTop: 12,
-                          color: isDarkMode ? '#fbbf24' : '#f59e42',
-                        }}
-                      >
-                        {streakLoading ? 'Loading...' : streakError ? streakError : `🔥 ${streak ?? 0} week streak!`}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: 15,
-                          color: isDarkMode ? '#e5e7eb' : '#374151',
-                          marginTop: 8,
-                          textAlign: 'center',
-                          maxWidth: 260,
-                        }}
-                      >
-                        {streak && streak > 0
-                          ? `You've completed your goals for ${streak} consecutive week${
-                              streak > 1 ? 's' : ''
-                            }! Keep it up!`
-                          : 'Complete your goals each week to build your streak.'}
-                      </Text>
-                      {/* Calendar Streak View */}
-                      <View style={{ marginTop: 24, marginBottom: 16 }}>
-                        <Text
-                          style={{
-                            color: isDarkMode ? '#fbbf24' : '#f59e42',
-                            fontWeight: 'bold',
-                            fontSize: 16,
-                            marginBottom: 8,
-                            textAlign: 'center',
-                          }}
-                        >
-                          Weekly Streak Calendar
-                        </Text>
-                        <StreakCalendar
-                          isDarkMode={isDarkMode}
-                          dailyCompletion={dailyCompletion}
-                          currentMonth={calendarMonth}
-                          currentYear={calendarYear}
-                          handlePrevDailyCompletion={handlePrevDailyCompletion}
-                          handleNextDailyCompletion={handleNextDailyCompletion}
-                        />
-                      </View>
-                    </>
-                  ) : (
-                    <View
-                      style={{
-                        alignItems: 'center',
-                        width: 260,
-                        minHeight: 260,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          fontWeight: 'bold',
-                          color: isDarkMode ? '#fbbf24' : '#f59e42',
-                          marginBottom: 12,
-                          textAlign: 'center',
-                        }}
-                      >
-                        Streak Achievements
-                      </Text>
-                      {renderStreakAchievements(totalStreakCount, isDarkMode)}
-                    </View>
-                  )}
-
                   <TouchableOpacity
-                    onPress={closeStreakModal}
                     style={{
-                      marginTop: 8,
-                      backgroundColor: isDarkMode ? '#059669' : '#e6f4f1',
-                      paddingVertical: 10,
-                      paddingHorizontal: 32,
-                      borderRadius: 8,
+                      flex: 1,
+                      alignItems: 'center',
+                      paddingVertical: 8,
+                      borderBottomWidth: 2,
+                      borderBottomColor:
+                        streakTab === 'calendar' ? (isDarkMode ? '#fbbf24' : '#f59e42') : 'transparent',
                     }}
+                    onPress={() => setStreakTab('calendar')}
                   >
                     <Text
                       style={{
-                        color: isDarkMode ? '#fff' : '#059669',
+                        color:
+                          streakTab === 'calendar'
+                            ? isDarkMode
+                              ? '#fbbf24'
+                              : '#f59e42'
+                            : isDarkMode
+                              ? '#e5e7eb'
+                              : '#374151',
                         fontWeight: 'bold',
                         fontSize: 16,
                       }}
                     >
-                      Close
+                      Calendar
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      alignItems: 'center',
+                      paddingVertical: 8,
+                      borderBottomWidth: 2,
+                      borderBottomColor:
+                        streakTab === 'achievements' ? (isDarkMode ? '#fbbf24' : '#f59e42') : 'transparent',
+                    }}
+                    onPress={() => setStreakTab('achievements')}
+                  >
+                    <Text
+                      style={{
+                        color:
+                          streakTab === 'achievements'
+                            ? isDarkMode
+                              ? '#fbbf24'
+                              : '#f59e42'
+                            : isDarkMode
+                              ? '#e5e7eb'
+                              : '#374151',
+                        fontWeight: 'bold',
+                        fontSize: 16,
+                      }}
+                    >
+                      Achievements
                     </Text>
                   </TouchableOpacity>
                 </View>
-              </View>
-            </Modal>
 
-            {/* --- Streak Calendar Component --- */}
-            {/*
+                {/* Tab Content */}
+                {streakTab === 'calendar' ? (
+                  <>
+                    <Flame size={40} color={isDarkMode ? '#fbbf24' : '#f59e42'} />
+                    <Text
+                      style={{
+                        fontSize: 22,
+                        fontWeight: 'bold',
+                        marginTop: 12,
+                        color: isDarkMode ? '#fbbf24' : '#f59e42',
+                      }}
+                    >
+                      {streakLoading ? 'Loading...' : streakError ? streakError : `🔥 ${streak ?? 0} week streak!`}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        color: isDarkMode ? '#e5e7eb' : '#374151',
+                        marginTop: 8,
+                        textAlign: 'center',
+                        maxWidth: 260,
+                      }}
+                    >
+                      {streak && streak > 0
+                        ? `You've completed your goals for ${streak} consecutive week${
+                            streak > 1 ? 's' : ''
+                          }! Keep it up!`
+                        : 'Complete your goals each week to build your streak.'}
+                    </Text>
+                    {/* Calendar Streak View */}
+                    <View style={{ marginTop: 24, marginBottom: 16 }}>
+                      <Text
+                        style={{
+                          color: isDarkMode ? '#fbbf24' : '#f59e42',
+                          fontWeight: 'bold',
+                          fontSize: 16,
+                          marginBottom: 8,
+                          textAlign: 'center',
+                        }}
+                      >
+                        Weekly Streak Calendar
+                      </Text>
+                      <StreakCalendar
+                        isDarkMode={isDarkMode}
+                        dailyCompletion={dailyCompletion}
+                        currentMonth={calendarMonth}
+                        currentYear={calendarYear}
+                        handlePrevDailyCompletion={handlePrevDailyCompletion}
+                        handleNextDailyCompletion={handleNextDailyCompletion}
+                      />
+                    </View>
+                  </>
+                ) : (
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      width: 260,
+                      minHeight: 260,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 'bold',
+                        color: isDarkMode ? '#fbbf24' : '#f59e42',
+                        marginBottom: 12,
+                        textAlign: 'center',
+                      }}
+                    >
+                      Streak Achievements
+                    </Text>
+                    {renderStreakAchievements(totalStreakCount, isDarkMode)}
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  onPress={closeStreakModal}
+                  style={{
+                    marginTop: 8,
+                    backgroundColor: isDarkMode ? '#059669' : '#e6f4f1',
+                    paddingVertical: 10,
+                    paddingHorizontal: 32,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: isDarkMode ? '#fff' : '#059669',
+                      fontWeight: 'bold',
+                      fontSize: 16,
+                    }}
+                  >
+                    Close
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          {/* --- Streak Calendar Component --- */}
+          {/*
               Dummy data: Array of last 12 weeks, true = streak, false = missed
               You can replace this with real data if available.
             */}
-            {/*
+          {/*
               Place this at the bottom of your file, outside the MainDashboard component:
             */}
-            {/*
+          {/*
             Example usage:
               <StreakCalendar isDarkMode={isDarkMode} />
             */}
-            {/* --- End Streak Calendar Component --- */}
+          {/* --- End Streak Calendar Component --- */}
+        </View>
+      </View>
+
+      {/* Scrollable Content */}
+      <ScrollView
+        style={{
+          flex: 1,
+          backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
+        }}
+        contentContainerStyle={{ padding: 16, gap: 24 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Health Score and Quick Actions Row */}
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 8,
+            paddingHorizontal: 8,
+          }}
+        >
+          {/* Health Card - Platform specific (iOS HealthKit / Android Health Connect) */}
+          <PlatformHealthCard
+            isDarkMode={isDarkMode}
+            onPress={() => router.push('/dashboard/health')}
+            width={width * 0.44}
+            height={width * 0.4}
+          />
+
+          {/* Health Score - Right Side */}
+          <View className="items-center justify-center">
+            <CopilotStep
+              text="📊 Health Score - Your overall health score is calculated based on your daily activities, goal completion, and health metrics. Higher scores mean better health habits!"
+              order={1}
+              name="healthScore"
+            >
+              <WalkthroughableView
+                style={{
+                  alignItems: 'center',
+                  paddingHorizontal: 20,
+                  borderRadius: 16,
+                  minHeight: width * 0.4,
+                  justifyContent: 'center',
+                }}
+              >
+                {/* Liquid Gauge for Health Score */}
+                <LiquidGauge
+                  value={healthScore}
+                  width={width * 0.35}
+                  height={width * 0.35}
+                  config={{
+                    circleColor: '#f97316',
+                    textColor: isDarkMode ? '#fff' : '#1f2937',
+                    waveTextColor: isDarkMode ? '#1f2937' : '#fff',
+                    waveColor: '#f97316',
+                    circleThickness: 0.08,
+                    textVertPosition: 0.5,
+                    waveAnimateTime: 3000,
+                    waveRiseTime: 1500,
+                    waveHeight: 0.08,
+                    waveCount: 2,
+                    textSize: 1.2,
+                    waveRise: true,
+                    waveAnimate: true,
+                    waveHeightScaling: true,
+                    valueCountUp: true,
+                    textSuffix: '',
+                    toFixed: 0,
+                  }}
+                />
+
+                {/* Label below */}
+                <Text
+                  style={{
+                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    fontSize: 12,
+                    fontWeight: '500',
+                    textAlign: 'center',
+                    marginTop: 8,
+                  }}
+                >
+                  {healthScoreLoading ? 'Loading…' : 'Health Score'}
+                </Text>
+              </WalkthroughableView>
+            </CopilotStep>
           </View>
         </View>
 
-        {/* Scrollable Content */}
-        <ScrollView
+        {/* View Full Health Data Button - Platform specific */}
+        <TouchableOpacity
+          onPress={() => router.push('/dashboard/health')}
           style={{
-            height: '100%',
-            backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
+            backgroundColor: isDarkMode ? '#059669' : '#059669',
+            paddingVertical: 12,
+            paddingHorizontal: 20,
+            borderRadius: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            ...shadow.card,
           }}
-          contentContainerStyle={{ paddingBottom: 120 }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+          activeOpacity={0.8}
         >
-          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-            {/* Health Score and Quick Actions Row */}
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginBottom: 32,
-                minHeight: width * 0.4, // Ensure consistent height
-              }}
-            >
-              {/* Health Card - Left Side */}
-              <View style={{ width: '48%', paddingRight: 8 }}>
-                {/* Health Card - Platform specific (iOS HealthKit / Android Health Connect) */}
-                <PlatformHealthCard
-                  isDarkMode={isDarkMode}
-                  onPress={() => router.push('/dashboard/health')}
-                  width={width * 0.44}
-                  height={width * 0.4}
-                />
-              </View>
+          <Heart size={16} color="#ffffff" style={{ marginRight: 8 }} />
+          <Text
+            style={{
+              color: '#ffffff',
+              fontSize: 14,
+              fontWeight: '600',
+            }}
+          >
+            View Full Health Data
+          </Text>
+        </TouchableOpacity>
 
-              {/* Health Score - Right Side */}
-              <View className="items-center justify-center" style={{ width: '48%', paddingLeft: 8 }}>
-                <CopilotStep
-                  text="📊 Health Score - Your overall health score is calculated based on your daily activities, goal completion, and health metrics. Higher scores mean better health habits!"
-                  order={1}
-                  name="healthScore"
-                >
-                  <WalkthroughableView
-                    style={{
-                      alignItems: 'center',
-                      padding: 20,
-                      borderRadius: 16,
-                      minHeight: width * 0.4,
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {/* Liquid Gauge for Health Score */}
-                    <LiquidGauge
-                      value={healthScore}
-                      width={width * 0.35}
-                      height={width * 0.35}
-                      config={{
-                        circleColor: '#f97316',
-                        textColor: isDarkMode ? '#fff' : '#1f2937',
-                        waveTextColor: isDarkMode ? '#1f2937' : '#fff',
-                        waveColor: '#f97316',
-                        circleThickness: 0.08,
-                        textVertPosition: 0.5,
-                        waveAnimateTime: 3000,
-                        waveRiseTime: 1500,
-                        waveHeight: 0.08,
-                        waveCount: 2,
-                        textSize: 1.2,
-                        waveRise: true,
-                        waveAnimate: true,
-                        waveHeightScaling: true,
-                        valueCountUp: true,
-                        textSuffix: '',
-                        toFixed: 0,
-                      }}
-                    />
+        {/* Lab Tests Card */}
+        <SimpleLabTestsCard isDarkMode={isDarkMode} onPress={() => router.push('/dashboard/lab-tests')} />
 
-                    {/* Label below */}
-                    <Text
-                      style={{
-                        color: isDarkMode ? '#9ca3af' : '#6b7280',
-                        fontSize: 12,
-                        fontWeight: '500',
-                        textAlign: 'center',
-                        marginTop: 8,
-                      }}
-                    >
-                      {healthScoreLoading ? 'Loading…' : 'Health Score'}
-                    </Text>
-                  </WalkthroughableView>
-                </CopilotStep>
-              </View>
-            </View>
+        {/* Critical Risk Alerts Card */}
+        {criticalRiskAlerts.length > 0 && (
+          <CriticalRiskAlertsCard
+            isDarkMode={isDarkMode}
+            alerts={criticalRiskAlerts}
+            loadCriticalRiskAlert={loadCriticalRiskAlerts}
+            width={width - 32}
+            onAlertPress={(alert) => {
+              // Handle alert press - could navigate to detailed view
+              console.log('Alert pressed:', alert);
+            }}
+          />
+        )}
 
-            {/* View Full Health Data Button - Platform specific */}
-            <TouchableOpacity
-              onPress={() => router.push('/dashboard/health')}
-              style={{
-                backgroundColor: isDarkMode ? '#059669' : '#059669',
-                paddingVertical: 12,
-                paddingHorizontal: 20,
-                borderRadius: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 24,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
-              activeOpacity={0.8}
-            >
-              <Heart size={16} color="#ffffff" style={{ marginRight: 8 }} />
-              <Text
-                style={{
-                  color: '#ffffff',
-                  fontSize: 14,
-                  fontWeight: '600',
-                }}
-              >
-                View Full Health Data
-              </Text>
-            </TouchableOpacity>
+        {/* Today's Action Items (collapsible) */}
+        <CopilotStep
+          text="✅ Today's Action Items - Complete your daily health tasks to stay on track with your goals. Tap the checkboxes to mark items as done and build your streak!"
+          order={2}
+          name="todayItems"
+        >
+          <WalkthroughableView style={isDarkMode ? commonStylesDark.displayCard : commonStylesLight.displayCard}>
+            <TodaysActionItems />
+          </WalkthroughableView>
+        </CopilotStep>
 
-            {/* Lab Tests Card */}
-            <View style={{ marginBottom: 24 }}>
-              <SimpleLabTestsCard
-                isDarkMode={isDarkMode}
-                onPress={() => router.push('/dashboard/lab-tests')}
-                width={width - 32}
-                height={width * 0.3}
-              />
-            </View>
-
-            {/* Critical Risk Alerts Card */}
-            {criticalRiskAlerts.length > 0 && (
-              <View style={{ marginBottom: 24 }}>
-                <CriticalRiskAlertsCard
-                  isDarkMode={isDarkMode}
-                  alerts={criticalRiskAlerts}
-                  loadCriticalRiskAlert={loadCriticalRiskAlerts}
-                  width={width - 32}
-                  onAlertPress={(alert) => {
-                    // Handle alert press - could navigate to detailed view
-                    console.log('Alert pressed:', alert);
-                  }}
-                />
-              </View>
-            )}
-
-            {/* Today's Action Items (collapsible) */}
-            <View style={{ marginBottom: 24 }}>
-              <CopilotStep
-                text="✅ Today's Action Items - Complete your daily health tasks to stay on track with your goals. Tap the checkboxes to mark items as done and build your streak!"
-                order={2}
-                name="todayItems"
-              >
-                <WalkthroughableView
-                  style={{
-                    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                    width: '100%',
-                    borderRadius: 16,
-                    padding: 16,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                    shadowRadius: 4,
-                    elevation: 3,
-                    borderWidth: 1,
-                    borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
-                  }}
-                >
-                  <TodaysActionItems />
-                </WalkthroughableView>
-              </CopilotStep>
-            </View>
-
-            {/* Removed Today's Tasks card */}
-
-            {/* Weekly Goals Summary (from goals endpoint) */}
-            <View style={{ marginBottom: 24 }}>
-              <CopilotStep
-                text="🎯 Weekly Goals - Monitor your progress towards weekly health goals and stay motivated. Track completion percentages and see how you're doing each week!"
-                order={3}
-                name="weeklyGoals"
-              >
-                <WalkthroughableView
-                  style={{
-                    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                    borderRadius: 16,
-                    padding: 16,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                    shadowRadius: 4,
-                    elevation: 3,
-                    borderWidth: 1,
-                    borderColor: isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: 16,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <View style={{ marginRight: 8 }}>
-                        <Target size={20} color={isDarkMode ? '#34d399' : '#114131'} />
-                      </View>
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          fontWeight: '600',
-                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                        }}
-                      >
-                        Weekly Goals
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        paddingHorizontal: 12,
-                        paddingVertical: 4,
-                        borderRadius: 20,
-                        backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          fontWeight: '600',
-                          color: isDarkMode ? '#34d399' : '#114131',
-                        }}
-                      >
-                        {`${(goals || []).filter((g: any) => g.completed).length}/${(goals || []).length}`}
-                      </Text>
-                    </View>
-                  </View>
-                  {(goals || []).length === 0 ? (
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        color: isDarkMode ? '#9ca3af' : '#6b7280',
-                      }}
-                    >
-                      No goals yet.
-                    </Text>
-                  ) : (
-                    <View>
-                      {(goals as any[]).slice(0, 5).map((g: any) => {
-                        return (
-                          <View
-                            key={g.id}
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              marginBottom: 16,
-                              paddingVertical: 4,
-                            }}
-                          >
-                            <View
-                              style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                flex: 1,
-                              }}
-                            >
-                              {/* Circular Progress Ring */}
-                              <View style={{ marginRight: 12 }}>
-                                <CircularProgressRing
-                                  size={44}
-                                  strokeWidth={3}
-                                  progress={g.completion_percentage || 0}
-                                  color={
-                                    g.completion_percentage >= 80
-                                      ? '#10b981' // Green for high completion
-                                      : g.completion_percentage >= 50
-                                        ? '#f59e0b' // Yellow for medium completion
-                                        : '#ef4444' // Red for low completion
-                                  }
-                                  backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
-                                  showPercentage={false}
-                                  textColor={isDarkMode ? '#d1d5db' : '#374151'}
-                                />
-                              </View>
-                              <View style={{ flex: 1 }}>
-                                <Text
-                                  style={{
-                                    fontSize: 14,
-                                    fontWeight: '500',
-                                    color: isDarkMode ? '#e5e7eb' : '#1f2937',
-                                    marginBottom: 2,
-                                  }}
-                                >
-                                  {g.title}
-                                </Text>
-                                <Text
-                                  style={{
-                                    fontSize: 12,
-                                    color: isDarkMode ? '#9ca3af' : '#6b7280',
-                                  }}
-                                >
-                                  {g.completion_percentage}% completed this week
-                                </Text>
-                              </View>
-                            </View>
-                            <View style={{ alignItems: 'flex-end' }}>
-                              <View
-                                style={{
-                                  width: 12,
-                                  height: 12,
-                                  borderRadius: 6,
-                                  backgroundColor: g.completed
-                                    ? isDarkMode
-                                      ? '#34d399'
-                                      : '#10b981'
-                                    : isDarkMode
-                                      ? '#4b5563'
-                                      : '#94a3b8',
-                                }}
-                              />
-                              <Text
-                                style={{
-                                  fontSize: 11,
-                                  marginTop: 4,
-                                  color: isDarkMode ? '#9ca3af' : '#6b7280',
-                                }}
-                              >
-                                {g.completed ? 'Done' : 'Active'}
-                              </Text>
-                            </View>
-                          </View>
-                        );
-                      })}
-                    </View>
-                  )}
-                  <TouchableOpacity
-                    style={{
-                      marginTop: 12,
-                      padding: 12,
-                      borderRadius: 12,
-                      backgroundColor: isDarkMode ? '#064e3b' : '#e6f4f1',
-                    }}
-                    onPress={() => router.push('./goals')}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={{
-                        textAlign: 'center',
-                        fontSize: 14,
-                        fontWeight: '600',
-                        color: isDarkMode ? '#34d399' : '#114131',
-                      }}
-                    >
-                      View All Goals
-                    </Text>
-                  </TouchableOpacity>
-                </WalkthroughableView>
-              </CopilotStep>
-            </View>
-          </View>
-        </ScrollView>
-      </View>
+        {/* Weekly Goals Summary (from goals endpoint) */}
+        <CopilotStep
+          text="🎯 Weekly Goals - Monitor your progress towards weekly health goals and stay motivated. Track completion percentages and see how you're doing each week!"
+          order={3}
+          name="weeklyGoals"
+        >
+          <WalkthroughableView style={isDarkMode ? commonStylesDark.displayCard : commonStylesLight.displayCard}>
+            <WeeklyGoals />
+          </WalkthroughableView>
+        </CopilotStep>
+      </ScrollView>
     </SafeAreaView>
   );
 }
