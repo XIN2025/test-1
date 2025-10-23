@@ -2,7 +2,7 @@ export default {
   expo: {
     name: 'Evra',
     slug: 'evra',
-    owner: 'jimjamm',
+    owner: 'evrahealth',
     version: '1.0.5',
     orientation: 'portrait',
     icon: './assets/images/logo.png',
@@ -163,12 +163,12 @@ export default {
     extra: {
       API_BASE_URL: process.env.API_BASE_URL,
       eas: {
-        projectId: 'b1ec0f89-6d86-4441-83b3-7f7b827a0ab6',
+        projectId: '29057e40-c485-49b4-a2b4-6c71c1878caa',
       },
     },
   },
   updates: {
-    url: 'https://u.expo.dev/b1ec0f89-6d86-4441-83b3-7f7b827a0ab6',
+    url: 'https://u.expo.dev/29057e40-c485-49b4-a2b4-6c71c1878caa',
   },
   runtimeVersion: {
     policy: 'appVersion',

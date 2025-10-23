@@ -16,4 +16,7 @@ config.resolver = {
   sourceExts: [...resolver.sourceExts, 'jsx', 'js', 'ts', 'tsx'],
 };
 
-module.exports = withNativeWind(config, { input: './app/global.css' });
+module.exports = withNativeWind(config, {
+  input: './app/global.css',
+  configPath: './tailwind.config.js',
+});
