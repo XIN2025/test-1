@@ -24,6 +24,8 @@ import AddGoalModal from '@/components/goals/AddGoalModal';
 import UploadModal from '@/components/goals/UploadModal';
 import Header from '@/components/ui/Header';
 import { formatDate } from '@/utils/date';
+import { commonStylesDark, commonStylesLight } from '@/utils/commonStyles';
+import GoalCard from '@/components/goals/Goal';
 
 // Extend the Goal interface to include action_plan
 interface ExtendedGoal extends Goal {
@@ -149,23 +151,6 @@ export default function GoalsScreen() {
     const end = new Date(start);
     end.setDate(end.getDate() + 6);
     return { start, end };
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'health':
-        return '❤️';
-      case 'fitness':
-        return '💪';
-      case 'nutrition':
-        return '🥗';
-      case 'mental':
-        return '🧠';
-      case 'personal':
-        return '⭐';
-      default:
-        return '🎯';
-    }
   };
 
   const handleAddGoal = async () => {
@@ -552,259 +537,21 @@ export default function GoalsScreen() {
               </View>
             )}
 
-            <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-              {/* Week Navigation (hidden) */}
-              {false && (
-                <Card className="border-0">
-                  <View className="flex-row items-center justify-between p-4">
-                    <TouchableOpacity onPress={() => handleWeekChange('prev')} className="p-2">
-                      <ChevronLeft size={20} color="#059669" />
-                    </TouchableOpacity>
-                    <View className="items-center">
-                      <Text className="font-semibold text-gray-800">Week of {formatDate(weekStart)}</Text>
-                      <Text className="text-sm text-gray-600">
-                        {completedGoals}/{totalGoals} goals completed
-                      </Text>
-                    </View>
-                    <TouchableOpacity onPress={() => handleWeekChange('next')} className="p-2">
-                      <ChevronRight size={20} color="#059669" />
-                    </TouchableOpacity>
-                  </View>
-                </Card>
-              )}
-
-              {/* Progress Overview (hidden) */}
-              {false && (
-                <Card className="border-0">
-                  <View className="p-4">
-                    <View className="mb-3 flex-row items-center">
-                      <BarChart3 size={20} color="#059669" className="mr-2" />
-                      <Text className="text-lg font-semibold text-gray-800">Weekly Progress</Text>
-                    </View>
-                    <View className="mb-2 flex-row items-center justify-between">
-                      <Text className="text-sm text-gray-600">Completion Rate</Text>
-                      <Text className="text-sm font-semibold text-gray-800">{completionRate.toFixed(0)}%</Text>
-                    </View>
-                    <View className="h-3 rounded-full bg-gray-200">
-                      <View
-                        className="h-3 rounded-full"
-                        style={{
-                          backgroundColor: '#114131',
-                          width: `${completionRate}%`,
-                        }}
-                      />
-                    </View>
-                    <View className="mt-3 flex-row justify-between">
-                      <View className="items-center">
-                        <Text className="text-2xl font-bold" style={{ color: '#114131' }}></Text>
-                        <Text className="text-xs text-gray-600">Completed</Text>
-                      </View>
-                      <View className="items-center">
-                        <Text className="text-2xl font-bold text-gray-400"></Text>
-                        <Text className="text-xs text-gray-600">Remaining</Text>
-                      </View>
-                      <View className="items-center">
-                        <Text className="text-2xl font-bold text-blue-600"></Text>
-                        <Text className="text-xs text-gray-600">Total</Text>
-                      </View>
-                    </View>
-                  </View>
-                </Card>
-              )}
-
-              {/* Goals Summary (hidden) */}
-              {false && goals && goals.length > 0 && (
-                <WeeklyGoalsSummary
-                  goals={goals.map((goal) => ({
-                    id: goal.id,
-                    title: goal.title,
-                    currentValue: goal.current_value || 0,
-                    targetValue: goal.target_value || 1,
-                    completed: goal.completed,
-                    category: goal.category,
-                  }))}
-                  onViewAll={() => {
-                    // Scroll to goals list or show all goals
-                    console.log('View all goals');
-                  }}
-                />
-              )}
-
+            <View style={{ paddingHorizontal: 16, gap: 16 }}>
               {/* Empty State */}
               {!loading && goals.length === 0 && <EmptyGoals setShowAddGoal={setShowAddGoal} />}
 
               {/* Goals List */}
               {goals.map((goal: any) => (
-                <View
+                <GoalCard
                   key={goal.id}
-                  style={{
-                    backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                    borderRadius: 16,
-                    padding: 16,
-                    marginBottom: 16,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}
-                >
-                  <View>
-                    <View style={{ marginBottom: 16 }}>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          marginBottom: 12,
-                        }}
-                      >
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            flex: 1,
-                          }}
-                        >
-                          <Text style={{ fontSize: 20, marginRight: 8 }}>{getCategoryIcon(goal.category)}</Text>
-                          <Text
-                            style={{
-                              fontSize: 18,
-                              fontWeight: '600',
-                              flex: 1,
-                              color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                            }}
-                          >
-                            {goal.title}
-                          </Text>
-                          {/* Circular Progress Ring */}
-                          <View style={{ marginLeft: 10 }}>
-                            <CircularProgressRing
-                              size={54}
-                              strokeWidth={4}
-                              progress={goal.completion_percentage || 0}
-                              color={
-                                goal.completion_percentage >= 80
-                                  ? '#10b981'
-                                  : goal.completion_percentage >= 50
-                                    ? '#f59e0b'
-                                    : '#ef4444'
-                              }
-                              backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
-                              showPercentage={true}
-                              textColor={isDarkMode ? '#d1d5db' : '#374151'}
-                            />
-                          </View>
-                          {/* Delete Button */}
-                          <TouchableOpacity
-                            onPress={() => {
-                              Alert.alert(
-                                'Delete Goal',
-                                'Are you sure you want to delete this goal?',
-                                [
-                                  { text: 'Cancel', style: 'cancel' },
-                                  {
-                                    text: 'Delete',
-                                    style: 'destructive',
-                                    onPress: () => deleteGoal(goal.id),
-                                  },
-                                ],
-                                { cancelable: true },
-                              );
-                            }}
-                            style={{
-                              marginLeft: 12,
-                              padding: 6,
-                              borderRadius: 8,
-                              backgroundColor: isDarkMode ? '#ef4444' : '#fee2e2',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                            activeOpacity={0.7}
-                          >
-                            <Trash size={20} color={isDarkMode ? '#fff' : '#ef4444'} />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                      {!(goal.action_items && goal.action_items.length > 0) && (
-                        <TouchableOpacity
-                          onPress={() => handleGeneratePlan(goal.id, goal)}
-                          disabled={generatingPlanGoalIds.includes(goal.id)}
-                          style={{
-                            paddingHorizontal: 16,
-                            paddingVertical: 12,
-                            backgroundColor: '#10b981',
-                            borderRadius: 12,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            opacity: generatingPlanGoalIds.includes(goal.id) ? 0.5 : 1,
-                            marginBottom: 8,
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          {generatingPlanGoalIds.includes(goal.id) ? (
-                            <ActivityIndicator size="small" color="#ffffff" />
-                          ) : (
-                            <View style={{ marginRight: 8 }}>
-                              <BarChart3 size={18} color="#ffffff" />
-                            </View>
-                          )}
-                          <Text
-                            style={{
-                              color: 'white',
-                              fontSize: 14,
-                              fontWeight: '600',
-                            }}
-                          >
-                            {generatingPlanGoalIds.includes(goal.id) ? 'Generating…' : 'Generate Plan'}
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontWeight: '600',
-                            color:
-                              goal.priority === 'high' ? '#ef4444' : goal.priority === 'medium' ? '#f59e0b' : '#10b981',
-                          }}
-                        >
-                          {goal.priority.toUpperCase()} PRIORITY
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Action Items */}
-                    {(goal.action_items?.length ?? 0) > 0 && (
-                      <View className="mt-4">
-                        <Text
-                          className={`mb-2 text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}
-                        >
-                          Action Items
-                        </Text>
-                        <View>
-                          {goal.action_items?.map((item: any) => (
-                            <ActionItemCard key={item.id} item={item} onPress={() => setSelectedActionItem(item)} />
-                          ))}
-                        </View>
-                      </View>
-                    )}
-
-                    {/* Use GoalProgressTracker component for measurable goals */}
-                    {goal.target_value && (
-                      <GoalProgressTracker
-                        goalId={goal.id}
-                        title=""
-                        currentValue={goal.current_value || 0}
-                        targetValue={goal.target_value}
-                        unit={goal.unit || ''}
-                        onProgressUpdate={handleUpdateProgress}
-                        showQuickActions={true}
-                      />
-                    )}
-                  </View>
-                </View>
+                  goal={goal}
+                  onDelete={() => deleteGoal(goal.id)}
+                  onGeneratePlan={handleGeneratePlan}
+                  onProgressUpdate={handleUpdateProgress}
+                  onSelectActionItem={setSelectedActionItem}
+                  generatingPlanGoalIds={generatingPlanGoalIds}
+                />
               ))}
 
               {/* Weekend Reflection */}
@@ -826,25 +573,6 @@ export default function GoalsScreen() {
                     </TouchableOpacity>
                   </View>
                 </Card>
-              )}
-
-              {/* Habit Integration (hidden) */}
-              {false && goals.length > 0 && (
-                <HabitGoalIntegration
-                  goalId={goals[0].id}
-                  goalTitle={goals[0].title}
-                  suggestedHabits={[
-                    'Set a daily reminder',
-                    'Track progress in the morning',
-                    'Review goals before bed',
-                    'Celebrate small wins',
-                  ]}
-                  completedHabits={['Set a daily reminder']}
-                  onHabitToggle={(habit) => {
-                    // Handle habit toggle
-                    console.log('Habit toggled:', habit);
-                  }}
-                />
               )}
             </View>
           </View>

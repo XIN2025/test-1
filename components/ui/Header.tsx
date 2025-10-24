@@ -61,6 +61,7 @@ const MIcon = ({ icon, accessibilityLabel, onPress, variant = 'primary' }: IconP
         },
         onPress && shadow.card,
       ]}
+      disabled={!onPress}
       accessibilityLabel={accessibilityLabel}
     >
       <Icon size={20} color={colors.icon} />
