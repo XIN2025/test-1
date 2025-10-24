@@ -5,15 +5,18 @@ import { TooltipProvider } from '@repo/ui/components/tooltip';
 import { Toaster } from '@repo/ui/components/sonner';
 import { SessionProvider } from 'next-auth/react';
 import AuthWrapper from './AuthWrapper';
+import { SidebarProvider } from '@repo/ui/components/sidebar';
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <SessionProvider>
       <AuthWrapper>
-        <ThemeProvider attribute='class' defaultTheme='system' disableTransitionOnChange>
-          <Toaster duration={2500} richColors closeButton position='top-right' />
-          <TooltipProvider>{children}</TooltipProvider>
-        </ThemeProvider>
+        <SidebarProvider>
+          <ThemeProvider attribute='class' defaultTheme='system' disableTransitionOnChange>
+            <Toaster duration={2500} richColors closeButton position='top-right' />
+            <TooltipProvider>{children}</TooltipProvider>
+          </ThemeProvider>
+        </SidebarProvider>
       </AuthWrapper>
     </SessionProvider>
   );

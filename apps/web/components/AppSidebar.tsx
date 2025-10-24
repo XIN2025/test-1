@@ -9,6 +9,7 @@ import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@repo/ui/components/avatar';
 import { getConsistentColors, getInitials } from '@repo/shared-types/utils';
 import NavBar from './Navbar';
+import Bottombar from './Bottombar';
 
 export const routes = [
   {
@@ -37,10 +38,10 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const user = useAuth();
   const randomColor = getConsistentColors(user?.name || '');
-  console.log(randomColor);
+
   return (
-    <div className='flex h-dvh w-full'>
-      <div className='bg-background flex w-24 flex-col items-center justify-between py-4 text-sm font-medium'>
+    <div className='flex h-dvh w-full overflow-hidden'>
+      <div className='bg-background flex w-24 flex-shrink-0 flex-col items-center justify-between py-4 text-sm font-medium max-md:hidden'>
         <div className='flex w-full flex-col items-center justify-center gap-10'>
           <Link href='/'>
             <Image alt='karmi' src={'/images/logo.png'} width={1000} height={1000} className='h-8 w-10 opacity-80' />
@@ -72,9 +73,11 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
           <span className='text-xs'>Profile</span>
         </Link>
       </div>
-      <div className='bg-muted relative w-full'>
+
+      <div className='bg-muted flex flex-1 flex-col overflow-hidden'>
         <NavBar />
-        <div className='h-[calc(100vh-3.5rem)] w-full p-4'>{children}</div>
+        <main className='flex-1 overflow-auto'>{children}</main>
+        <Bottombar />
       </div>
     </div>
   );

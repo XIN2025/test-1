@@ -8,7 +8,7 @@ import { Button } from '@repo/ui/components/button';
 const NavBar = () => {
   const user = useAuth();
   return (
-    <header className='sticky top-0 z-10 flex h-14 w-full items-center justify-between px-5'>
+    <header className='bg-background border-border/40 sticky top-0 z-10 flex h-14 w-full items-center justify-between border-b px-5'>
       <div className='bg-foreground text-background relative flex w-fit items-center gap-2 rounded-full px-2 py-1.5 text-sm font-medium'>
         <span className='pl-1'>{user?.name}</span>
         <ChevronDown className='bg-background text-foreground size-5 rounded-full' />

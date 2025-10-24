@@ -54,14 +54,18 @@ const ChatPage = () => {
   }
   return (
     <div className='flex h-full w-full flex-col'>
-      <ChatMessages messages={messages} status={status} error={error} isLoading={status === 'streaming'} />
-      <ChatInput
-        handleSubmit={handleSubmit}
-        query={input}
-        setQuery={setInput}
-        isSubmitting={status === 'streaming'}
-        onStop={stop}
-      />
+      <div className='flex-1 overflow-auto'>
+        <ChatMessages messages={messages} status={status} error={error} isLoading={status === 'streaming'} />
+      </div>
+      <div className='flex-shrink-0 p-4 pt-0'>
+        <ChatInput
+          handleSubmit={handleSubmit}
+          query={input}
+          setQuery={setInput}
+          isSubmitting={status === 'streaming'}
+          onStop={stop}
+        />
+      </div>
     </div>
   );
 };

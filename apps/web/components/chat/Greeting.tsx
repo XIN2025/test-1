@@ -41,7 +41,7 @@ const Greeting = ({ query, setQuery, isSubmitting, handleSubmit }: GreetingProps
     }, 200);
   };
   return (
-    <div className='mx-auto flex h-full max-w-4xl flex-col items-center justify-center px-4 py-8'>
+    <div className='mx-auto flex min-h-full max-w-4xl flex-col items-center justify-center px-4 py-8'>
       {/* Header Section */}
       <div className='mb-8 space-y-4 text-center'>
         <div className='mb-6 flex items-center justify-center'>
@@ -87,11 +87,6 @@ const Greeting = ({ query, setQuery, isSubmitting, handleSubmit }: GreetingProps
             </Card>
           ))}
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className='mt-12 text-center'>
-        <p className='text-muted-foreground text-sm'>AI can make mistakes. Consider checking important information.</p>
       </div>
     </div>
   );
