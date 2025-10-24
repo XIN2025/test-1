@@ -34,10 +34,10 @@ export default function AIMessage({ text, isLoading = false, showAvatar = true }
           shadowOpacity: isDarkMode ? 0.3 : 0.1,
           shadowRadius: 2,
           elevation: 2,
-          borderBottomLeftRadius: 4, // Tail effect for AI messages
+          borderBottomLeftRadius: 4,
         }}
       >
-        {isLoading ? (
+        {isLoading && !text ? (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <ActivityIndicator size="small" color={isDarkMode ? '#34d399' : '#114131'} />
             <Text
@@ -51,13 +51,30 @@ export default function AIMessage({ text, isLoading = false, showAvatar = true }
             </Text>
           </View>
         ) : (
-          <CustomMarkdown
-            style={{
-              body: { color: isDarkMode ? '#e5e7eb' : '#111827' },
-            }}
-          >
-            {text}
-          </CustomMarkdown>
+          <View>
+            <CustomMarkdown
+              style={{
+                body: { color: isDarkMode ? '#e5e7eb' : '#111827' },
+              }}
+            >
+              {text}
+            </CustomMarkdown>
+            {isLoading && text && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                <ActivityIndicator size="small" color={isDarkMode ? '#34d399' : '#114131'} />
+                <Text
+                  style={{
+                    marginLeft: 8,
+                    fontSize: 12,
+                    color: isDarkMode ? '#9CA3AF' : '#6B7280',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Evra is typing...
+                </Text>
+              </View>
+            )}
+          </View>
         )}
       </View>
     </View>

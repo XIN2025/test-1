@@ -3,7 +3,6 @@ import { TextInput, TouchableOpacity, View } from 'react-native';
 import { Mic, Send } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useRawAudioTranscription } from '../../hooks/useRawAudioTranscription';
-import { useRealtimeTranscription } from '../../hooks/useRealtimeTranscription';
 
 interface ChatInputProps {
   inputText: string;
@@ -40,7 +39,9 @@ export default function ChatInput({ inputText, setInputText, onSendMessage, isTy
     if (isRecording) {
       stopTranscription();
     }
-    onSendMessage(inputText);
+    if (inputText.trim()) {
+      onSendMessage(inputText);
+    }
   };
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Keyboard } from 'react-native';
+import EventSource from 'react-native-sse';
 import { useAuth } from '../context/AuthContext';
 import { Message, ChatHookReturn } from '../types/chat';
 
@@ -8,11 +9,11 @@ export const useChat = (): ChatHookReturn => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const messageQueueRef = useRef<{ type: string; content: any }[]>([]);
+  const isProcessingQueueRef = useRef(false);
 
-  // API Configuration
   const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://localhost:8000';
-
-  // Get user's email from context
   const { user } = useAuth();
   const userEmail = user?.email || '';
 
@@ -20,8 +21,87 @@ export const useChat = (): ChatHookReturn => {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   };
 
+  const processMessageQueue = useCallback(async () => {
+    if (isProcessingQueueRef.current || messageQueueRef.current.length === 0) {
+      return;
+    }
+
+    isProcessingQueueRef.current = true;
+
+    while (messageQueueRef.current.length > 0) {
+      const messageData = messageQueueRef.current.shift();
+      if (!messageData) break;
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      try {
+        if (messageData.type === 'response_chunk' && messageData.content) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.isLoading && msg.sender === 'bot' ? { ...msg, text: msg.text + messageData.content } : msg,
+            ),
+          );
+        } else if (messageData.type === 'follow_up' && messageData.content) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.isLoading && msg.sender === 'bot'
+                ? { ...msg, suggestions: messageData.content, isLoading: false }
+                : msg,
+            ),
+          );
+          setIsTyping(false);
+        } else if (messageData.type === 'error') {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.isLoading && msg.sender === 'bot'
+                ? {
+                    ...msg,
+                    text:
+                      messageData.content ||
+                      'I apologize, but I encountered an error while processing your request. Please try again later.',
+                    isLoading: false,
+                    suggestions: [],
+                  }
+                : msg,
+            ),
+          );
+          setIsTyping(false);
+        } else if (messageData.type === 'close') {
+          setMessages((prev) =>
+            prev.map((msg) => (msg.isLoading && msg.sender === 'bot' ? { ...msg, isLoading: false } : msg)),
+          );
+          setIsTyping(false);
+        }
+      } catch (error) {
+        console.error('Error processing message:', error);
+      }
+    }
+
+    isProcessingQueueRef.current = false;
+  }, []);
+
+  useEffect(() => {
+    if (messageQueueRef.current.length > 0) {
+      processMessageQueue();
+    }
+  }, [processMessageQueue]);
+
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, []);
+
   const handleSendMessage = async (text: string) => {
-    if (!text.trim()) return;
+    if (!text.trim() || isTyping) return;
+
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+
+    messageQueueRef.current = [];
 
     const userMessage: Message = {
       id: generateUniqueId(),
@@ -33,55 +113,74 @@ export const useChat = (): ChatHookReturn => {
     setInputText('');
     setIsTyping(true);
 
-    // Add loading message
-    const loadingMessage: Message = {
-      id: generateUniqueId(),
+    const botMessageId = generateUniqueId();
+    const botMessagePlaceholder: Message = {
+      id: botMessageId,
       text: '',
       sender: 'bot',
       isLoading: true,
+      suggestions: [],
     };
-    setMessages((prev) => [...prev, loadingMessage]);
+    setMessages((prev) => [...prev, botMessagePlaceholder]);
 
-    try {
-      const formData = new FormData();
-      formData.append('message', text.trim());
-      formData.append('user_email', userEmail);
+    const url = `${API_BASE_URL}/chat/stream`;
+    const urlWithParams = new URL(url);
+    urlWithParams.searchParams.append('message', text.trim());
+    urlWithParams.searchParams.append('user_email', userEmail);
 
-      const response = await fetch(`${API_BASE_URL}/chat/send`, {
-        method: 'POST',
-        body: formData,
+    eventSourceRef.current = new EventSource(urlWithParams.toString());
+
+    eventSourceRef.current.addEventListener('open', () => {
+      console.log('SSE connection opened.');
+    });
+
+    eventSourceRef.current.addEventListener('message', (event) => {
+      if (!event.data) return;
+
+      try {
+        const parsed = JSON.parse(event.data);
+
+        messageQueueRef.current.push(parsed);
+
+        processMessageQueue();
+
+        if (parsed.type === 'follow_up' || parsed.type === 'error') {
+          setTimeout(() => {
+            closeStream();
+          }, 0);
+        }
+      } catch (e) {
+        console.error('Failed to parse SSE message:', event.data, e);
+      }
+    });
+
+    eventSourceRef.current.addEventListener('error', (event) => {
+      console.error('SSE connection error:', event);
+
+      messageQueueRef.current.push({
+        type: 'error',
+        content: "I apologize, but I'm having trouble connecting. Please try again later.",
       });
 
-      const data = await response.json();
+      processMessageQueue();
 
-      if (data.success) {
-        // Remove loading message and add response
-        setMessages((prev) => prev.filter((msg) => !msg.isLoading));
+      setTimeout(() => {
+        eventSourceRef.current?.close();
+      }, 0);
+    });
 
-        const botMessage: Message = {
-          id: generateUniqueId(),
-          text: data.response,
-          sender: 'bot',
-          suggestions: data.follow_up_questions || [],
-        };
-        setMessages((prev) => [...prev, botMessage]);
-      } else {
-        throw new Error(data.error || 'Failed to get response');
-      }
-    } catch (error) {
-      console.error('Chat error:', error);
-      setMessages((prev) => prev.filter((msg) => !msg.isLoading));
+    const closeStream = () => {
+      console.log('SSE connection closed.');
 
-      const errorMessage: Message = {
-        id: generateUniqueId(),
-        text: "I apologize, but I'm having trouble processing your request right now. Please try again later.",
-        sender: 'bot',
-        suggestions: ['Try again', 'Ask something else'],
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsTyping(false);
-    }
+      messageQueueRef.current.push({
+        type: 'close',
+        content: null,
+      });
+
+      processMessageQueue();
+
+      eventSourceRef.current?.close();
+    };
   };
 
   const handleSuggestionClick = (suggestion: string) => {
