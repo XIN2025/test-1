@@ -53,7 +53,7 @@ const ChatPage = () => {
     return <Greeting query={input} setQuery={setInput} isSubmitting={isCreatingChat} handleSubmit={handleCreateChat} />;
   }
   return (
-    <div className='flex h-[calc(100vh-3rem)] w-full flex-col pb-4'>
+    <div className='flex h-full w-full flex-col'>
       <ChatMessages messages={messages} status={status} error={error} isLoading={status === 'streaming'} />
       <ChatInput
         handleSubmit={handleSubmit}
