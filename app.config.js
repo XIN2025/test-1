@@ -2,7 +2,7 @@ export default {
   expo: {
     name: 'Evra',
     slug: 'evra',
-    owner: 'gamma-heizen',
+    owner: 'evrahealth',
     version: '1.0.5',
     orientation: 'portrait',
     icon: './assets/images/logo.png',
@@ -18,6 +18,7 @@ export default {
         ITSAppUsesNonExemptEncryption: false,
         NSHealthShareUsageDescription: 'Your own custom usage description',
         NSHealthUpdateUsageDescription: 'Your own custom usage description',
+        NSMicrophoneUsageDescription: 'Allow Evra to access your microphone for voice input in chat',
       },
       userInterfaceStyle: 'light',
     },
@@ -109,6 +110,9 @@ export default {
 
         // Background Access
         'android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND',
+
+        // Audio Recording for voice input
+        'android.permission.RECORD_AUDIO',
       ],
       softwareKeyboardLayoutMode: 'pan',
     },
@@ -134,9 +138,12 @@ export default {
         {
           ios: {
             useFrameworks: 'static',
+            newArchEnabled: false,
           },
           android: {
             minSdkVersion: 26,
+            newArchEnabled: false,
+            excludedModules: ['react-native-worklets'],
           },
         },
       ],
@@ -160,12 +167,12 @@ export default {
     extra: {
       API_BASE_URL: 'https://api.evra.opengig.work',
       eas: {
-        projectId: 'c41c4d5e-cf0b-4fc7-b62f-abab08fd108c',
+        projectId: '29057e40-c485-49b4-a2b4-6c71c1878caa',
       },
     },
   },
   updates: {
-    url: 'https://u.expo.dev/c41c4d5e-cf0b-4fc7-b62f-abab08fd108c',
+    url: 'https://u.expo.dev/29057e40-c485-49b4-a2b4-6c71c1878caa',
   },
   runtimeVersion: {
     policy: 'appVersion',

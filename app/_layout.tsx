@@ -5,6 +5,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { useFonts } from '../hooks/useFonts';
 import './global.css';
 import { HeadlessBackgroundSync } from '../components/HeadlessBackgroundSync';
+import { IOSHealthDataSync } from '../components/IOSHealthDataSync';
 
 export default function RootLayout() {
   const fontsLoaded = useFonts();
@@ -18,7 +19,6 @@ export default function RootLayout() {
               flex: 1,
               justifyContent: 'center',
               alignItems: 'center',
-              // backgroundColor: "#f0fdf4",
             }}
           >
             <Text style={{ color: '#059669', fontSize: 18 }}>Loading...</Text>
@@ -33,6 +33,7 @@ export default function RootLayout() {
       <AuthProvider>
         <>
           <HeadlessBackgroundSync />
+          <IOSHealthDataSync />
           <Stack screenOptions={{ headerShown: false }} />
         </>
       </AuthProvider>

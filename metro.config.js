@@ -4,12 +4,7 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-// Configure path alias resolver
-config.resolver.alias = {
-  '@': path.resolve(__dirname),
-};
-
-// Add resolver request handler
+// Configure path alias resolver properly
 const { resolver } = config;
 config.resolver = {
   ...resolver,
@@ -21,4 +16,6 @@ config.resolver = {
   sourceExts: [...resolver.sourceExts, 'jsx', 'js', 'ts', 'tsx'],
 };
 
-module.exports = withNativeWind(config, { input: './app/global.css' });
+module.exports = withNativeWind(config, {
+  input: './app/global.css',
+});

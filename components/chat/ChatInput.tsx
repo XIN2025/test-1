@@ -1,18 +1,55 @@
-import React, { useRef } from 'react';
-import { TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import { Mic, Send, SendHorizontal } from 'lucide-react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { TextInput, TouchableOpacity, View } from 'react-native';
+import { LucideIcon, Mic, Send, SendHorizontal } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { shadow } from '@/utils/commonStyles';
+import { useRawAudioTranscription } from '../../hooks/useRawAudioTranscription';
+import { useRealtimeTranscription } from '../../hooks/useRealtimeTranscription';
 
 interface ChatInputProps {
   inputText: string;
-  setInputText: (text: string) => void;
+  setInputText: React.Dispatch<React.SetStateAction<string>>;
   onSendMessage: (text: string) => void;
 }
 
 export default function ChatInput({ inputText, setInputText, onSendMessage }: ChatInputProps) {
   const { isDarkMode } = useTheme();
   const inputRef = useRef<TextInput>(null);
+  const [interimText, setInterimText] = useState('');
+
+  const handleTranscript = (text: string, isFinal: boolean) => {
+    if (isFinal) {
+      setInputText((prev) => (prev ? prev + ' ' + text : text));
+      setInterimText('');
+    } else {
+      setInterimText(text);
+    }
+  };
+
+  const { isRecording, startTranscription, stopTranscription } = useRawAudioTranscription(handleTranscript);
+
+  const handleMicPress = () => {
+    if (isRecording) {
+      stopTranscription();
+    } else {
+      startTranscription();
+    }
+  };
+
+  const handleSendMessage = () => {
+    if (isRecording) {
+      stopTranscription();
+    }
+    onSendMessage(inputText);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (isRecording) {
+        stopTranscription();
+      }
+    };
+  }, [isRecording, stopTranscription]);
 
   return (
     <View
@@ -29,8 +66,12 @@ export default function ChatInput({ inputText, setInputText, onSendMessage }: Ch
       <TextInput
         ref={inputRef}
         value={inputText}
-        onChangeText={setInputText}
-        placeholder="Ask me about health..."
+        onChangeText={(text) => {
+          if (!isRecording) {
+            setInputText(text);
+          }
+        }}
+        placeholder={isRecording ? 'Listening...' : 'Ask me about health...'}
         style={{
           fontSize: 14,
           color: isDarkMode ? '#F3F4F6' : '#1F2937',
@@ -52,13 +93,14 @@ export default function ChatInput({ inputText, setInputText, onSendMessage }: Ch
         scrollEnabled={false}
         returnKeyType="default"
         enablesReturnKeyAutomatically={false}
+        editable={!isRecording}
       />
       <TouchableOpacity
         onPress={() => {
           if (inputText.trim()) {
-            onSendMessage(inputText);
+            handleSendMessage();
           } else {
-            console.log('Microphone pressed');
+            handleMicPress();
           }
         }}
         style={{

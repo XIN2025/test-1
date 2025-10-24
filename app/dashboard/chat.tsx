@@ -1,11 +1,10 @@
-import React from 'react';
-import { KeyboardAvoidingView, View } from 'react-native';
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 import ChatInput from '../../components/chat/ChatInput';
 import EmptyState from '../../components/chat/EmptyState';
 import Messages from '../../components/chat/Messages';
-import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Message } from '../../types/chat';
 import { API_BASE_URL } from '../../utils/api';
@@ -96,6 +95,18 @@ export default function ChatPage() {
           )}
         </View>
         <ChatInput inputText={inputText} setInputText={setInputText} onSendMessage={handleSendMessage} />
+        <Text
+          style={{
+            fontSize: 12,
+            textAlign: 'center',
+            marginHorizontal: 16,
+            marginBottom: 6,
+            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+          }}
+        >
+          Messages from Evra are AI-generated and for informational purposes only. For medical advice, please confirm
+          this information with your healthcare provider.
+        </Text>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

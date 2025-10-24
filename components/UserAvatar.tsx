@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useUser } from '../context/UserContext';
 import { getInitials } from '../utils/string';
+import { useTheme } from '@/context/ThemeContext';
 
 interface UserAvatarProps {
   size?: 'small' | 'medium' | 'large' | 'xlarge';
@@ -13,6 +14,20 @@ interface UserAvatarProps {
   className?: string;
 }
 
+const getBackgroundColor = (initials: string, isDarkMode: boolean) => {
+  if (!initials) return isDarkMode ? '#064e3b' : '#059669'; // Default green
+  const charCode = initials.charCodeAt(0);
+  const colors = [
+    '#059669', // green
+    '#0891b2', // cyan
+    '#7c3aed', // purple
+    '#db2777', // pink
+    '#dc2626', // red
+    '#ea580c', // orange
+  ];
+  return colors[charCode % colors.length];
+};
+
 const UserAvatar: React.FC<UserAvatarProps> = ({
   size = 'medium',
   imageUrl,
@@ -23,6 +38,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   className,
 }) => {
   const { userName: contextUserName, userEmail: contextUserEmail } = useUser();
+  const { isDarkMode } = useTheme();
 
   // Use props first, then context values
   const displayName = userName || contextUserName || '';
@@ -39,7 +55,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   const { container: containerSize, text: textSize } = sizeConfig[size];
 
-  // Generate initials and background color
   const initials = getInitials(displayText);
 
   const containerStyle = {
@@ -48,6 +63,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     borderRadius: containerSize / 2,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
+    backgroundColor: getBackgroundColor(initials, isDarkMode),
     overflow: 'hidden' as const,
     ...customStyle,
   };

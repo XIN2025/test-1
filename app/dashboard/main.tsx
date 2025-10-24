@@ -2,8 +2,8 @@ import { LiquidGauge } from 'react-native-liquid-gauge';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useGoals } from '@/hooks/useGoals';
+import { CircularProgressRing } from '../../components/CircularProgressRing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Bell, Flame, Heart, Info, Target } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -14,8 +14,7 @@ import { goalsApi } from '../../services/goalsApi';
 import HealthCard from '../../components/health/HealthCard';
 import SimpleLabTestsCard from '../../components/SimpleLabTestsCard';
 import CriticalRiskAlertsCard from '../../components/CriticalRiskAlertsCard';
-import UserAvatar from '@/components/UserAvatar';
-import Greeting from '@/components/Greeting';
+import UserAvatar from '../../components/UserAvatar';
 import { healthAlertsApi } from '../../services/healthAlertsApi';
 import { CriticalRiskAlert } from '../../types/criticalRiskAlerts';
 import { healthScoreApi } from '../../services/healthScoreApi';
@@ -23,6 +22,7 @@ import TodaysActionItems from '@/components/main/TodaysActionItems';
 import { commonStylesDark, commonStylesLight, shadow } from '@/utils/commonStyles';
 import WeeklyGoals from '@/components/main/WeeklyGoals';
 import Header from '@/components/ui/Header';
+import { CustomLiquidGauge } from '../../components/CustomLiquidGauge';
 
 const { width } = Dimensions.get('window');
 
@@ -602,7 +602,7 @@ function MainDashboard() {
                 }}
               >
                 {/* Liquid Gauge for Health Score */}
-                <LiquidGauge
+                {/* <LiquidGauge
                   value={healthScore}
                   width={width * 0.35}
                   height={width * 0.35}
@@ -625,7 +625,25 @@ function MainDashboard() {
                     textSuffix: '',
                     toFixed: 0,
                   }}
-                />
+                /> */}
+                <View
+                  style={{
+                    width: width * 0.45,
+                    height: width * 0.45,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <CustomLiquidGauge
+                    value={healthScore}
+                    width={width * 0.45}
+                    height={width * 0.45}
+                    circleColor="#f97316"
+                    waveColor="#f97316"
+                    textColor="#1f2937"
+                    waveTextColor="#fff"
+                  />
+                </View>
 
                 {/* Label below */}
                 <Text
