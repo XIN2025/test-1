@@ -1,9 +1,9 @@
 import { useTheme } from '@/context/ThemeContext';
 
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, Utensils, FileText, Pill, ShoppingBag } from 'lucide-react-native';
 import { shadow } from '@/utils/commonStyles';
 
 interface IconProps {
@@ -75,9 +75,22 @@ interface HeaderProps {
   leftComponent?: React.ReactNode;
   leftIcon?: IconProps;
   rightIcons?: IconProps[];
+  tabs?: string[];
+  onTabPress?: (tab: string) => void;
+  activeTab?: string;
 }
 
-export default function Header({ title, subtitle, showBackButton, leftComponent, leftIcon, rightIcons }: HeaderProps) {
+export default function Header({
+  title,
+  subtitle,
+  showBackButton,
+  leftComponent,
+  leftIcon,
+  rightIcons,
+  tabs,
+  activeTab,
+  onTabPress,
+}: HeaderProps) {
   const router = useRouter();
   const { isDarkMode } = useTheme();
 
@@ -89,43 +102,73 @@ export default function Header({ title, subtitle, showBackButton, leftComponent,
         backgroundColor: isDarkMode ? '#111827' : '#ffffff',
         paddingVertical: 12,
         paddingHorizontal: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        flexDirection: 'column',
+        gap: 16,
       }}
     >
-      <View className="flex-row items-center gap-2">
-        {showBackButton && (
-          <MIcon icon={ArrowLeft} accessibilityLabel="Back" onPress={() => router.back()} variant="secondary" />
-        )}
-        {leftComponent}
-        {leftIcon && <MIcon {...leftIcon} />}
-        <View className="ml-2">
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: '600',
-              color: isDarkMode ? '#f3f4f6' : '#1f2937',
-              marginBottom: 2,
-            }}
-          >
-            {title}
-          </Text>
-          <Text
-            style={{
-              fontSize: 12,
-              color: isDarkMode ? '#9ca3af' : '#6b7280',
-            }}
-          >
-            {subtitle}
-          </Text>
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          {showBackButton && (
+            <MIcon icon={ArrowLeft} accessibilityLabel="Back" onPress={() => router.back()} variant="secondary" />
+          )}
+          {leftComponent}
+          {leftIcon && <MIcon {...leftIcon} />}
+          <View className="ml-2">
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                marginBottom: 2,
+              }}
+            >
+              {title}
+            </Text>
+            <Text
+              style={{
+                fontSize: 12,
+                color: isDarkMode ? '#9ca3af' : '#6b7280',
+              }}
+            >
+              {subtitle}
+            </Text>
+          </View>
+        </View>
+        <View className="flex flex-row items-center gap-3">
+          {rightIcons?.map((icon, index) => (
+            <MIcon key={index} {...icon} />
+          ))}
         </View>
       </View>
-      <View className="flex flex-row items-center gap-3">
-        {rightIcons?.map((icon, index) => (
-          <MIcon key={index} {...icon} />
-        ))}
-      </View>
+      {tabs && tabs.length > 0 && (
+        <View className="flex-row items-center justify-between gap-2">
+          {tabs.map((tab, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => onTabPress?.(tab)}
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                borderRadius: 8,
+                paddingVertical: 6,
+                backgroundColor: activeTab === tab ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
+              }}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={{
+                  textAlign: 'center',
+                  fontSize: 12,
+                  fontWeight: '500',
+                  color: activeTab === tab ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
+                }}
+              >
+                {tab}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
