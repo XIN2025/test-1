@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  react-native-reanimated: 3.17.4
+  react-native-reanimated: 3.17.5
 
 importers:
 
@@ -1584,7 +1584,7 @@ packages:
     peerDependencies:
       react: '>=19.0'
       react-native: '>=0.78'
-      react-native-reanimated: 3.17.4
+      react-native-reanimated: 3.17.5
     peerDependenciesMeta:
       react-native:
         optional: true
@@ -3135,7 +3135,7 @@ packages:
       expo: '*'
       expo-constants: '*'
       expo-linking: '*'
-      react-native-reanimated: 3.17.4
+      react-native-reanimated: 3.17.5
       react-native-safe-area-context: '*'
       react-native-screens: '*'
     peerDependenciesMeta:
@@ -4727,7 +4727,7 @@ packages:
     peerDependencies:
       react: '>=18'
       react-native: '*'
-      react-native-reanimated: 3.17.4
+      react-native-reanimated: 3.17.5
       react-native-safe-area-context: '*'
       react-native-svg: '*'
       tailwindcss: ~3
@@ -4783,7 +4783,7 @@ packages:
       d3: '>=7.8.5'
       react: '*'
       react-native: '*'
-      react-native-reanimated: 3.17.4
+      react-native-reanimated: 3.17.5
 
   react-native-live-audio-stream@1.1.1:
     resolution: {integrity: sha512-Yk0O51hY7eFMUv1umYxGDs4SJVPHyhUX6uz4jI+GiowOwSqIzLLRNh03hJjCVZRFXTWLPCntqOKZ+N8fVAc6BQ==}
