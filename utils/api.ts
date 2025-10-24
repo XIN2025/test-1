@@ -27,7 +27,7 @@ export class ApiException extends Error {
 import Constants from 'expo-constants';
 
 // Base API configuration
-const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://localhost:8000';
+export const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://localhost:8000';
 
 // Log the API URL on app start
 console.log('🌐 API_BASE_URL:', API_BASE_URL);

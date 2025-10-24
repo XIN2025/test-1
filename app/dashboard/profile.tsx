@@ -25,6 +25,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Alert, Image, Platform, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { healthScoreApi } from '../../services/healthScoreApi';
+import Header from '@/components/ui/Header';
 
 export default function ProfileDashboard() {
   const { user } = useAuth();
@@ -378,309 +379,333 @@ export default function ProfileDashboard() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
-      {/* @ts-ignore - expo-linear-gradient children prop typing issue */}
-      <View>
-        {/* Fixed Header */}
-        <View
-          style={{
-            borderBottomWidth: 1,
-            borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
-            backgroundColor: isDarkMode ? '#111827' : '#ffffff',
-            paddingHorizontal: 16,
-            paddingVertical: 16,
-            zIndex: 10,
-          }}
-        >
+      <Header title="Profile" subtitle="Manage your profile" leftIcon={{ icon: User }} />
+
+      {/* Scrollable Content */}
+      <ScrollView
+        style={{
+          height: '100%',
+          backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
+        }}
+        contentContainerStyle={{ paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+          {/* Profile Card */}
           <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+              borderRadius: 16,
+              padding: 20,
+              marginBottom: 16,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: isDarkMode ? 0.3 : 0.1,
+              shadowRadius: 4,
+              elevation: 3,
             }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-              <View
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: 12,
-                  backgroundColor: isDarkMode ? '#1f6f51' : '#114131',
-                }}
-              >
-                <User size={22} color="#fff" />
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 20,
+              }}
+            >
+              <View style={{ position: 'relative' }}>
+                <View
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 40,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 16,
+                    overflow: 'hidden',
+                    backgroundColor: isDarkMode ? '#064e3b' : '#d1fae5',
+                  }}
+                >
+                  {profile.profile_picture ? (
+                    <Image
+                      source={{
+                        uri: `data:image/jpeg;base64,${profile.profile_picture}`,
+                      }}
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <User size={36} color={isDarkMode ? '#34d399' : '#059669'} />
+                  )}
+                </View>
+                <TouchableOpacity
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    width: 28,
+                    height: 28,
+                    backgroundColor: '#10b981',
+                    borderRadius: 14,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 2,
+                    borderColor: isDarkMode ? '#1f2937' : '#ffffff',
+                  }}
+                  onPress={pickImage}
+                  disabled={loading}
+                  activeOpacity={0.7}
+                >
+                  <Camera size={14} color="#fff" />
+                </TouchableOpacity>
               </View>
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
-                    fontSize: 18,
-                    fontWeight: '600',
+                    fontSize: 20,
+                    fontWeight: '700',
                     color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                    marginBottom: 2,
+                    marginBottom: 4,
                   }}
                 >
-                  Profile
+                  {profile.name}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    marginBottom: 4,
+                  }}
+                >
+                  {profile.email}
                 </Text>
                 <Text
                   style={{
                     fontSize: 13,
-                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    color: '#10b981',
+                    fontWeight: '600',
                   }}
                 >
-                  Manage your account
+                  Premium Member
                 </Text>
               </View>
             </View>
-          </View>
-        </View>
 
-        {/* Scrollable Content */}
-        <ScrollView
-          style={{
-            height: '100%',
-            backgroundColor: isDarkMode ? '#111827' : '#F0FDF4',
-          }}
-          contentContainerStyle={{ paddingBottom: 120 }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-            {/* Profile Card */}
+            {/* Health Stats */}
             <View
               style={{
-                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                borderRadius: 16,
-                padding: 20,
-                marginBottom: 16,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                shadowRadius: 4,
-                elevation: 3,
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                gap: 12,
               }}
             >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginBottom: 20,
-                }}
-              >
-                <View style={{ position: 'relative' }}>
+              {healthStats.map((stat, index) => (
+                <View
+                  key={index}
+                  style={{
+                    width: '45%',
+                    padding: 14,
+                    borderRadius: 12,
+                    backgroundColor: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb',
+                  }}
+                >
                   <View
                     style={{
-                      width: 80,
-                      height: 80,
-                      borderRadius: 40,
+                      flexDirection: 'row',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: 16,
-                      overflow: 'hidden',
-                      backgroundColor: isDarkMode ? '#064e3b' : '#d1fae5',
-                    }}
-                  >
-                    {profile.profile_picture ? (
-                      <Image
-                        source={{
-                          uri: `data:image/jpeg;base64,${profile.profile_picture}`,
-                        }}
-                        style={{ width: '100%', height: '100%' }}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <User size={36} color={isDarkMode ? '#34d399' : '#059669'} />
-                    )}
-                  </View>
-                  <TouchableOpacity
-                    style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      right: 0,
-                      width: 28,
-                      height: 28,
-                      backgroundColor: '#10b981',
-                      borderRadius: 14,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderWidth: 2,
-                      borderColor: isDarkMode ? '#1f2937' : '#ffffff',
-                    }}
-                    onPress={pickImage}
-                    disabled={loading}
-                    activeOpacity={0.7}
-                  >
-                    <Camera size={14} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontSize: 20,
-                      fontWeight: '700',
-                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                      justifyContent: 'space-between',
                       marginBottom: 4,
                     }}
                   >
-                    {profile.name}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: isDarkMode ? '#9ca3af' : '#6b7280',
-                      marginBottom: 4,
-                    }}
-                  >
-                    {profile.email}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      color: '#10b981',
-                      fontWeight: '600',
-                    }}
-                  >
-                    Premium Member
-                  </Text>
-                </View>
-              </View>
-
-              {/* Health Stats */}
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  justifyContent: 'space-between',
-                  gap: 12,
-                }}
-              >
-                {healthStats.map((stat, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      width: '45%',
-                      padding: 14,
-                      borderRadius: 12,
-                      backgroundColor: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : '#f9fafb',
-                    }}
-                  >
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <stat.icon
-                        size={20}
-                        color={
-                          isDarkMode
-                            ? stat.color.includes('green')
-                              ? '#34d399'
-                              : stat.color.includes('blue')
-                                ? '#60a5fa'
-                                : stat.color.includes('purple')
-                                  ? '#a78bfa'
-                                  : '#fbbf24'
-                            : stat.color.replace('text-', '').replace('-600', '')
-                        }
-                      />
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          fontWeight: '700',
-                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                        }}
-                      >
-                        {stat.value}
-                      </Text>
-                    </View>
+                    <stat.icon
+                      size={20}
+                      color={
+                        isDarkMode
+                          ? stat.color.includes('green')
+                            ? '#34d399'
+                            : stat.color.includes('blue')
+                              ? '#60a5fa'
+                              : stat.color.includes('purple')
+                                ? '#a78bfa'
+                                : '#fbbf24'
+                          : stat.color.replace('text-', '').replace('-600', '')
+                      }
+                    />
                     <Text
                       style={{
-                        fontSize: 12,
-                        color: isDarkMode ? '#9ca3af' : '#6b7280',
+                        fontSize: 18,
+                        fontWeight: '700',
+                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
                       }}
                     >
-                      {stat.label}
+                      {stat.value}
                     </Text>
                   </View>
-                ))}
-              </View>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    }}
+                  >
+                    {stat.label}
+                  </Text>
+                </View>
+              ))}
             </View>
+          </View>
 
-            {/* Personal Information */}
+          {/* Personal Information */}
+          <View
+            style={{
+              backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 16,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: isDarkMode ? 0.3 : 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
+          >
             <View
               style={{
-                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                borderRadius: 16,
-                padding: 16,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 marginBottom: 16,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                shadowRadius: 4,
-                elevation: 3,
               }}
             >
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: '600',
+                  color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                }}
+              >
+                Personal Information
+              </Text>
+              {!isEditing && (
+                <TouchableOpacity
+                  onPress={() => setIsEditing(true)}
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: isDarkMode ? '#064e3b' : '#d1fae5',
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Edit size={18} color={isDarkMode ? '#34d399' : '#059669'} />
+                </TouchableOpacity>
+              )}
+            </View>
+            <View>
               <View
                 style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
+                  paddingVertical: 12,
+                  borderBottomWidth: 1,
+                  borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
                   marginBottom: 16,
                 }}
               >
                 <Text
                   style={{
-                    fontSize: 18,
-                    fontWeight: '600',
+                    fontSize: 14,
+                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    marginBottom: 8,
+                    fontWeight: '500',
+                  }}
+                >
+                  Full Name
+                </Text>
+                {isEditing ? (
+                  <TextInput
+                    value={editForm.full_name}
+                    onChangeText={(text) => setEditForm((prev) => ({ ...prev, full_name: text }))}
+                    style={{
+                      padding: 12,
+                      borderRadius: 8,
+                      backgroundColor: isDarkMode ? '#374151' : '#f9fafb',
+                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                      fontSize: 16,
+                      borderWidth: 1,
+                      borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
+                    }}
+                    placeholder="Enter full name"
+                    placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
+                  />
+                ) : (
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '500',
+                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                    }}
+                  >
+                    {profile.name}
+                  </Text>
+                )}
+              </View>
+              <View
+                style={{
+                  paddingVertical: 12,
+                  borderBottomWidth: 1,
+                  borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
+                  marginBottom: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    marginBottom: 8,
+                    fontWeight: '500',
+                  }}
+                >
+                  Email
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: '500',
                     color: isDarkMode ? '#f3f4f6' : '#1f2937',
                   }}
                 >
-                  Personal Information
+                  {profile.email}
                 </Text>
-                {!isEditing && (
-                  <TouchableOpacity
-                    onPress={() => setIsEditing(true)}
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 22,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: isDarkMode ? '#064e3b' : '#d1fae5',
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <Edit size={18} color={isDarkMode ? '#34d399' : '#059669'} />
-                  </TouchableOpacity>
-                )}
               </View>
-              <View>
-                <View
+              <View
+                style={{
+                  paddingVertical: 12,
+                  borderBottomWidth: 1,
+                  borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
+                  marginBottom: 16,
+                }}
+              >
+                <Text
                   style={{
-                    paddingVertical: 12,
-                    borderBottomWidth: 1,
-                    borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
-                    marginBottom: 16,
+                    fontSize: 14,
+                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    marginBottom: 8,
+                    fontWeight: '500',
                   }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: isDarkMode ? '#9ca3af' : '#6b7280',
-                      marginBottom: 8,
-                      fontWeight: '500',
-                    }}
-                  >
-                    Full Name
-                  </Text>
-                  {isEditing ? (
+                  Phone
+                </Text>
+                {isEditing ? (
+                  <>
                     <TextInput
-                      value={editForm.full_name}
-                      onChangeText={(text) => setEditForm((prev) => ({ ...prev, full_name: text }))}
+                      value={editForm.phone_number}
+                      onChangeText={(text) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          phone_number: text,
+                        }))
+                      }
                       style={{
                         padding: 12,
                         borderRadius: 8,
@@ -689,40 +714,22 @@ export default function ProfileDashboard() {
                         fontSize: 16,
                         borderWidth: 1,
                         borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
+                        marginBottom: 6,
                       }}
-                      placeholder="Enter full name"
+                      placeholder="Enter phone number (min. 10 digits)"
                       placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
+                      keyboardType="phone-pad"
                     />
-                  ) : (
                     <Text
                       style={{
-                        fontSize: 16,
-                        fontWeight: '500',
-                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                        fontSize: 12,
+                        color: isDarkMode ? '#6b7280' : '#6b7280',
                       }}
                     >
-                      {profile.name}
+                      Format: +1XXXXXXXXXX or XXXXXXXXXX
                     </Text>
-                  )}
-                </View>
-                <View
-                  style={{
-                    paddingVertical: 12,
-                    borderBottomWidth: 1,
-                    borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
-                    marginBottom: 16,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: isDarkMode ? '#9ca3af' : '#6b7280',
-                      marginBottom: 8,
-                      fontWeight: '500',
-                    }}
-                  >
-                    Email
-                  </Text>
+                  </>
+                ) : (
                   <Text
                     style={{
                       fontSize: 16,
@@ -730,480 +737,417 @@ export default function ProfileDashboard() {
                       color: isDarkMode ? '#f3f4f6' : '#1f2937',
                     }}
                   >
-                    {profile.email}
+                    {profile.phone_number || 'Not set'}
                   </Text>
-                </View>
-                <View
-                  style={{
-                    paddingVertical: 12,
-                    borderBottomWidth: 1,
-                    borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
-                    marginBottom: 16,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: isDarkMode ? '#9ca3af' : '#6b7280',
-                      marginBottom: 8,
-                      fontWeight: '500',
-                    }}
-                  >
-                    Phone
-                  </Text>
-                  {isEditing ? (
-                    <>
-                      <TextInput
-                        value={editForm.phone_number}
-                        onChangeText={(text) =>
-                          setEditForm((prev) => ({
-                            ...prev,
-                            phone_number: text,
-                          }))
-                        }
-                        style={{
-                          padding: 12,
-                          borderRadius: 8,
-                          backgroundColor: isDarkMode ? '#374151' : '#f9fafb',
-                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                          fontSize: 16,
-                          borderWidth: 1,
-                          borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
-                          marginBottom: 6,
-                        }}
-                        placeholder="Enter phone number (min. 10 digits)"
-                        placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
-                        keyboardType="phone-pad"
-                      />
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: isDarkMode ? '#6b7280' : '#6b7280',
-                        }}
-                      >
-                        Format: +1XXXXXXXXXX or XXXXXXXXXX
-                      </Text>
-                    </>
-                  ) : (
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: '500',
-                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                      }}
-                    >
-                      {profile.phone_number || 'Not set'}
-                    </Text>
-                  )}
-                </View>
-                <View
-                  style={{
-                    paddingVertical: 12,
-                    borderBottomWidth: 1,
-                    borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
-                    marginBottom: 16,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: isDarkMode ? '#9ca3af' : '#6b7280',
-                      marginBottom: 8,
-                      fontWeight: '500',
-                    }}
-                  >
-                    Date of Birth
-                  </Text>
-                  {isEditing ? (
-                    <>
-                      <TextInput
-                        value={editForm.date_of_birth}
-                        onChangeText={(text) =>
-                          setEditForm((prev) => ({
-                            ...prev,
-                            date_of_birth: text,
-                          }))
-                        }
-                        style={{
-                          padding: 12,
-                          borderRadius: 8,
-                          backgroundColor: isDarkMode ? '#374151' : '#f9fafb',
-                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                          fontSize: 16,
-                          borderWidth: 1,
-                          borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
-                          marginBottom: 6,
-                        }}
-                        placeholder="YYYY-MM-DD"
-                        placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
-                      />
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: isDarkMode ? '#6b7280' : '#6b7280',
-                        }}
-                      >
-                        Format: YYYY-MM-DD (e.g., 1990-01-31)
-                      </Text>
-                    </>
-                  ) : (
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: '500',
-                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                      }}
-                    >
-                      {profile.date_of_birth || 'Not set'}
-                    </Text>
-                  )}
-                </View>
-                <View style={{ paddingVertical: 12 }}>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: isDarkMode ? '#9ca3af' : '#6b7280',
-                      marginBottom: 8,
-                      fontWeight: '500',
-                    }}
-                  >
-                    Blood Type
-                  </Text>
-                  {isEditing ? (
-                    <>
-                      <TextInput
-                        value={editForm.blood_type}
-                        onChangeText={(text) => {
-                          setEditForm((prev) => ({
-                            ...prev,
-                            blood_type: text,
-                          }));
-                        }}
-                        style={{
-                          padding: 12,
-                          borderRadius: 8,
-                          backgroundColor: isDarkMode ? '#374151' : '#f9fafb',
-                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                          fontSize: 16,
-                          borderWidth: 1,
-                          borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
-                          marginBottom: 6,
-                        }}
-                        placeholder="Enter blood type (e.g., A+)"
-                        placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
-                        autoCapitalize="characters"
-                        maxLength={3}
-                      />
-                      {editForm.blood_type && !/^(A|B|AB|O)[+-]$/.test(editForm.blood_type.toUpperCase()) && (
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            color: '#ef4444',
-                            marginBottom: 4,
-                          }}
-                        >
-                          Invalid blood type format. Please use one of: A+, A-, B+, B-, AB+, AB-, O+, O-
-                        </Text>
-                      )}
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: isDarkMode ? '#6b7280' : '#6b7280',
-                        }}
-                      >
-                        Valid formats: A+, A-, B+, B-, AB+, AB-, O+, O-
-                      </Text>
-                    </>
-                  ) : (
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: '500',
-                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                      }}
-                    >
-                      {profile.blood_type || 'Not set'}
-                    </Text>
-                  )}
-                </View>
-                {isEditing && (
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'flex-end',
-                      marginTop: 20,
-                      gap: 12,
-                    }}
-                  >
-                    <TouchableOpacity
-                      onPress={() => {
-                        setIsEditing(false);
-                        setEditForm({
-                          full_name: profile.name,
-                          phone_number: profile.phone_number || '',
-                          date_of_birth: profile.date_of_birth || '',
-                          blood_type: profile.blood_type || '',
-                        });
-                      }}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 22,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <X size={20} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={handleSaveProfile}
-                      disabled={loading}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 22,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: '#10b981',
-                        opacity: loading ? 0.5 : 1,
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Check size={20} color="#ffffff" />
-                    </TouchableOpacity>
-                  </View>
                 )}
               </View>
-            </View>
-
-            {/* Preferences */}
-            <View
-              style={{
-                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                borderRadius: 16,
-                padding: 16,
-                marginBottom: 16,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
-            >
-              <Text
+              <View
                 style={{
-                  fontSize: 18,
-                  fontWeight: '600',
+                  paddingVertical: 12,
+                  borderBottomWidth: 1,
+                  borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
                   marginBottom: 16,
-                  color: isDarkMode ? '#f3f4f6' : '#1f2937',
                 }}
               >
-                Preferences
-              </Text>
-              <View>
-                <View
+                <Text
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: 20,
+                    fontSize: 14,
+                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    marginBottom: 8,
+                    fontWeight: '500',
                   }}
                 >
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: '500',
-                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                        marginBottom: 4,
-                      }}
-                    >
-                      Push Notifications
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        color: isDarkMode ? '#9ca3af' : '#6b7280',
-                      }}
-                    >
-                      Receive health reminders
-                    </Text>
-                  </View>
-                  <Switch
-                    value={notificationsEnabled}
-                    onValueChange={handleNotificationToggle}
-                    trackColor={{
-                      false: isDarkMode ? '#374151' : '#d1d5db',
-                      true: '#10b981',
-                    }}
-                    thumbColor="#ffffff"
-                    disabled={loading || notificationLoading}
-                    style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
-                  />
-                </View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: '500',
-                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                        marginBottom: 4,
-                      }}
-                    >
-                      Dark Mode
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        color: isDarkMode ? '#9ca3af' : '#6b7280',
-                      }}
-                    >
-                      Use dark theme
-                    </Text>
-                  </View>
-                  <Switch
-                    value={isDarkMode}
-                    onValueChange={toggleDarkMode}
-                    trackColor={{
-                      false: isDarkMode ? '#374151' : '#d1d5db',
-                      true: '#10b981',
-                    }}
-                    thumbColor="#ffffff"
-                    style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
-                  />
-                </View>
-              </View>
-            </View>
-
-            <View
-              style={{
-                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                borderRadius: 16,
-                padding: 16,
-                marginBottom: 16,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDarkMode ? 0.3 : 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: '600',
-                  marginBottom: 16,
-                  color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                }}
-              >
-                Settings
-              </Text>
-              <View>
-                {menuItems.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => {
-                      if (item.title === 'Sign Out') {
-                        handleLogout();
+                  Date of Birth
+                </Text>
+                {isEditing ? (
+                  <>
+                    <TextInput
+                      value={editForm.date_of_birth}
+                      onChangeText={(text) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          date_of_birth: text,
+                        }))
                       }
-                      // Add other handlers for other menu items if needed
+                      style={{
+                        padding: 12,
+                        borderRadius: 8,
+                        backgroundColor: isDarkMode ? '#374151' : '#f9fafb',
+                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                        fontSize: 16,
+                        borderWidth: 1,
+                        borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
+                        marginBottom: 6,
+                      }}
+                      placeholder="YYYY-MM-DD"
+                      placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
+                    />
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: isDarkMode ? '#6b7280' : '#6b7280',
+                      }}
+                    >
+                      Format: YYYY-MM-DD (e.g., 1990-01-31)
+                    </Text>
+                  </>
+                ) : (
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '500',
+                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                    }}
+                  >
+                    {profile.date_of_birth || 'Not set'}
+                  </Text>
+                )}
+              </View>
+              <View style={{ paddingVertical: 12 }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    marginBottom: 8,
+                    fontWeight: '500',
+                  }}
+                >
+                  Blood Type
+                </Text>
+                {isEditing ? (
+                  <>
+                    <TextInput
+                      value={editForm.blood_type}
+                      onChangeText={(text) => {
+                        setEditForm((prev) => ({
+                          ...prev,
+                          blood_type: text,
+                        }));
+                      }}
+                      style={{
+                        padding: 12,
+                        borderRadius: 8,
+                        backgroundColor: isDarkMode ? '#374151' : '#f9fafb',
+                        color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                        fontSize: 16,
+                        borderWidth: 1,
+                        borderColor: isDarkMode ? '#4b5563' : '#d1d5db',
+                        marginBottom: 6,
+                      }}
+                      placeholder="Enter blood type (e.g., A+)"
+                      placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
+                      autoCapitalize="characters"
+                      maxLength={3}
+                    />
+                    {editForm.blood_type && !/^(A|B|AB|O)[+-]$/.test(editForm.blood_type.toUpperCase()) && (
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: '#ef4444',
+                          marginBottom: 4,
+                        }}
+                      >
+                        Invalid blood type format. Please use one of: A+, A-, B+, B-, AB+, AB-, O+, O-
+                      </Text>
+                    )}
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: isDarkMode ? '#6b7280' : '#6b7280',
+                      }}
+                    >
+                      Valid formats: A+, A-, B+, B-, AB+, AB-, O+, O-
+                    </Text>
+                  </>
+                ) : (
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '500',
+                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                    }}
+                  >
+                    {profile.blood_type || 'Not set'}
+                  </Text>
+                )}
+              </View>
+              {isEditing && (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'flex-end',
+                    marginTop: 20,
+                    gap: 12,
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={() => {
+                      setIsEditing(false);
+                      setEditForm({
+                        full_name: profile.name,
+                        phone_number: profile.phone_number || '',
+                        date_of_birth: profile.date_of_birth || '',
+                        blood_type: profile.blood_type || '',
+                      });
                     }}
                     style={{
-                      flexDirection: 'row',
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
                       alignItems: 'center',
-                      padding: 14,
-                      borderRadius: 12,
-                      backgroundColor:
-                        index === menuItems.length - 1
-                          ? isDarkMode
-                            ? 'rgba(127, 29, 29, 0.5)'
-                            : '#fef2f2'
-                          : isDarkMode
-                            ? 'rgba(55, 65, 81, 0.5)'
-                            : '#f9fafb',
-                      marginBottom: index === menuItems.length - 1 ? 0 : 8,
+                      justifyContent: 'center',
+                      backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
                     }}
                     activeOpacity={0.7}
                   >
-                    <View
+                    <X size={20} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleSaveProfile}
+                    disabled={loading}
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#10b981',
+                      opacity: loading ? 0.5 : 1,
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Check size={20} color="#ffffff" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Preferences */}
+          <View
+            style={{
+              backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 16,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: isDarkMode ? 0.3 : 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                marginBottom: 16,
+                color: isDarkMode ? '#f3f4f6' : '#1f2937',
+              }}
+            >
+              Preferences
+            </Text>
+            <View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 20,
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '500',
+                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                      marginBottom: 4,
+                    }}
+                  >
+                    Push Notifications
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    }}
+                  >
+                    Receive health reminders
+                  </Text>
+                </View>
+                <Switch
+                  value={notificationsEnabled}
+                  onValueChange={handleNotificationToggle}
+                  trackColor={{
+                    false: isDarkMode ? '#374151' : '#d1d5db',
+                    true: '#10b981',
+                  }}
+                  thumbColor="#ffffff"
+                  disabled={loading || notificationLoading}
+                  style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
+                />
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '500',
+                      color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                      marginBottom: 4,
+                    }}
+                  >
+                    Dark Mode
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: isDarkMode ? '#9ca3af' : '#6b7280',
+                    }}
+                  >
+                    Use dark theme
+                  </Text>
+                </View>
+                <Switch
+                  value={isDarkMode}
+                  onValueChange={toggleDarkMode}
+                  trackColor={{
+                    false: isDarkMode ? '#374151' : '#d1d5db',
+                    true: '#10b981',
+                  }}
+                  thumbColor="#ffffff"
+                  style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View
+            style={{
+              backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 16,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: isDarkMode ? 0.3 : 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                marginBottom: 16,
+                color: isDarkMode ? '#f3f4f6' : '#1f2937',
+              }}
+            >
+              Settings
+            </Text>
+            <View>
+              {menuItems.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => {
+                    if (item.title === 'Sign Out') {
+                      handleLogout();
+                    }
+                    // Add other handlers for other menu items if needed
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 14,
+                    borderRadius: 12,
+                    backgroundColor:
+                      index === menuItems.length - 1
+                        ? isDarkMode
+                          ? 'rgba(127, 29, 29, 0.5)'
+                          : '#fef2f2'
+                        : isDarkMode
+                          ? 'rgba(55, 65, 81, 0.5)'
+                          : '#f9fafb',
+                    marginBottom: index === menuItems.length - 1 ? 0 : 8,
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 12,
+                      backgroundColor: isDarkMode ? '#4b5563' : '#e5e7eb',
+                    }}
+                  >
+                    <item.icon
+                      size={20}
+                      color={
+                        index === menuItems.length - 1
+                          ? isDarkMode
+                            ? '#f87171'
+                            : '#ef4444'
+                          : isDarkMode
+                            ? '#9ca3af'
+                            : '#6b7280'
+                      }
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
                       style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginRight: 12,
-                        backgroundColor: isDarkMode ? '#4b5563' : '#e5e7eb',
-                      }}
-                    >
-                      <item.icon
-                        size={20}
-                        color={
+                        fontSize: 16,
+                        fontWeight: '500',
+                        marginBottom: 2,
+                        color:
                           index === menuItems.length - 1
                             ? isDarkMode
                               ? '#f87171'
                               : '#ef4444'
                             : isDarkMode
-                              ? '#9ca3af'
-                              : '#6b7280'
-                        }
-                      />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          fontWeight: '500',
-                          marginBottom: 2,
-                          color:
-                            index === menuItems.length - 1
-                              ? isDarkMode
-                                ? '#f87171'
-                                : '#ef4444'
-                              : isDarkMode
-                                ? '#f3f4f6'
-                                : '#1f2937',
-                        }}
-                      >
-                        {item.title}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          color: isDarkMode ? '#9ca3af' : '#6b7280',
-                        }}
-                      >
-                        {item.subtitle}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            {/* App Version */}
-            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: isDarkMode ? '#9ca3af' : '#6b7280',
-                }}
-              >
-                Evra Health App v{Constants.expoConfig?.version || '1.0.0'}
-              </Text>
+                              ? '#f3f4f6'
+                              : '#1f2937',
+                      }}
+                    >
+                      {item.title}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        color: isDarkMode ? '#9ca3af' : '#6b7280',
+                      }}
+                    >
+                      {item.subtitle}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
-        </ScrollView>
-      </View>
+
+          {/* App Version */}
+          <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+            <Text
+              style={{
+                fontSize: 13,
+                color: isDarkMode ? '#9ca3af' : '#6b7280',
+              }}
+            >
+              Evra Health App v{Constants.expoConfig?.version || '1.0.0'}
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

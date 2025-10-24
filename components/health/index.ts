@@ -13,11 +13,6 @@ export { default as HealthMetricListItem } from './molecules/HealthMetricListIte
 export { default as HealthSection } from './organisms/HealthSection';
 export { default as HealthDashboardContent } from './organisms/HealthDashboardContent';
 
-// Platform-specific components
-export { default as IOSHealthCard } from './IOSHealthCard';
-export { default as AndroidHealthCard } from './AndroidHealthCard';
-export { default as PlatformHealthCard } from './PlatformHealthCard';
-
 // Utilities
 export * from './utils/healthFormatters';
 export * from './utils/healthDataTransformers';

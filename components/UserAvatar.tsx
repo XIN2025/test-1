@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useUser } from '../context/UserContext';
-import { useTheme } from '../context/ThemeContext';
 import { getInitials } from '../utils/string';
+import { useTheme } from '@/context/ThemeContext';
 
 interface UserAvatarProps {
   size?: 'small' | 'medium' | 'large' | 'xlarge';
@@ -10,10 +10,23 @@ interface UserAvatarProps {
   userName?: string;
   userEmail?: string;
   onPress?: () => void;
-  showBorder?: boolean;
   customStyle?: any;
   className?: string;
 }
+
+const getBackgroundColor = (initials: string, isDarkMode: boolean) => {
+  if (!initials) return isDarkMode ? '#064e3b' : '#059669'; // Default green
+  const charCode = initials.charCodeAt(0);
+  const colors = [
+    '#059669', // green
+    '#0891b2', // cyan
+    '#7c3aed', // purple
+    '#db2777', // pink
+    '#dc2626', // red
+    '#ea580c', // orange
+  ];
+  return colors[charCode % colors.length];
+};
 
 const UserAvatar: React.FC<UserAvatarProps> = ({
   size = 'medium',
@@ -21,7 +34,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
   userName,
   userEmail,
   onPress,
-  showBorder = false,
   customStyle,
   className,
 }) => {
@@ -45,29 +57,13 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   const initials = getInitials(displayText);
 
-  const getBackgroundColor = () => {
-    if (!initials) return isDarkMode ? '#064e3b' : '#059669'; // Default green
-    const charCode = initials.charCodeAt(0);
-    const colors = [
-      '#059669', // green
-      '#0891b2', // cyan
-      '#7c3aed', // purple
-      '#db2777', // pink
-      '#dc2626', // red
-      '#ea580c', // orange
-    ];
-    return colors[charCode % colors.length];
-  };
-
   const containerStyle = {
     width: containerSize,
     height: containerSize,
     borderRadius: containerSize / 2,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    backgroundColor: getBackgroundColor(),
-    borderWidth: showBorder ? 2 : 0,
-    borderColor: isDarkMode ? '#374151' : '#E5E7EB',
+    backgroundColor: getBackgroundColor(initials, isDarkMode),
     overflow: 'hidden' as const,
     ...customStyle,
   };

@@ -7,6 +7,7 @@ import { useTheme } from '../../../context/ThemeContext';
 import * as DocumentPicker from 'expo-document-picker';
 import { labReportsApi, LabReportSummary } from '../../../services/labReportsApi';
 import { useAuth } from '../../../context/AuthContext';
+import Header from '@/components/ui/Header';
 
 export default function LabTestsPage() {
   const { isDarkMode } = useTheme();
@@ -205,96 +206,19 @@ export default function LabTestsPage() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }} edges={['top']}>
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.1,
-          shadowRadius: 2,
-          elevation: 2,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <ArrowLeft size={20} color={isDarkMode ? '#f3f4f6' : '#374151'} />
-        </TouchableOpacity>
-
-        <View style={{ alignItems: 'center' }}>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: '600',
-              color: isDarkMode ? '#f3f4f6' : '#1f2937',
-            }}
-          >
-            Lab Tests
-          </Text>
-          {reports.length <= 0 && (
-            <Text
-              style={{
-                fontSize: 12,
-                color: isDarkMode ? '#34d399' : '#059669',
-                fontWeight: '500',
-              }}
-            >
-              Connected to Labcorp
-            </Text>
-          )}
-        </View>
-
-        {reports.length > 0 ? (
-          <TouchableOpacity
-            onPress={handleUpload}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: isDarkMode ? '#064e3b' : '#f0fdf4',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Upload size={20} color={isDarkMode ? '#34d399' : '#059669'} />
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            onPress={onRefresh}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: isDarkMode ? '#064e3b' : '#f0fdf4',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            disabled={refreshing}
-          >
-            <RefreshCw
-              size={20}
-              color={isDarkMode ? '#34d399' : '#059669'}
-              style={{
-                transform: [{ rotate: refreshing ? '180deg' : '0deg' }],
-              }}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
+      <Header
+        title="Lab Tests"
+        subtitle="Connect to Labcorp"
+        showBackButton
+        rightIcons={[
+          {
+            icon: RefreshCw,
+            onPress: onRefresh,
+            variant: 'secondary',
+            accessibilityLabel: 'Refresh',
+          },
+        ]}
+      />
 
       <ScrollView
         style={{
