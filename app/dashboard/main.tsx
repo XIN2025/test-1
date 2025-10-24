@@ -365,7 +365,7 @@ function MainDashboard() {
           },
           {
             icon: Info,
-            onPress: start,
+            onPress: () => start(),
             variant: 'secondary',
             accessibilityLabel: 'Start App Tour',
           },
