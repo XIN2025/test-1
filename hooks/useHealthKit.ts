@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -84,6 +84,9 @@ export function useHealthKit() {
   const [isAvailable, setIsAvailable] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPermissions, setHasPermissions] = useState(false);
+
+  // Permission change listeners
+  const permissionChangeListeners = useRef<Set<(hasPermissions: boolean) => void>>(new Set());
 
   // Use the kingstinct recommended authorization hook
   const [authorizationStatus, requestHealthkitAuthorization] = useHealthkitAuthorization([
@@ -270,7 +273,21 @@ export function useHealthKit() {
       if (available) {
         // Use the authorization status from the kingstinct hook
         const isAuthorized = authorizationStatus === AuthorizationRequestStatus.unnecessary;
+        const previousPermissions = hasPermissions;
         setHasPermissions(isAuthorized);
+
+        // Notify listeners if permissions changed
+        if (previousPermissions !== isAuthorized) {
+          console.log('📱 HealthKit permissions changed:', isAuthorized);
+          permissionChangeListeners.current.forEach((listener) => {
+            try {
+              listener(isAuthorized);
+            } catch (error) {
+              console.error('Error in permission change listener:', error);
+            }
+          });
+        }
+
         console.log('Authorization status:', authorizationStatus, 'isAuthorized:', isAuthorized);
       }
     } catch (error) {
@@ -280,7 +297,7 @@ export function useHealthKit() {
     } finally {
       setIsLoading(false);
     }
-  }, [authorizationStatus]);
+  }, [authorizationStatus, hasPermissions]);
 
   const requestHealthKitPermissions = useCallback(
     async (requestAllPermissions = false) => {
@@ -384,6 +401,19 @@ export function useHealthKit() {
       return false;
     }
   }, [requestHealthkitAuthorization]);
+
+  // Add permission change listener
+  const addPermissionChangeListener = useCallback((listener: (hasPermissions: boolean) => void) => {
+    permissionChangeListeners.current.add(listener);
+    return () => {
+      permissionChangeListeners.current.delete(listener);
+    };
+  }, []);
+
+  // Remove permission change listener
+  const removePermissionChangeListener = useCallback((listener: (hasPermissions: boolean) => void) => {
+    permissionChangeListeners.current.delete(listener);
+  }, []);
 
   const fetchHealthMetric = useCallback(async (type: string, isCategory = false): Promise<HealthMetric> => {
     try {
@@ -849,5 +879,7 @@ export function useHealthKit() {
     refreshData: fetchAllHealthData,
     verifyPermissions: () => verifyPermissions(false),
     resetPermissions: resetHealthKitPermissions,
+    addPermissionChangeListener,
+    removePermissionChangeListener,
   };
 }

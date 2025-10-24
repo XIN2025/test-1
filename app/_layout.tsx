@@ -5,6 +5,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { useFonts } from '../hooks/useFonts';
 import './global.css';
 import { HeadlessBackgroundSync } from '../components/HeadlessBackgroundSync';
+import { IOSHealthDataSync } from '../components/IOSHealthDataSync';
 
 export default function RootLayout() {
   const fontsLoaded = useFonts();
@@ -30,8 +31,11 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <HeadlessBackgroundSync />
-        <Stack screenOptions={{ headerShown: false }} />
+        <>
+          <HeadlessBackgroundSync />
+          <IOSHealthDataSync />
+          <Stack screenOptions={{ headerShown: false }} />
+        </>
       </AuthProvider>
     </ThemeProvider>
   );

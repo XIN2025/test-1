@@ -2,7 +2,9 @@ import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { hourlyHealthDataFetcher } from './hourlyHealthDataFetcher';
+import { healthDataSyncManager } from './healthDataSyncManager';
 
 // Background task identifier
 const HEALTH_DATA_SYNC_TASK = 'health-data-sync';
@@ -87,7 +89,14 @@ TaskManager.defineTask(HEALTH_DATA_SYNC_TASK, async () => {
   try {
     console.log('🔄 Background health data sync started at:', new Date().toISOString());
 
-    // Get user email from storage
+    // For iOS, use the new sync manager instead of background tasks
+    if (Platform.OS === 'ios') {
+      console.log('📱 iOS detected - using foreground sync manager instead of background task');
+      const result = await healthDataSyncManager.syncHealthData();
+      return result.success ? BackgroundTask.BackgroundTaskResult.Success : BackgroundTask.BackgroundTaskResult.Failed;
+    }
+
+    // Android background sync logic (unchanged)
     const userEmail = await AsyncStorage.getItem('userEmail');
     if (!userEmail) {
       console.log('❌ No user email found, skipping sync');
@@ -213,6 +222,12 @@ export class HealthDataBackgroundSync {
     try {
       console.log('📱 Registering health data background sync task...');
 
+      // For iOS, don't register background tasks - use foreground sync instead
+      if (Platform.OS === 'ios') {
+        console.log('📱 iOS detected - skipping background task registration, using foreground sync');
+        return;
+      }
+
       // Check if background tasks are available
       const status = await BackgroundTask.getStatusAsync();
       console.log('📱 Background task status:', BackgroundTask.BackgroundTaskStatus[status]);
@@ -246,6 +261,12 @@ export class HealthDataBackgroundSync {
     try {
       console.log('📱 Unregistering health data background sync task...');
 
+      // For iOS, nothing to unregister since we don't use background tasks
+      if (Platform.OS === 'ios') {
+        console.log('📱 iOS detected - no background task to unregister');
+        return;
+      }
+
       const isRegistered = await TaskManager.isTaskRegisteredAsync(HEALTH_DATA_SYNC_TASK);
       if (!isRegistered) {
         console.log('📱 Health data sync task is not registered');
@@ -265,6 +286,11 @@ export class HealthDataBackgroundSync {
     try {
       await AsyncStorage.setItem('userEmail', email);
       console.log('📱 User email stored for background sync:', email.substring(0, 10) + '...');
+
+      // Also store in iOS sync manager
+      if (Platform.OS === 'ios') {
+        await healthDataSyncManager.setUserEmail(email);
+      }
     } catch (error) {
       console.error('❌ Failed to store user email:', error);
     }
@@ -275,6 +301,11 @@ export class HealthDataBackgroundSync {
     try {
       await AsyncStorage.removeItem('userEmail');
       console.log('📱 User email cleared from background sync');
+
+      // Also clear from iOS sync manager
+      if (Platform.OS === 'ios') {
+        await healthDataSyncManager.clearUserEmail();
+      }
     } catch (error) {
       console.error('❌ Failed to clear user email:', error);
     }
@@ -374,7 +405,14 @@ export class HealthDataBackgroundSync {
     try {
       console.log('🔄 Starting manual health data sync...');
 
-      // Get user email
+      // For iOS, use the new sync manager
+      if (Platform.OS === 'ios') {
+        console.log('📱 iOS detected - using foreground sync manager for manual sync');
+        const result = await healthDataSyncManager.syncHealthData(forceSync);
+        return result.success;
+      }
+
+      // Android manual sync logic (unchanged)
       const userEmail = await AsyncStorage.getItem('userEmail');
       if (!userEmail) {
         console.log('❌ No user email found for manual sync');
