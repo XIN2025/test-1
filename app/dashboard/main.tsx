@@ -602,42 +602,18 @@ function MainDashboard() {
                 }}
               >
                 {/* Liquid Gauge for Health Score */}
-                {/* <LiquidGauge
-                  value={healthScore}
-                  width={width * 0.35}
-                  height={width * 0.35}
-                  config={{
-                    circleColor: '#f97316',
-                    textColor: isDarkMode ? '#fff' : '#1f2937',
-                    waveTextColor: isDarkMode ? '#1f2937' : '#fff',
-                    waveColor: '#f97316',
-                    circleThickness: 0.08,
-                    textVertPosition: 0.5,
-                    waveAnimateTime: 3000,
-                    waveRiseTime: 1500,
-                    waveHeight: 0.08,
-                    waveCount: 2,
-                    textSize: 1.2,
-                    waveRise: true,
-                    waveAnimate: true,
-                    waveHeightScaling: true,
-                    valueCountUp: true,
-                    textSuffix: '',
-                    toFixed: 0,
-                  }}
-                /> */}
                 <View
                   style={{
-                    width: width * 0.45,
-                    height: width * 0.45,
+                    width: width * 0.35,
+                    height: width * 0.35,
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
                   <CustomLiquidGauge
                     value={healthScore}
-                    width={width * 0.45}
-                    height={width * 0.45}
+                    width={width * 0.35}
+                    height={width * 0.35}
                     circleColor="#f97316"
                     waveColor="#f97316"
                     textColor="#1f2937"

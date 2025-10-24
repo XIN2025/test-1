@@ -12,6 +12,41 @@ interface ChatInputProps {
   onSendMessage: (text: string) => void;
 }
 
+const ActionButton = ({
+  isDarkMode,
+  onPress,
+  icon,
+  disabled = false,
+  highlighted = false,
+}: {
+  isDarkMode: boolean;
+  onPress: () => void;
+  icon: LucideIcon;
+  disabled?: boolean;
+  highlighted?: boolean;
+}) => {
+  const Icon = icon;
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        width: 44,
+        height: 44,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: highlighted ? '#059669' : isDarkMode ? '#1f2937' : '#f9fafb',
+        opacity: disabled ? 0.5 : 1,
+        ...shadow.card,
+      }}
+      activeOpacity={0.7}
+      disabled={disabled}
+    >
+      <Icon size={20} color={highlighted ? '#fff' : isDarkMode ? '#9ca3af' : '#6b7280'} />
+    </TouchableOpacity>
+  );
+};
+
 export default function ChatInput({ inputText, setInputText, onSendMessage }: ChatInputProps) {
   const { isDarkMode } = useTheme();
   const inputRef = useRef<TextInput>(null);
@@ -65,7 +100,7 @@ export default function ChatInput({ inputText, setInputText, onSendMessage }: Ch
     >
       <TextInput
         ref={inputRef}
-        value={inputText}
+        value={inputText + (interimText ? ` ${interimText}` : '')}
         onChangeText={(text) => {
           if (!isRecording) {
             setInputText(text);
@@ -95,31 +130,13 @@ export default function ChatInput({ inputText, setInputText, onSendMessage }: Ch
         enablesReturnKeyAutomatically={false}
         editable={!isRecording}
       />
-      <TouchableOpacity
-        onPress={() => {
-          if (inputText.trim()) {
-            handleSendMessage();
-          } else {
-            handleMicPress();
-          }
-        }}
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 24,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: isDarkMode ? '#1f2937' : '#f9fafb',
-          ...shadow.card,
-        }}
-        activeOpacity={0.7}
-      >
-        {inputText.trim() ? (
-          <SendHorizontal size={20} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
-        ) : (
-          <Mic size={20} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
-        )}
-      </TouchableOpacity>
+      <ActionButton isDarkMode={isDarkMode} onPress={handleMicPress} icon={Mic} highlighted={isRecording} />
+      <ActionButton
+        isDarkMode={isDarkMode}
+        onPress={handleSendMessage}
+        icon={SendHorizontal}
+        disabled={!inputText.trim() || isRecording}
+      />
     </View>
   );
 }

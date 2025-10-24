@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FlatList } from 'react-native';
+import { FlatList, Text } from 'react-native';
 import { Message } from '../../types/chat';
 import MessageComponent from './Message';
+import { useTheme } from '@/context/ThemeContext';
+import { commonStylesDark, commonStylesLight } from '@/utils/commonStyles';
 
 interface MessagesProps {
   messages: Message[];
@@ -11,6 +13,7 @@ interface MessagesProps {
 export default function Messages({ messages, onSuggestionClick }: MessagesProps) {
   const flatListRef = useRef<FlatList<Message>>(null);
   const [contentHeight, setContentHeight] = useState(0);
+  const { isDarkMode } = useTheme();
 
   const scrollToBottom = (animated = true) => {
     requestAnimationFrame(() => {
@@ -43,6 +46,25 @@ export default function Messages({ messages, onSuggestionClick }: MessagesProps)
         paddingHorizontal: 16,
       }}
       keyboardShouldPersistTaps="handled"
+      ListHeaderComponent={() => (
+        <Text
+          style={[
+            (isDarkMode ? commonStylesDark : commonStylesLight).displayCard,
+            {
+              fontSize: 12,
+              textAlign: 'center',
+              borderWidth: 0,
+              paddingVertical: 12,
+              marginHorizontal: 8,
+              marginBottom: 16,
+              color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            },
+          ]}
+        >
+          Messages from Evra are AI-generated and for informational purposes only. For medical advice, please confirm
+          this information with your healthcare provider.
+        </Text>
+      )}
       onContentSizeChange={(height) => {
         if (height > contentHeight) {
           setContentHeight(height);

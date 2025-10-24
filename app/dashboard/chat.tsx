@@ -95,18 +95,6 @@ export default function ChatPage() {
           )}
         </View>
         <ChatInput inputText={inputText} setInputText={setInputText} onSendMessage={handleSendMessage} />
-        <Text
-          style={{
-            fontSize: 12,
-            textAlign: 'center',
-            marginHorizontal: 16,
-            marginBottom: 6,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
-          }}
-        >
-          Messages from Evra are AI-generated and for informational purposes only. For medical advice, please confirm
-          this information with your healthcare provider.
-        </Text>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
