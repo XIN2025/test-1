@@ -137,9 +137,12 @@ export default {
         {
           ios: {
             useFrameworks: 'static',
+            newArchEnabled: false,
           },
           android: {
             minSdkVersion: 26,
+            newArchEnabled: false,
+            excludedModules: ['react-native-worklets'],
           },
         },
       ],
