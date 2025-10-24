@@ -156,8 +156,8 @@ export default function RegisterForm() {
     >
       <div className='space-y-8'>
         <div className='flex flex-col items-center justify-center gap-4'>
-          <div className='bg-primary flex items-center justify-center rounded-full p-8'>{icons.send}</div>
-          <p className='text-sm text-gray-500'>{formatTimer(timer)}</p>
+          <div className='bg-foreground flex items-center justify-center rounded-full p-8'>{icons.send}</div>
+          <p className='text-muted-foreground text-sm'>{formatTimer(timer)}</p>
         </div>
 
         <p className='text-center text-sm font-medium'>

@@ -6,7 +6,6 @@ import { AuthContextType } from '@repo/shared-types/types';
 import { signOut, useSession } from 'next-auth/react';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -14,7 +13,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthContextType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { status } = useSession();
-  const router = useRouter();
 
   const logOut = () => {
     signOut({
@@ -29,7 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(resp);
       }
       if (resp.redirectUrl) {
-        router.push(resp.redirectUrl);
+        window.location.href = resp.redirectUrl;
         return;
       }
     } catch (error) {

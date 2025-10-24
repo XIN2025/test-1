@@ -13,8 +13,8 @@ const VerifyForm = ({ redirectUrl }: VerifyFormProps) => {
     <CardLayout>
       <div className='flex flex-col items-center justify-center space-y-8'>
         <div className='flex flex-col items-center justify-center gap-4'>
-          <div className='bg-primary flex items-center justify-center rounded-full p-8'>
-            <Check strokeWidth={3} className='size-12 text-white' />
+          <div className='bg-foreground flex items-center justify-center rounded-full p-8'>
+            <Check strokeWidth={3} className='text-background size-12' />
           </div>
           <div className='text-center'>
             <p className='text-2xl font-semibold'>Verification Completed</p>
