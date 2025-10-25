@@ -29,9 +29,7 @@ export const config = {
       fromName: process.env.SMTP_FROM_NAME ?? 'Karmi',
     },
   },
-  astrology: {
-    userId: process.env.ASTROLOGY_API_USER_ID || '',
-    apiKey: process.env.ASTROLOGY_API_KEY || '',
-    language: process.env.ASTROLOGY_API_LANG || 'en',
+  freeAstrology: {
+    apiKey: process.env.FREE_ASTROLOGY_API_KEY || '',
   },
 };
