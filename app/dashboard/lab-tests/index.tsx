@@ -8,6 +8,303 @@ import * as DocumentPicker from 'expo-document-picker';
 import { labReportsApi, LabReportSummary } from '../../../services/labReportsApi';
 import { useAuth } from '../../../context/AuthContext';
 import Header from '@/components/ui/Header';
+import { commonStylesDark, commonStylesLight, shadow } from '@/utils/commonStyles';
+
+const formatDate = (dateString: string | null | undefined) => {
+  if (!dateString) {
+    return 'Date not available';
+  }
+
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch (error) {
+    return 'Date not available';
+  }
+};
+
+const cleanTitle = (title: string | null | undefined): string => {
+  if (!title) {
+    return 'Lab Report';
+  }
+
+  return title
+    .replace(/[%&<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .substring(0, 50);
+};
+
+const cleanDescription = (description: string | null | undefined): string => {
+  if (!description) {
+    return '';
+  }
+
+  return description
+    .replace(/[%&<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const UploadButton = ({ handleUpload }: { handleUpload: () => void }) => {
+  return (
+    <TouchableOpacity
+      onPress={handleUpload}
+      style={{
+        backgroundColor: '#f97316',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...shadow.card,
+      }}
+      activeOpacity={0.8}
+    >
+      <Upload size={16} color="#ffffff" style={{ marginRight: 8 }} />
+      <Text
+        style={{
+          color: '#ffffff',
+          fontSize: 14,
+          fontWeight: '600',
+        }}
+      >
+        Upload Lab Tests
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+const EmptyState = ({ handleUpload }: { handleUpload: () => void }) => {
+  const { isDarkMode } = useTheme();
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 12,
+        paddingHorizontal: 32,
+        marginBottom: 60,
+      }}
+    >
+      <View
+        style={{
+          width: 80,
+          height: 80,
+          borderRadius: 40,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
+          borderColor: isDarkMode ? '#4b5563' : '#e5e7eb',
+          borderWidth: 2,
+        }}
+      >
+        <FlaskConical size={40} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+      </View>
+      <Text
+        style={{
+          fontSize: 24,
+          fontWeight: '600',
+          color: isDarkMode ? '#f3f4f6' : '#1f2937',
+          textAlign: 'center',
+        }}
+      >
+        No Tests Found
+      </Text>
+      <Text
+        style={{
+          fontSize: 16,
+          color: isDarkMode ? '#9ca3af' : '#6b7280',
+          textAlign: 'center',
+          marginBottom: 8,
+        }}
+      >
+        Upload PDF lab reports to view your results and track your health metrics over time.
+      </Text>
+      <UploadButton handleUpload={handleUpload} />
+    </View>
+  );
+};
+
+const ReportCard = ({
+  report,
+  handleTestPress,
+}: {
+  report: LabReportSummary;
+  handleTestPress: (report: LabReportSummary) => void;
+}) => {
+  const { isDarkMode } = useTheme();
+  return (
+    <TouchableOpacity
+      key={report.id}
+      onPress={() => handleTestPress(report)}
+      style={(isDarkMode ? commonStylesDark : commonStylesLight).pressableCard}
+      activeOpacity={0.7}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: isDarkMode ? '#f3f4f6' : '#1f2937',
+              marginBottom: 4,
+            }}
+          >
+            {cleanTitle(report.test_title || report.test_description)}
+          </Text>
+
+          {report.test_description && report.test_description !== report.test_title ? (
+            <Text
+              style={{
+                fontSize: 14,
+                color: isDarkMode ? '#d1d5db' : '#4b5563',
+                lineHeight: 20,
+                marginBottom: 8,
+              }}
+              numberOfLines={2}
+            >
+              {cleanDescription(report.test_description)}
+            </Text>
+          ) : null}
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <Calendar size={14} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+            <Text
+              style={{
+                fontSize: 14,
+                color: isDarkMode ? '#9ca3af' : '#6b7280',
+                marginLeft: 6,
+              }}
+            >
+              {formatDate(report.test_date)}
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: isDarkMode ? '#34d399' : '#059669',
+                marginRight: 6,
+              }}
+            />
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: '500',
+                color: isDarkMode ? '#34d399' : '#059669',
+                textTransform: 'capitalize',
+              }}
+            >
+              completed
+            </Text>
+            <Text
+              style={{
+                fontSize: 12,
+                color: isDarkMode ? '#9ca3af' : '#6b7280',
+                marginLeft: 12,
+              }}
+            >
+              {report.properties_count} item{report.properties_count !== 1 ? 's' : ''}
+            </Text>
+          </View>
+        </View>
+
+        <ChevronRight size={20} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+// Upload Progress Banner component
+const UploadProgressBanner = ({
+  uploadProgress,
+}: {
+  uploadProgress: {
+    fileName: string;
+    status: 'uploading' | 'processing' | 'completed' | 'failed';
+    message: string;
+  };
+}) => {
+  const { isDarkMode } = useTheme();
+
+  const getStatusColor = () => {
+    switch (uploadProgress.status) {
+      case 'uploading':
+      case 'processing':
+        return isDarkMode ? '#3b82f6' : '#1d4ed8';
+      case 'completed':
+        return isDarkMode ? '#10b981' : '#059669';
+      case 'failed':
+        return isDarkMode ? '#ef4444' : '#dc2626';
+      default:
+        return isDarkMode ? '#6b7280' : '#4b5563';
+    }
+  };
+
+  const getBackgroundColor = () => {
+    switch (uploadProgress.status) {
+      case 'uploading':
+      case 'processing':
+        return isDarkMode ? '#1e3a8a' : '#dbeafe';
+      case 'completed':
+        return isDarkMode ? '#064e3b' : '#d1fae5';
+      case 'failed':
+        return isDarkMode ? '#7f1d1d' : '#fee2e2';
+      default:
+        return isDarkMode ? '#374151' : '#f3f4f6';
+    }
+  };
+
+  return (
+    <View
+      style={{
+        backgroundColor: getBackgroundColor(),
+        borderRadius: 12,
+        padding: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
+    >
+      {(uploadProgress.status === 'uploading' || uploadProgress.status === 'processing') && (
+        <ActivityIndicator size="small" color={getStatusColor()} />
+      )}
+      <View style={{ marginLeft: 12, flex: 1 }}>
+        <Text
+          style={{
+            color: getStatusColor(),
+            fontSize: 14,
+            fontWeight: '600',
+            marginBottom: 2,
+          }}
+        >
+          {uploadProgress.fileName}
+        </Text>
+        <Text
+          style={{
+            color: getStatusColor(),
+            fontSize: 12,
+            opacity: 0.8,
+          }}
+        >
+          {uploadProgress.message}
+        </Text>
+      </View>
+    </View>
+  );
+};
 
 export default function LabTestsPage() {
   const { isDarkMode } = useTheme();
@@ -117,95 +414,13 @@ export default function LabTestsPage() {
   };
 
   const handleTestPress = (report: LabReportSummary) => {
-    const title = report.test_title || report.test_description;
-    router.push(`/dashboard/lab-tests/${report.id}?testName=${encodeURIComponent(title)}`);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  const statusColor = useMemo(() => (isDarkMode ? '#34d399' : '#059669'), [isDarkMode]);
-
-  // Upload Progress Banner component
-  const UploadProgressBanner = () => {
-    if (!uploadProgress) return null;
-
-    const getStatusColor = () => {
-      switch (uploadProgress.status) {
-        case 'uploading':
-        case 'processing':
-          return isDarkMode ? '#3b82f6' : '#1d4ed8';
-        case 'completed':
-          return isDarkMode ? '#10b981' : '#059669';
-        case 'failed':
-          return isDarkMode ? '#ef4444' : '#dc2626';
-        default:
-          return isDarkMode ? '#6b7280' : '#4b5563';
-      }
-    };
-
-    const getBackgroundColor = () => {
-      switch (uploadProgress.status) {
-        case 'uploading':
-        case 'processing':
-          return isDarkMode ? '#1e3a8a' : '#dbeafe';
-        case 'completed':
-          return isDarkMode ? '#064e3b' : '#d1fae5';
-        case 'failed':
-          return isDarkMode ? '#7f1d1d' : '#fee2e2';
-        default:
-          return isDarkMode ? '#374151' : '#f3f4f6';
-      }
-    };
-
-    return (
-      <View
-        style={{
-          backgroundColor: getBackgroundColor(),
-          borderRadius: 12,
-          padding: 12,
-          marginHorizontal: 16,
-          marginBottom: 16,
-          flexDirection: 'row',
-          alignItems: 'center',
-        }}
-      >
-        {(uploadProgress.status === 'uploading' || uploadProgress.status === 'processing') && (
-          <ActivityIndicator size="small" color={getStatusColor()} />
-        )}
-        <View style={{ marginLeft: 12, flex: 1 }}>
-          <Text
-            style={{
-              color: getStatusColor(),
-              fontSize: 14,
-              fontWeight: '600',
-              marginBottom: 2,
-            }}
-          >
-            {uploadProgress.fileName}
-          </Text>
-          <Text
-            style={{
-              color: getStatusColor(),
-              fontSize: 12,
-              opacity: 0.8,
-            }}
-          >
-            {uploadProgress.message}
-          </Text>
-        </View>
-      </View>
-    );
+    const title = report.test_title || report.test_description || 'Lab Report';
+    const cleanedTitle = cleanTitle(title);
+    router.push(`/dashboard/lab-tests/${report.id}?testName=${encodeURIComponent(cleanedTitle)}`);
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }} edges={['top', 'bottom']}>
       <Header
         title="Lab Tests"
         subtitle="Connect to Labcorp"
@@ -220,228 +435,63 @@ export default function LabTestsPage() {
         ]}
       />
 
-      <ScrollView
-        style={{
-          flex: 1,
-          backgroundColor: isDarkMode ? '#111827' : '#f9fafb',
-        }}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[isDarkMode ? '#34d399' : '#059669']}
-            tintColor={isDarkMode ? '#34d399' : '#059669'}
-          />
-        }
-      >
-        {/* Upload Progress Banner */}
-        <UploadProgressBanner />
-
-        <View style={{ padding: 16 }}>
-          {loading ? (
-            <View style={{ alignItems: 'center', paddingVertical: 60 }}>
-              <ActivityIndicator size="large" color={isDarkMode ? '#34d399' : '#059669'} />
-            </View>
-          ) : reports.length === 0 ? (
-            <View style={{ alignItems: 'center', paddingVertical: 60 }}>
-              <View
-                style={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: 60,
-                  backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 32,
-                  borderWidth: 2,
-                  borderColor: isDarkMode ? '#4b5563' : '#e5e7eb',
-                  borderStyle: 'solid',
-                }}
-              >
-                <FlaskConical size={48} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
-              </View>
-
+      {loading ? (
+        <View style={{ alignItems: 'center', paddingVertical: 60 }}>
+          <ActivityIndicator size="large" color={isDarkMode ? '#34d399' : '#059669'} />
+        </View>
+      ) : reports.length === 0 && !uploadProgress ? (
+        <EmptyState handleUpload={handleUpload} />
+      ) : (
+        <ScrollView
+          style={{
+            flex: 1,
+            backgroundColor: isDarkMode ? '#111827' : '#f9fafb',
+          }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[isDarkMode ? '#34d399' : '#059669']}
+              tintColor={isDarkMode ? '#34d399' : '#059669'}
+            />
+          }
+        >
+          <View style={{ height: '100%', backgroundColor: isDarkMode ? '#111827' : '#f9fafb', gap: 24, padding: 16 }}>
+            <View style={{ gap: 4 }}>
               <Text
                 style={{
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: '700',
                   color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                  textAlign: 'center',
-                  marginBottom: 12,
                 }}
               >
-                No Tests Found
+                Your Lab Tests
               </Text>
-
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: 14,
                   color: isDarkMode ? '#9ca3af' : '#6b7280',
-                  textAlign: 'center',
-                  lineHeight: 24,
-                  marginBottom: 40,
-                  paddingHorizontal: 20,
                 }}
               >
-                Upload PDF lab reports to view your results and track your health metrics over time.
+                {reports.length} test{reports.length !== 1 ? 's' : ''} available
               </Text>
-
-              <TouchableOpacity
-                onPress={handleUpload}
-                style={{
-                  backgroundColor: '#f97316',
-                  paddingHorizontal: 32,
-                  paddingVertical: 16,
-                  borderRadius: 16,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 8,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 8,
-                  elevation: 4,
-                }}
-                activeOpacity={0.8}
-              >
-                <Upload size={20} color="#ffffff" />
-                <Text
-                  style={{
-                    color: '#ffffff',
-                    fontSize: 18,
-                    fontWeight: '600',
-                  }}
-                >
-                  Upload Lab Tests
-                </Text>
-              </TouchableOpacity>
             </View>
-          ) : (
-            <View>
-              <View style={{ marginBottom: 24 }}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: '700',
-                    color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                    marginBottom: 8,
-                  }}
-                >
-                  Your Lab Tests
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: isDarkMode ? '#9ca3af' : '#6b7280',
-                  }}
-                >
-                  {reports.length} test{reports.length !== 1 ? 's' : ''} available
-                </Text>
-              </View>
 
-              <View style={{ gap: 12 }}>
-                {reports.map((report) => (
-                  <TouchableOpacity
-                    key={report.id}
-                    onPress={() => handleTestPress(report)}
-                    style={{
-                      backgroundColor: isDarkMode ? '#374151' : '#ffffff',
-                      borderRadius: 16,
-                      padding: 20,
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.1,
-                      shadowRadius: 4,
-                      elevation: 2,
-                      borderWidth: 2,
-                      borderColor: isDarkMode ? '#4b5563' : '#f3f4f6',
-                      borderStyle: 'solid',
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <View style={{ flex: 1 }}>
-                        <Text
-                          style={{
-                            fontSize: 18,
-                            fontWeight: '600',
-                            color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                            marginBottom: 4,
-                          }}
-                        >
-                          {report.test_title || report.test_description}
-                        </Text>
+            {uploadProgress ? (
+              <UploadProgressBanner uploadProgress={uploadProgress} />
+            ) : (
+              <UploadButton handleUpload={handleUpload} />
+            )}
 
-                        {report.test_description ? (
-                          <Text
-                            style={{
-                              fontSize: 14,
-                              color: isDarkMode ? '#d1d5db' : '#4b5563',
-                              lineHeight: 20,
-                              marginBottom: 8,
-                            }}
-                            numberOfLines={2}
-                          >
-                            {report.test_description}
-                          </Text>
-                        ) : null}
-
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                          <Calendar size={14} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
-                          <Text
-                            style={{
-                              fontSize: 14,
-                              color: isDarkMode ? '#9ca3af' : '#6b7280',
-                              marginLeft: 6,
-                            }}
-                          >
-                            {formatDate(report.test_date)}
-                          </Text>
-                        </View>
-
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <View
-                            style={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: 4,
-                              backgroundColor: statusColor,
-                              marginRight: 6,
-                            }}
-                          />
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              fontWeight: '500',
-                              color: statusColor,
-                              textTransform: 'capitalize',
-                            }}
-                          >
-                            completed
-                          </Text>
-                          <Text
-                            style={{
-                              fontSize: 12,
-                              color: isDarkMode ? '#9ca3af' : '#6b7280',
-                              marginLeft: 12,
-                            }}
-                          >
-                            {report.properties_count} item{report.properties_count !== 1 ? 's' : ''}
-                          </Text>
-                        </View>
-                      </View>
-
-                      <ChevronRight size={20} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
+            <View style={{ gap: 12 }}>
+              {reports.map((report) => (
+                <ReportCard key={report.id} report={report} handleTestPress={handleTestPress} />
+              ))}
             </View>
-          )}
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

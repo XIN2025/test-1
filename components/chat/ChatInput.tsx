@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TextInput, TouchableOpacity, View } from 'react-native';
-import { LucideIcon, Mic, Send, SendHorizontal } from 'lucide-react-native';
+import { LucideIcon, Mic, SendHorizontal } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { shadow } from '@/utils/commonStyles';
 import { useRawAudioTranscription } from '../../hooks/useRawAudioTranscription';
-import { useRealtimeTranscription } from '../../hooks/useRealtimeTranscription';
 
 interface ChatInputProps {
   inputText: string;
@@ -36,13 +35,12 @@ const ActionButton = ({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: highlighted ? '#059669' : isDarkMode ? '#1f2937' : '#f9fafb',
-        opacity: disabled ? 0.5 : 1,
         ...shadow.card,
       }}
       activeOpacity={0.7}
       disabled={disabled}
     >
-      <Icon size={20} color={highlighted ? '#fff' : isDarkMode ? '#9ca3af' : '#6b7280'} />
+      <Icon size={20} color={highlighted ? '#fff' : isDarkMode ? '#9ca3af' : '#6b7280'} opacity={disabled ? 0.5 : 1} />
     </TouchableOpacity>
   );
 };
@@ -75,7 +73,9 @@ export default function ChatInput({ inputText, setInputText, onSendMessage }: Ch
     if (isRecording) {
       stopTranscription();
     }
-    onSendMessage(inputText);
+    if (inputText.trim()) {
+      onSendMessage(inputText);
+    }
   };
 
   useEffect(() => {
@@ -117,18 +117,21 @@ export default function ChatInput({ inputText, setInputText, onSendMessage }: Ch
           backgroundColor: isDarkMode ? '#1f2937' : '#f9fafb',
           borderWidth: 0,
           ...shadow.card,
-          justifyContent: 'center',
           flex: 1,
-          alignItems: 'center',
-          textAlign: 'left',
+          textAlignVertical: 'center',
         }}
         placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
         multiline
         maxLength={500}
-        scrollEnabled={false}
         returnKeyType="default"
         enablesReturnKeyAutomatically={false}
         editable={!isRecording}
+        autoCorrect={true}
+        autoCapitalize="sentences"
+        spellCheck={false}
+        textContentType="none"
+        keyboardType="default"
+        blurOnSubmit={false}
       />
       <ActionButton isDarkMode={isDarkMode} onPress={handleMicPress} icon={Mic} highlighted={isRecording} />
       <ActionButton

@@ -6,11 +6,11 @@ const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://localh
 export type LabReportSummary = {
   id: string;
   test_title?: string;
-  test_description: string;
-  test_date: string; // ISO string
+  test_description?: string;
+  test_date?: string;
   properties_count: number;
   filename: string;
-  created_at: string; // ISO string
+  created_at: string;
 };
 
 export type LabReportDetailProperty = {
@@ -26,9 +26,9 @@ export type LabReportDetail = {
   id: string;
   user_email: string;
   test_title?: string;
-  test_description: string;
+  test_description?: string;
   properties: LabReportDetailProperty[];
-  test_date: string; // ISO string
+  test_date?: string; // ISO string
   lab_name?: string;
   doctor_name?: string;
   filename: string;

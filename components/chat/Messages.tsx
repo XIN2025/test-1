@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { FlatList, Text } from 'react-native';
 import { Message } from '../../types/chat';
 import MessageComponent from './Message';
@@ -12,22 +12,7 @@ interface MessagesProps {
 
 export default function Messages({ messages, onSuggestionClick }: MessagesProps) {
   const flatListRef = useRef<FlatList<Message>>(null);
-  const [contentHeight, setContentHeight] = useState(0);
   const { isDarkMode } = useTheme();
-
-  const scrollToBottom = (animated = true) => {
-    requestAnimationFrame(() => {
-      flatListRef.current?.scrollToEnd({ animated });
-    });
-  };
-
-  useEffect(() => {
-    if (flatListRef.current && messages.length > 0) {
-      setTimeout(() => {
-        scrollToBottom();
-      }, 50);
-    }
-  }, [messages]);
 
   return (
     <FlatList
@@ -65,15 +50,6 @@ export default function Messages({ messages, onSuggestionClick }: MessagesProps)
           this information with your healthcare provider.
         </Text>
       )}
-      onContentSizeChange={(height) => {
-        if (height > contentHeight) {
-          setContentHeight(height);
-          setTimeout(() => {
-            scrollToBottom();
-          }, 50);
-        }
-      }}
-      onLayout={() => scrollToBottom()}
     />
   );
 }
