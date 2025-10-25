@@ -66,7 +66,7 @@ export const apiRequest = async <T = any>(endpoint: string, options: RequestInit
     return data as T;
   } catch (error) {
     console.error('❌ API Error:', error);
-    
+
     if (error instanceof ApiException) {
       throw error;
     }
