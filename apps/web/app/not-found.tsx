@@ -7,7 +7,7 @@ import { Button } from '@repo/ui/components/button';
 
 const NotFoundPage = () => {
   return (
-    <div className='bg-background flex min-h-screen items-center justify-center p-4'>
+    <div className='bg-background flex min-h-screen w-full items-center justify-center p-4'>
       <Card className='w-full max-w-md text-center'>
         <CardHeader>
           <CardTitle className='flex items-center justify-center text-3xl'>

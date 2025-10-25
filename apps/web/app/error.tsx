@@ -12,7 +12,7 @@ interface ErrorProps {
 
 const ErrorPage: React.FC<ErrorProps> = ({ error, reset }) => {
   return (
-    <div className='bg-background flex min-h-screen items-center justify-center p-4'>
+    <div className='bg-background flex min-h-screen w-full items-center justify-center p-4'>
       <Card className='w-full max-w-md'>
         <CardHeader className='text-center'>
           <CardTitle className='mb-4 flex items-center justify-center'>

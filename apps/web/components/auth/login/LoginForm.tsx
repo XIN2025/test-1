@@ -109,7 +109,11 @@ export default function LoginForm() {
               <Button
                 type='button'
                 variant='outline'
-                onClick={() => signIn('google')}
+                onClick={() =>
+                  signIn('google', {
+                    callbackUrl,
+                  })
+                }
                 className='flex flex-1 items-center justify-center gap-2'
               >
                 {icons.google}

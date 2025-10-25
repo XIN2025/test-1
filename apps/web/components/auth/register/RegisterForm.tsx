@@ -15,8 +15,11 @@ import { useEffect, useState } from 'react';
 import { AuthService } from '@/services/auth.service';
 import { toast } from 'sonner';
 import { cn } from '@repo/ui/lib/utils';
+import { useSearchParams } from 'next/navigation';
 
 export default function RegisterForm() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
   const [step, setStep] = useState(1);
   const [timer, setTimer] = useState(15 * 60);
   const [resendTimer, setResendTimer] = useState(0);
@@ -126,7 +129,11 @@ export default function RegisterForm() {
               <Button
                 type='button'
                 variant='outline'
-                onClick={() => signIn('google')}
+                onClick={() =>
+                  signIn('google', {
+                    callbackUrl,
+                  })
+                }
                 className='flex flex-1 items-center justify-center gap-2'
               >
                 {icons.google}
