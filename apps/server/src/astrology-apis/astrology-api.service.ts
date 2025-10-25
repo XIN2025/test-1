@@ -24,17 +24,74 @@ export class AstrologyApiService {
     }
     return result;
   }
-  async getHoroscope(dto: GetHoroscopeDto) {
-    const getPlanetsInfo = await this.getPlanets(dto);
-    const getShadbalaSummary = await this.getShadbalaSummary(dto);
-    const getShadbalaBreakUp = await this.getShadbalaBreakUp(dto);
-    const getAntarAndMahaDasas = await this.getAntarAndMahaDasas(dto);
+
+  async getHoroscopeChartImageUrl(dto: GetHoroscopeDto) {
+    const { apiKey } = config.freeAstrology;
+
+    if (!apiKey) {
+      throw new HttpException('Missing Astrology API credentials', 500);
+    }
+
+    const [datePart, timePart] = dto.dateOfBirth.split('T');
+    const [year, month, date] = datePart.split('-').map(Number);
+    const [hours, minutes] = timePart.split(':').map(Number);
+
+    const data = JSON.stringify({
+      date,
+      month,
+      year,
+      hours,
+      minutes,
+      seconds: 0,
+      latitude: dto.latitude,
+      longitude: dto.longitude,
+      timezone: dto.timezoneOffset,
+      settings: {
+        observation_point: 'topocentric',
+        ayanamsha: 'lahiri',
+        language: 'en',
+      },
+    });
+
+    const url = `https://json.freeastrologyapi.com/horoscope-chart-url`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: data,
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      console.log(response);
+      throw new HttpException(err?.msg || 'Failed to fetch horoscope chart', response.status);
+    }
+
+    const responseData = (await response.json()).output;
 
     return {
-      planets: getPlanetsInfo?.data,
-      shadbalaSummary: getShadbalaSummary?.data,
-      shadbalaBreakUp: getShadbalaBreakUp?.data,
-      antarAndMahaDasas: getAntarAndMahaDasas?.data,
+      data: responseData,
+    };
+  }
+
+  async getHoroscope(dto: GetHoroscopeDto) {
+    const [planets, shadbalaSummary, shadbalaBreakUp, antarAndMahaDasas, horoscopeChartImageUrl] = await Promise.all([
+      this.getPlanets(dto),
+      this.getShadbalaSummary(dto),
+      this.getShadbalaBreakUp(dto),
+      this.getAntarAndMahaDasas(dto),
+      this.getHoroscopeChartImageUrl(dto),
+    ]);
+
+    return {
+      horoscopeChartImageUrl: horoscopeChartImageUrl?.data,
+      planets: planets?.data,
+      shadbalaSummary: shadbalaSummary?.data,
+      shadbalaBreakUp: shadbalaBreakUp?.data,
+      antarAndMahaDasas: antarAndMahaDasas?.data,
     };
   }
 
@@ -66,8 +123,6 @@ export class AstrologyApiService {
       },
     });
 
-    console.log(data);
-
     const url = `https://json.apiastro.com/planets/extended`;
 
     const response = await fetch(url, {
@@ -85,7 +140,7 @@ export class AstrologyApiService {
       throw new HttpException(err?.msg || 'Failed to fetch horoscope chart', response.status);
     }
 
-    const responseData = await response.json();
+    const responseData = (await response.json()).output;
 
     return {
       data: responseData,
@@ -132,7 +187,7 @@ export class AstrologyApiService {
       throw new HttpException(err?.msg || 'Failed to fetch shadbala break up', response.status);
     }
 
-    const responseData = await response.json();
+    const responseData = (await response.json()).output;
     return {
       data: responseData,
     };
@@ -178,7 +233,7 @@ export class AstrologyApiService {
       throw new HttpException(err?.msg || 'Failed to fetch shadbala summary', response.status);
     }
 
-    const responseData = await response.json();
+    const responseData = (await response.json()).output;
     return {
       data: responseData,
     };

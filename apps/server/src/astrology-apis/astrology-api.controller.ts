@@ -42,4 +42,11 @@ export class AstrologyApiController {
   getAntarAndMahaDasas(@Body() dto: GetHoroscopeDto) {
     return this.astrologyApiService.getAntarAndMahaDasas(dto);
   }
+
+  @Post('horoscope-chart-image-url')
+  @ApiOperation({ summary: 'Get horoscope chart url using Astrology API' })
+  @ApiResponse({ status: 200, description: 'Returns horoscope chart url.' })
+  getHoroscopeChartImageUrl(@Body() dto: GetHoroscopeDto) {
+    return this.astrologyApiService.getHoroscopeChartImageUrl(dto);
+  }
 }
