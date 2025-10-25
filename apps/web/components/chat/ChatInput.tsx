@@ -1,4 +1,4 @@
-import React, { useRef, ChangeEvent } from 'react';
+import React, { useRef, ChangeEvent, useEffect } from 'react';
 import { Button } from '@repo/ui/components/button';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@repo/ui/lib/utils';
@@ -33,6 +33,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ isSubmitting, handleSubmit, query
     }
   };
 
+  useEffect(() => {
+    if (!isSubmitting && textareaRef.current) {
+      textareaRef.current.focus();
+      handleInput();
+    }
+  }, [isSubmitting]);
+
   return (
     <div className='mx-auto flex w-full max-w-3xl flex-col gap-2'>
       <form
@@ -56,7 +63,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ isSubmitting, handleSubmit, query
               isSubmitting && 'cursor-not-allowed'
             )}
           />
-          <div className='flex items-center justify-between gap-2 p-2 pt-0'>
+          <div className='flex items-center justify-end gap-2 p-2 pt-0'>
             <div className='flex items-center gap-2'>
               {isSubmitting && onStop ? (
                 <Button type='button' className='rounded-xl' size='sm' onClick={onStop}>
