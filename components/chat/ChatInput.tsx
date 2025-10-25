@@ -117,15 +117,12 @@ export default function ChatInput({ inputText, setInputText, onSendMessage }: Ch
           backgroundColor: isDarkMode ? '#1f2937' : '#f9fafb',
           borderWidth: 0,
           ...shadow.card,
-          justifyContent: 'center',
           flex: 1,
-          alignItems: 'center',
-          textAlign: 'left',
+          textAlignVertical: 'center',
         }}
         placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
         multiline
         maxLength={500}
-        scrollEnabled={false}
         returnKeyType="default"
         enablesReturnKeyAutomatically={false}
         editable={!isRecording}

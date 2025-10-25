@@ -10,13 +10,32 @@ import { useAuth } from '../../../context/AuthContext';
 import Header from '@/components/ui/Header';
 import { commonStylesDark, commonStylesLight, shadow } from '@/utils/commonStyles';
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+const formatDate = (dateString: string | null | undefined) => {
+  if (!dateString) {
+    return 'Date not available';
+  }
+
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch (error) {
+    return 'Date not available';
+  }
+};
+
+const cleanTitle = (title: string | null | undefined): string => {
+  if (!title) {
+    return 'Lab Report';
+  }
+
+  return title.replace(/[%&]/g, '').replace(/\s+/g, ' ').trim().substring(0, 50);
 };
 
 const UploadButton = ({ handleUpload }: { handleUpload: () => void }) => {
@@ -126,10 +145,10 @@ const ReportCard = ({
               marginBottom: 4,
             }}
           >
-            {report.test_title || report.test_description}
+            {cleanTitle(report.test_title || report.test_description)}
           </Text>
 
-          {report.test_description ? (
+          {report.test_description && report.test_description !== report.test_title ? (
             <Text
               style={{
                 fontSize: 14,
@@ -380,8 +399,9 @@ export default function LabTestsPage() {
   };
 
   const handleTestPress = (report: LabReportSummary) => {
-    const title = report.test_title || report.test_description;
-    router.push(`/dashboard/lab-tests/${report.id}?testName=${encodeURIComponent(title)}`);
+    const title = report.test_title || report.test_description || 'Lab Report';
+    const cleanedTitle = cleanTitle(title);
+    router.push(`/dashboard/lab-tests/${report.id}?testName=${encodeURIComponent(cleanedTitle)}`);
   };
 
   return (

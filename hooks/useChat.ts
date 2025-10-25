@@ -2,7 +2,9 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import EventSource from 'react-native-sse';
 import { useAuth } from '../context/AuthContext';
 import { Message } from '../types/chat';
-import { API_BASE_URL } from '@/utils/api';
+import Constants from 'expo-constants';
+
+const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://localhost:8000';
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -11,6 +13,7 @@ export const useChat = () => {
   const eventSourceRef = useRef<EventSource | null>(null);
   const messageQueueRef = useRef<{ type: string; content: any }[]>([]);
   const isProcessingQueueRef = useRef(false);
+  const conversationHistoryRef = useRef<{ user: string; assistant: string }[]>([]);
 
   const { user } = useAuth();
   const userEmail = user?.email || '';
@@ -34,19 +37,32 @@ export const useChat = () => {
 
       try {
         if (messageData.type === 'response_chunk' && messageData.content) {
-          setMessages((prev) =>
-            prev.map((msg) =>
+          setMessages((prev) => {
+            const updated = prev.map((msg) =>
               msg.isLoading && msg.sender === 'bot' ? { ...msg, text: msg.text + messageData.content } : msg,
-            ),
-          );
+            );
+            return updated;
+          });
         } else if (messageData.type === 'follow_up' && messageData.content) {
-          setMessages((prev) =>
-            prev.map((msg) =>
+          setMessages((prev) => {
+            const updated = prev.map((msg) =>
               msg.isLoading && msg.sender === 'bot'
                 ? { ...msg, suggestions: messageData.content, isLoading: false }
                 : msg,
-            ),
-          );
+            );
+
+            const botMessage = updated.find((msg) => msg.sender === 'bot' && !msg.isLoading);
+            const lastUserMessage = [...updated].reverse().find((msg) => msg.sender === 'user');
+
+            if (botMessage && lastUserMessage) {
+              conversationHistoryRef.current.push({
+                user: lastUserMessage.text,
+                assistant: botMessage.text,
+              });
+            }
+
+            return updated;
+          });
           setIsTyping(false);
         } else if (messageData.type === 'error') {
           setMessages((prev) =>
@@ -125,6 +141,13 @@ export const useChat = () => {
     const urlWithParams = new URL(url);
     urlWithParams.searchParams.append('message', text.trim());
     urlWithParams.searchParams.append('user_email', userEmail);
+
+    if (conversationHistoryRef.current.length > 0) {
+      urlWithParams.searchParams.append(
+        'conversation_history',
+        JSON.stringify(conversationHistoryRef.current.slice(-10)),
+      );
+    }
 
     eventSourceRef.current = new EventSource(urlWithParams.toString());
 

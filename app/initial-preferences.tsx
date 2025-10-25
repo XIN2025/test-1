@@ -49,7 +49,7 @@ const conditionsList = [
   'Auto-Immune / Inflammation Related Fatigue',
 ];
 
-const tonalStyles = ['Formal', 'Friendly'];
+const tonalStyles = ['Formal'];
 const verbosityStyles = ['Concise', 'Detailed'];
 
 const genderOptions = ['Male', 'Female', 'Other'];
@@ -73,7 +73,7 @@ export default function InitialPreferences() {
     healthGoals: [],
     conditions: [],
     atRiskConditions: [],
-    tonalStyle: '',
+    tonalStyle: 'Formal',
     verbosityStyle: '',
     notifications: false,
   });
@@ -95,11 +95,8 @@ export default function InitialPreferences() {
       newErrors.gender = genderResult.error;
     }
 
-    if (!formData.tonalStyle.trim()) {
-      newErrors.communicationStyle = 'Please select a tone (Formal or Friendly)';
-    }
     if (!formData.verbosityStyle.trim()) {
-      newErrors.communicationStyle = 'Please select a style (Concise or Detailed)';
+      newErrors.communicationStyle = 'Please select a detail level (Concise or Detailed)';
     }
 
     setErrors(newErrors);
@@ -137,7 +134,7 @@ export default function InitialPreferences() {
         healthGoals: formData.healthGoals,
         conditions: formData.conditions,
         atRiskConditions: formData.atRiskConditions,
-        communicationStyle: [formData.tonalStyle, formData.verbosityStyle].filter(Boolean).join(' - '),
+        communicationStyle: ['Formal', formData.verbosityStyle].filter(Boolean).join(' - '),
         notifications: formData.notifications,
       };
 
@@ -171,7 +168,6 @@ export default function InitialPreferences() {
   const isFormValid =
     formData.age.trim().length > 0 &&
     formData.gender.trim().length > 0 &&
-    formData.tonalStyle.trim().length > 0 &&
     formData.verbosityStyle.trim().length > 0 &&
     Object.keys(errors).length === 0;
 
@@ -354,31 +350,6 @@ export default function InitialPreferences() {
           {/* Communication Style */}
           <View className="mb-4 w-full">
             <Text className="mb-2 font-medium text-gray-700">Preferred Communication Style *</Text>
-
-            {/* Tone Selection */}
-            <Text className="mb-2 text-sm text-gray-600">Tone</Text>
-            <View className="mb-4 flex-row flex-wrap gap-2">
-              {tonalStyles.map((style) => (
-                <TouchableOpacity
-                  key={style}
-                  className={`rounded-full border px-3 py-2 ${
-                    formData.tonalStyle === style ? 'border-gray-300' : 'border-gray-300 bg-gray-100'
-                  }`}
-                  style={{
-                    backgroundColor: formData.tonalStyle === style ? '#059669' : '#f3f4f6',
-                    borderColor: formData.tonalStyle === style ? '#059669' : '#d1d5db',
-                  }}
-                  onPress={() => handleInputChange('tonalStyle', style)}
-                  disabled={loading}
-                >
-                  <Text
-                    className={`text-sm font-medium ${formData.tonalStyle === style ? 'text-white' : 'text-gray-700'}`}
-                  >
-                    {style}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
 
             {/* Verbosity Selection */}
             <Text className="mb-2 text-sm text-gray-600">Detail Level</Text>

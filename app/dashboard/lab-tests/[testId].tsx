@@ -66,13 +66,32 @@ export default function LabTestDetailsPage() {
     );
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) {
+      return 'Date not available';
+    }
+
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      return date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    } catch (error) {
+      return 'Date not available';
+    }
+  };
+
+  const cleanTitle = (title: string | null | undefined): string => {
+    if (!title) {
+      return 'Lab Report';
+    }
+
+    return title.replace(/[%&]/g, '').replace(/\s+/g, ' ').trim().substring(0, 50);
   };
 
   const getStatusIcon = (status: string) => {
@@ -160,7 +179,17 @@ export default function LabTestDetailsPage() {
               color: isDarkMode ? '#f3f4f6' : '#1f2937',
             }}
           >
-            {decodeURIComponent((testName as string) || report?.test_title || report?.test_description || '')}
+            {(() => {
+              try {
+                if (testName) {
+                  const decoded = decodeURIComponent(testName);
+                  return cleanTitle(decoded);
+                }
+                return cleanTitle(report?.test_title || report?.test_description);
+              } catch (error) {
+                return cleanTitle(testName || report?.test_title || report?.test_description);
+              }
+            })()}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
             <Calendar size={12} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
@@ -171,7 +200,7 @@ export default function LabTestDetailsPage() {
                 marginLeft: 4,
               }}
             >
-              {report ? formatDate(report.test_date) : ''}
+              {report ? formatDate(report.test_date) : 'Date not available'}
             </Text>
           </View>
         </View>
