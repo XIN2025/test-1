@@ -63,7 +63,7 @@ export const ChatConfig: React.FC = () => {
   const hasChanges = markdown !== configData?.chatAgentPrompt || selectedModel !== (configData?.model as AIModel);
 
   return (
-    <div className='flex h-dvh flex-col gap-4 p-6'>
+    <div className='flex h-full flex-col gap-4 p-6'>
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-2xl font-semibold'>Chat Config Editor</h1>

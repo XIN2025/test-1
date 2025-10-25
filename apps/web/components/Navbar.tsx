@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Bell, ChevronDown, Sparkles } from 'lucide-react';
+import { Bell, ChevronDown, Shield, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@repo/ui/components/button';
+import Link from 'next/link';
 
 const NavBar = () => {
   const user = useAuth();
@@ -14,6 +15,14 @@ const NavBar = () => {
         <ChevronDown className='bg-background text-foreground size-5 rounded-full' />
       </div>
       <div className='flex items-center gap-4'>
+        {user?.isAdmin && (
+          <Link href='/admin'>
+            <Button variant='ghost' size='sm'>
+              <Shield className='size-5' />
+              Admin
+            </Button>
+          </Link>
+        )}
         <Button variant='ghost' size='icon'>
           <Bell />
         </Button>
