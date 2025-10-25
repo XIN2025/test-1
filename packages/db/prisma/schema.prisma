@@ -73,6 +73,7 @@ model UserProfile {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
   userId           String   @unique @db.ObjectId
   gender           Gender
+  karmiPoints      Int      @default(50)
   dateOfBirth      DateTime
   timeOfBirth      String?
   placeOfBirth     String

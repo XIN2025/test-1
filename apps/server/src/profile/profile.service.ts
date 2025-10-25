@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AstrologyApiService } from 'src/astrology-apis/astrology-api.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProfileDto } from './dto/create-update-profile.dto';
@@ -36,5 +36,12 @@ export class ProfileService {
     });
 
     return profile;
+  }
+
+  async getKarmiPoints(userId: string) {
+    const profile = await this.prisma.userProfile.findUnique({
+      where: { userId },
+    });
+    return { karmiPoints: profile?.karmiPoints };
   }
 }
