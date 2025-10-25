@@ -208,8 +208,7 @@ export default function TodaysActionItems() {
     }
     setTogglePendingItemIds((prev) => [...(prev || []), id]);
     try {
-      const ok = await markCompletion(id, !actionItem.completed);
-      if (ok) actionItem.completed = !actionItem.completed;
+      await markCompletion(id, !actionItem.completed);
     } catch (error) {
       console.error('Failed to mark completion:', error);
     } finally {
