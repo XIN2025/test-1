@@ -1,7 +1,6 @@
 {
   "name": "@repo/shared-types",
   "version": "1.0.0",
-  "type": "module",
   "private": true,
   "scripts": {
     "lint": "eslint \"{types,schemas,enums}/**/*.ts\" --fix"
@@ -13,11 +12,13 @@
     "./utils": "./utils/index.ts"
   },
   "dependencies": {
-    "zod": "^3.25.51"
+    "zod": "^3.25.51",
+    "@repo/db": "*"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
+    "@repo/db": "*",
     "typescript": "^5.7.3"
   }
 }

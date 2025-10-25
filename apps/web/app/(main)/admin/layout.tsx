@@ -3,6 +3,8 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React from 'react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Karmi - Admin',
   description: 'Karmi - Admin',

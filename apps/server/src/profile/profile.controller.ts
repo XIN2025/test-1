@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CreateProfileDto } from './dto/create-update-profile.dto';
 import { ProfileService } from './profile.service';
@@ -22,5 +22,17 @@ export class ProfileController {
   @ApiOperation({ summary: 'Get user karmi points' })
   getKarmiPoints(@CurrentUser() user: RequestUser) {
     return this.profileService.getKarmiPoints(user.id);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get user profile' })
+  getUserProfile(@CurrentUser() user: RequestUser) {
+    return this.profileService.getProfile(user.id);
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Delete user account' })
+  deleteUserProfile(@CurrentUser() user: RequestUser) {
+    return this.profileService.deleteUserProfile(user.id);
   }
 }

@@ -1,5 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { AstrologyApiService } from 'src/astrology-apis/astrology-api.service';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProfileDto } from './dto/create-update-profile.dto';
 
@@ -10,16 +9,15 @@ export class ProfileService {
   async saveProfileDetails(createProfileDto: CreateProfileDto, userId: string) {
     const { dateOfBirth, timeOfBirth, placeOfBirth, gender, name } = createProfileDto;
 
-    const existingProfile = await this.prisma.userProfile.findUnique({
+    const profile = await this.prisma.userProfile.upsert({
       where: { userId },
-    });
-
-    if (existingProfile) {
-      throw new BadRequestException('Profile already exists');
-    }
-
-    const profile = await this.prisma.userProfile.create({
-      data: {
+      update: {
+        dateOfBirth: new Date(dateOfBirth),
+        gender,
+        placeOfBirth,
+        timeOfBirth,
+      },
+      create: {
         dateOfBirth: new Date(dateOfBirth),
         gender,
         placeOfBirth,
@@ -43,5 +41,25 @@ export class ProfileService {
       where: { userId },
     });
     return { karmiPoints: profile?.karmiPoints };
+  }
+
+  async getProfile(userId: string) {
+    const profile = await this.prisma.userProfile.findUnique({
+      where: { userId },
+      include: {
+        user: true,
+      },
+    });
+    return profile;
+  }
+
+  async deleteUserProfile(userId: string) {
+    await this.prisma.userProfile.delete({
+      where: { userId },
+    });
+    await this.prisma.user.delete({
+      where: { id: userId },
+    });
+    return { message: 'User profile deleted successfully' };
   }
 }

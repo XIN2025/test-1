@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { Button } from '@repo/ui/components/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui/components/select';
@@ -16,7 +16,7 @@ import { icons } from '../icons';
 
 type AIModel = 'gemini' | 'openai';
 
-export const ChatConfig: React.FC = () => {
+export const ChatConfig = () => {
   const [markdown, setMarkdown] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<AIModel>('openai');
 
