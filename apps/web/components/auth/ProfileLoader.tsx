@@ -80,6 +80,7 @@ const ProfileLoader = ({ className, duration = 5, onComplete }: ProfileLoaderPro
           alt='Profile Loader Background'
           fill
           priority
+          sizes='100vw'
           className='object-cover'
         />
       </div>
@@ -117,16 +118,7 @@ const ProfileLoader = ({ className, duration = 5, onComplete }: ProfileLoaderPro
               >
                 {/* Optimized Star Image */}
                 <div className='relative drop-shadow-lg' style={{ width: '13vw', height: '6vw' }}>
-                  <Image
-                    src='/images/star.png'
-                    alt='Star'
-                    fill
-                    className='object-contain'
-                    onError={(e) => {
-                      console.error('Failed to load star image:', e);
-                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
+                  <Image src='/images/star.png' alt='Star' fill sizes='13vw' className='object-contain' />
                 </div>
               </div>
             )}
