@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View, ScrollView } from 'react-native';
 import { MessageCircle } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
+import { commonStylesDark, commonStylesLight } from '@/utils/commonStyles';
 
 export default function EmptyState() {
   const { isDarkMode } = useTheme();
@@ -14,6 +15,7 @@ export default function EmptyState() {
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 32,
+        gap: 12,
       }}
     >
       <View
@@ -23,7 +25,6 @@ export default function EmptyState() {
           borderRadius: 40,
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: 24,
           backgroundColor: isDarkMode ? '#1f6f51' : '#114131',
         }}
       >
@@ -31,11 +32,10 @@ export default function EmptyState() {
       </View>
       <Text
         style={{
-          fontSize: 28,
+          fontSize: 24,
           fontWeight: '600',
           color: isDarkMode ? '#f3f4f6' : '#1f2937',
           textAlign: 'center',
-          marginBottom: 12,
         }}
       >
         How can I help you?
@@ -45,12 +45,25 @@ export default function EmptyState() {
           fontSize: 16,
           color: isDarkMode ? '#9ca3af' : '#6b7280',
           textAlign: 'center',
-          lineHeight: 24,
-          maxWidth: 300,
         }}
       >
         I&apos;m your AI health assistant. Ask me about nutrition, exercise, medications, or any health-related
         questions.
+      </Text>
+      <Text
+        style={[
+          (isDarkMode ? commonStylesDark : commonStylesLight).displayCard,
+          {
+            fontSize: 12,
+            textAlign: 'center',
+            borderWidth: 0,
+            paddingVertical: 8,
+            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+          },
+        ]}
+      >
+        Messages from Evra are AI-generated and for informational purposes only. For medical advice, please confirm this
+        information with your healthcare provider.
       </Text>
     </ScrollView>
   );

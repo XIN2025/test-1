@@ -1,20 +1,55 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TextInput, TouchableOpacity, View } from 'react-native';
-import { Mic, Send } from 'lucide-react-native';
+import { LucideIcon, Mic, Send, SendHorizontal } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
+import { shadow } from '@/utils/commonStyles';
 import { useRawAudioTranscription } from '../../hooks/useRawAudioTranscription';
 
 interface ChatInputProps {
   inputText: string;
   setInputText: React.Dispatch<React.SetStateAction<string>>;
   onSendMessage: (text: string) => void;
-  isTyping: boolean;
 }
 
-export default function ChatInput({ inputText, setInputText, onSendMessage, isTyping }: ChatInputProps) {
+const ActionButton = ({
+  isDarkMode,
+  onPress,
+  icon,
+  disabled = false,
+  highlighted = false,
+}: {
+  isDarkMode: boolean;
+  onPress: () => void;
+  icon: LucideIcon;
+  disabled?: boolean;
+  highlighted?: boolean;
+}) => {
+  const Icon = icon;
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        width: 44,
+        height: 44,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: highlighted ? '#059669' : isDarkMode ? '#1f2937' : '#f9fafb',
+        opacity: disabled ? 0.5 : 1,
+        ...shadow.card,
+      }}
+      activeOpacity={0.7}
+      disabled={disabled}
+    >
+      <Icon size={20} color={highlighted ? '#fff' : isDarkMode ? '#9ca3af' : '#6b7280'} />
+    </TouchableOpacity>
+  );
+};
+
+export default function ChatInput({ inputText, setInputText, onSendMessage }: ChatInputProps) {
   const { isDarkMode } = useTheme();
   const inputRef = useRef<TextInput>(null);
-  const [interimText, setInterimText] = React.useState('');
+  const [interimText, setInterimText] = useState('');
 
   const handleTranscript = (text: string, isFinal: boolean) => {
     if (isFinal) {
@@ -54,71 +89,55 @@ export default function ChatInput({ inputText, setInputText, onSendMessage, isTy
 
   return (
     <View
+      className="flex flex-row items-end gap-3"
       style={{
         borderTopWidth: 1,
         borderTopColor: isDarkMode ? '#374151' : '#e5e7eb',
         backgroundColor: isDarkMode ? '#111827' : '#ffffff',
         paddingHorizontal: 16,
         paddingVertical: 8,
+        ...shadow.card,
       }}
     >
-      <View style={{ minHeight: 48, flexDirection: 'row', gap: 16 }}>
-        <TextInput
-          ref={inputRef}
-          value={inputText + (interimText ? ` ${interimText}` : '')}
-          onChangeText={(text) => {
-            if (!isRecording) {
-              setInputText(text);
-            }
-          }}
-          placeholder={isRecording ? 'Listening...' : 'Ask me about health...'}
-          style={{
-            flex: 1,
-            fontSize: 16,
-            color: isDarkMode ? '#F3F4F6' : '#1F2937',
-            padding: 10,
-            borderRadius: 8,
-            backgroundColor: isDarkMode ? '#1f2937' : '#f9fafb',
-            borderWidth: 1,
-            borderColor: isRecording ? '#ef4444' : isDarkMode ? '#374151' : '#d1d5db',
-          }}
-          placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
-          multiline
-          editable={!isRecording}
-        />
-        <View style={{ flexDirection: 'row', gap: 4 }}>
-          <TouchableOpacity
-            onPress={handleMicPress}
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: isRecording ? '#ef4444' : isDarkMode ? '#374151' : '#f3f4f6',
-            }}
-            activeOpacity={0.7}
-          >
-            <Mic size={20} color={isRecording ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleSendMessage}
-            disabled={!inputText.trim() || isTyping || isRecording}
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor:
-                inputText.trim() && !isTyping && !isRecording ? '#10b981' : isDarkMode ? '#374151' : '#d1d5db',
-            }}
-            activeOpacity={0.7}
-          >
-            <Send size={20} color={inputText.trim() && !isTyping && !isRecording ? '#fff' : '#9ca3af'} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <TextInput
+        ref={inputRef}
+        value={inputText + (interimText ? ` ${interimText}` : '')}
+        onChangeText={(text) => {
+          if (!isRecording) {
+            setInputText(text);
+          }
+        }}
+        placeholder={isRecording ? 'Listening...' : 'Ask me about health...'}
+        style={{
+          fontSize: 14,
+          color: isDarkMode ? '#F3F4F6' : '#1F2937',
+          paddingVertical: 8,
+          paddingHorizontal: 18,
+          maxHeight: 88,
+          borderRadius: 24,
+          backgroundColor: isDarkMode ? '#1f2937' : '#f9fafb',
+          borderWidth: 0,
+          ...shadow.card,
+          justifyContent: 'center',
+          flex: 1,
+          alignItems: 'center',
+          textAlign: 'left',
+        }}
+        placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
+        multiline
+        maxLength={500}
+        scrollEnabled={false}
+        returnKeyType="default"
+        enablesReturnKeyAutomatically={false}
+        editable={!isRecording}
+      />
+      <ActionButton isDarkMode={isDarkMode} onPress={handleMicPress} icon={Mic} highlighted={isRecording} />
+      <ActionButton
+        isDarkMode={isDarkMode}
+        onPress={handleSendMessage}
+        icon={SendHorizontal}
+        disabled={!inputText.trim() || isRecording}
+      />
     </View>
   );
 }

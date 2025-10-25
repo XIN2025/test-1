@@ -85,10 +85,8 @@ export const CustomLiquidGauge: React.FC<LiquidGaugeProps> = ({
           </ClipPath>
         </Defs>
 
-        {/* Outer circle border */}
         <Circle cx={centerX} cy={centerY} r={radius} fill="none" stroke={circleColor} strokeWidth={radius * 0.1} />
 
-        {/* Animated wave */}
         <AnimatedPath
           animatedProps={animatedWaveProps}
           fill={waveColor}
@@ -96,7 +94,6 @@ export const CustomLiquidGauge: React.FC<LiquidGaugeProps> = ({
           clipPath="url(#circleClip)"
         />
 
-        {/* Text value */}
         <SvgText
           x={centerX}
           y={centerY}

@@ -114,6 +114,7 @@ export default {
         // Audio Recording for voice input
         'android.permission.RECORD_AUDIO',
       ],
+      softwareKeyboardLayoutMode: 'pan',
     },
     web: {
       bundler: 'metro',

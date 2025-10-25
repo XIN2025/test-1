@@ -59,16 +59,14 @@ export const CircularProgressRing: React.FC<CircularProgressRingProps> = ({
         {/* Percentage text */}
         {showPercentage && (
           <Text
-            x={center}
-            y={center}
+            x={center + 1}
+            y={center + 0.5}
             textAnchor="middle"
             dy="0.3em"
-            fontSize={size * 0.2}
+            fontSize={size * 0.25}
             fill={textColor}
             fontWeight="600"
-          >
-            {Math.round(progress)}%
-          </Text>
+          >{`${Math.round(progress)}%`}</Text>
         )}
       </Svg>
 

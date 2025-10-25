@@ -2,7 +2,9 @@ import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import GoalsHeader from './GoalsHeader';
+import { Target } from 'lucide-react-native';
+import { formatDate } from '@/utils/date';
+import Header from '../ui/Header';
 
 const SkeletonGoalCard = () => {
   const { isDarkMode } = useTheme();
@@ -92,12 +94,10 @@ const LoadingScreen = ({ weekStart, weekEnd }: { weekStart: Date; weekEnd: Date 
     <SafeAreaView style={{ backgroundColor: isDarkMode ? '#111827' : '#fff' }}>
       {/* Fixed Header */}
       <View>
-        <GoalsHeader
-          weekStart={weekStart}
-          weekEnd={weekEnd}
-          openPreferences={() => {}}
-          setShowUploadModal={() => {}}
-          setShowAddGoal={() => {}}
+        <Header
+          title="Weekly Goals"
+          subtitle={formatDate(weekStart) + ' - ' + formatDate(weekEnd)}
+          leftIcon={{ icon: Target }}
         />
         {/* Scrollable Content */}
         <ScrollView

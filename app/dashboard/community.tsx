@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import Header from '@/components/ui/Header';
 import { useTheme } from '@/context/ThemeContext';
 import {
   Activity,
@@ -9,6 +10,7 @@ import {
   Heart,
   MessageCircle,
   Share2,
+  ShoppingBag,
   Star,
   TrendingUp,
   Users,
@@ -68,9 +70,32 @@ interface FitnessActivity {
   rating: number;
 }
 
+const tabs = {
+  Posts: {
+    title: 'Community Hub',
+    subtitle: 'Connect with others on similar journeys',
+    icon: MessageCircle,
+  },
+  Groups: {
+    title: 'Support Groups',
+    subtitle: 'Join condition-specific communities',
+    icon: Users,
+  },
+  Challenges: {
+    title: 'Health Challenges',
+    subtitle: 'Achieve goals together',
+    icon: Award,
+  },
+  Fitness: {
+    title: 'Fitness Activities',
+    subtitle: 'Stay active and healthy',
+    icon: Dumbbell,
+  },
+};
+
 export default function HealthHubPage() {
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState<'posts' | 'groups' | 'challenges' | 'fitness'>('posts');
+  const [activeTab, setActiveTab] = useState<'Posts' | 'Groups' | 'Challenges' | 'Fitness'>('Posts');
 
   const postFilters = [
     { id: 'all', name: 'All Posts', icon: MessageCircle },
@@ -360,225 +385,17 @@ export default function HealthHubPage() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
-      {/* Fixed Header */}
-      <View>
-        <View
-          style={{
-            borderBottomWidth: 1,
-            borderBottomColor: isDarkMode ? '#374151' : '#e5e7eb',
-            backgroundColor: isDarkMode ? '#111827' : '#ffffff',
-            paddingHorizontal: 16,
-            paddingTop: 16,
-            paddingBottom: 12,
-            zIndex: 10,
-          }}
-        >
-          {/* Title Section */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginBottom: 16,
-            }}
-          >
-            <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: 12,
-                backgroundColor: isDarkMode ? '#1f6f51' : '#114131',
-              }}
-            >
-              {activeTab === 'posts' ? (
-                <MessageCircle size={22} color="#fff" />
-              ) : activeTab === 'groups' ? (
-                <Users size={22} color="#fff" />
-              ) : activeTab === 'challenges' ? (
-                <Award size={22} color="#fff" />
-              ) : (
-                <Dumbbell size={22} color="#fff" />
-              )}
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: '600',
-                  color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                  marginBottom: 2,
-                }}
-              >
-                {activeTab === 'posts'
-                  ? 'Community Hub'
-                  : activeTab === 'groups'
-                    ? 'Support Groups'
-                    : activeTab === 'challenges'
-                      ? 'Health Challenges'
-                      : 'Fitness Activities'}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: isDarkMode ? '#9ca3af' : '#6b7280',
-                }}
-              >
-                {activeTab === 'posts'
-                  ? 'Connect with others on similar journeys'
-                  : activeTab === 'groups'
-                    ? 'Join condition-specific communities'
-                    : activeTab === 'challenges'
-                      ? 'Achieve goals together'
-                      : 'Stay active and healthy'}
-              </Text>
-            </View>
-          </View>
-
-          {/* Tab Navigation - Scrollable */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 4 }}
-            style={{ marginHorizontal: -4 }}
-          >
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity
-                onPress={() => {
-                  setActiveTab('posts');
-                  setSelectedFilter('all');
-                }}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderRadius: 12,
-                  backgroundColor: activeTab === 'posts' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
-                  minWidth: 100,
-                }}
-                activeOpacity={0.7}
-              >
-                <MessageCircle
-                  size={16}
-                  color={activeTab === 'posts' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
-                  style={{ marginRight: 6 }}
-                />
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '600',
-                    color: activeTab === 'posts' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
-                  }}
-                >
-                  Posts
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => {
-                  setActiveTab('groups');
-                  setSelectedFilter('all');
-                }}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderRadius: 12,
-                  backgroundColor: activeTab === 'groups' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
-                  minWidth: 100,
-                }}
-                activeOpacity={0.7}
-              >
-                <Users
-                  size={16}
-                  color={activeTab === 'groups' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
-                  style={{ marginRight: 6 }}
-                />
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '600',
-                    color: activeTab === 'groups' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
-                  }}
-                >
-                  Groups
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => {
-                  setActiveTab('challenges');
-                  setSelectedFilter('all');
-                }}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderRadius: 12,
-                  backgroundColor: activeTab === 'challenges' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
-                  minWidth: 100,
-                }}
-                activeOpacity={0.7}
-              >
-                <Award
-                  size={16}
-                  color={activeTab === 'challenges' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
-                  style={{ marginRight: 6 }}
-                />
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '600',
-                    color: activeTab === 'challenges' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
-                  }}
-                >
-                  Challenges
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => {
-                  setActiveTab('fitness');
-                  setSelectedFilter('all');
-                }}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  borderRadius: 12,
-                  backgroundColor: activeTab === 'fitness' ? '#10b981' : isDarkMode ? '#374151' : '#f3f4f6',
-                  minWidth: 100,
-                }}
-                activeOpacity={0.7}
-              >
-                <Dumbbell
-                  size={16}
-                  color={activeTab === 'fitness' ? '#ffffff' : isDarkMode ? '#9ca3af' : '#6b7280'}
-                  style={{ marginRight: 6 }}
-                />
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '600',
-                    color: activeTab === 'fitness' ? '#ffffff' : isDarkMode ? '#d1d5db' : '#374151',
-                  }}
-                >
-                  Fitness
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </View>
-      </View>
+      <Header
+        title={tabs[activeTab].title}
+        subtitle={tabs[activeTab].subtitle}
+        leftIcon={{
+          icon: tabs[activeTab].icon,
+          accessibilityLabel: tabs[activeTab].title,
+        }}
+        tabs={Object.keys(tabs)}
+        activeTab={activeTab}
+        onTabPress={(tab) => setActiveTab(tab as keyof typeof tabs)}
+      />
 
       {/* Scrollable Content */}
       <ScrollView
@@ -591,7 +408,7 @@ export default function HealthHubPage() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 16 }}>
-          {activeTab === 'posts' ? (
+          {activeTab === 'Posts' ? (
             /* Post Filters */
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16 }}>
               <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12 }}>
@@ -602,18 +419,17 @@ export default function HealthHubPage() {
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
-                      paddingHorizontal: 16,
-                      paddingVertical: 10,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
                       borderRadius: 24,
                       borderWidth: 1,
                       borderColor: selectedFilter === filter.id ? '#10b981' : isDarkMode ? '#374151' : '#d1d5db',
                       backgroundColor: selectedFilter === filter.id ? '#10b981' : isDarkMode ? '#1f2937' : '#ffffff',
-                      minWidth: 120,
                     }}
                     activeOpacity={0.7}
                   >
                     <filter.icon
-                      size={18}
+                      size={14}
                       color={selectedFilter === filter.id ? '#fff' : isDarkMode ? '#9ca3af' : '#64748b'}
                       style={{ marginRight: 6 }}
                     />
@@ -630,7 +446,7 @@ export default function HealthHubPage() {
                 ))}
               </View>
             </ScrollView>
-          ) : activeTab === 'fitness' ? (
+          ) : activeTab === 'Fitness' ? (
             /* Fitness Categories */
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16 }}>
               <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12 }}>
@@ -641,18 +457,17 @@ export default function HealthHubPage() {
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
-                      paddingHorizontal: 16,
-                      paddingVertical: 10,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
                       borderRadius: 24,
                       borderWidth: 1,
                       borderColor: selectedFilter === category.id ? '#10b981' : isDarkMode ? '#374151' : '#d1d5db',
                       backgroundColor: selectedFilter === category.id ? '#10b981' : isDarkMode ? '#1f2937' : '#ffffff',
-                      minWidth: 100,
                     }}
                     activeOpacity={0.7}
                   >
                     <category.icon
-                      size={18}
+                      size={14}
                       color={selectedFilter === category.id ? '#fff' : isDarkMode ? '#9ca3af' : '#64748b'}
                       style={{ marginRight: 6 }}
                     />
@@ -680,18 +495,17 @@ export default function HealthHubPage() {
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
-                      paddingHorizontal: 16,
-                      paddingVertical: 10,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
                       borderRadius: 24,
                       borderWidth: 1,
                       borderColor: selectedFilter === category.id ? '#10b981' : isDarkMode ? '#374151' : '#d1d5db',
                       backgroundColor: selectedFilter === category.id ? '#10b981' : isDarkMode ? '#1f2937' : '#ffffff',
-                      minWidth: 100,
                     }}
                     activeOpacity={0.7}
                   >
                     <category.icon
-                      size={18}
+                      size={14}
                       color={selectedFilter === category.id ? '#fff' : isDarkMode ? '#9ca3af' : '#64748b'}
                       style={{ marginRight: 6 }}
                     />
@@ -710,7 +524,7 @@ export default function HealthHubPage() {
             </ScrollView>
           )}
 
-          {activeTab === 'posts' ? (
+          {activeTab === 'Posts' ? (
             <>
               {/* Community Posts */}
               {filteredPosts.map((post) => (
@@ -903,7 +717,7 @@ export default function HealthHubPage() {
                 </Card>
               )}
             </>
-          ) : activeTab === 'groups' ? (
+          ) : activeTab === 'Groups' ? (
             <>
               {/* Community Groups */}
               {filteredGroups.map((group) => (
@@ -954,7 +768,7 @@ export default function HealthHubPage() {
                 </Card>
               ))}
             </>
-          ) : activeTab === 'challenges' ? (
+          ) : activeTab === 'Challenges' ? (
             <>
               {/* Health Challenges */}
               {filteredChallenges.map((challenge) => (

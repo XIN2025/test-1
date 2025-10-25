@@ -1,7 +1,9 @@
-import React, { useRef } from 'react';
-import { FlatList } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { FlatList, Text } from 'react-native';
 import { Message } from '../../types/chat';
 import MessageComponent from './Message';
+import { useTheme } from '@/context/ThemeContext';
+import { commonStylesDark, commonStylesLight } from '@/utils/commonStyles';
 
 interface MessagesProps {
   messages: Message[];
@@ -10,12 +12,23 @@ interface MessagesProps {
 
 export default function Messages({ messages, onSuggestionClick }: MessagesProps) {
   const flatListRef = useRef<FlatList<Message>>(null);
-  const isAtBottomRef = useRef(true);
-  const handleScroll = (e: any) => {
-    const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
-    const threshold = 24;
-    isAtBottomRef.current = contentOffset.y + layoutMeasurement.height >= contentSize.height - threshold;
+  const [contentHeight, setContentHeight] = useState(0);
+  const { isDarkMode } = useTheme();
+
+  const scrollToBottom = (animated = true) => {
+    requestAnimationFrame(() => {
+      flatListRef.current?.scrollToEnd({ animated });
+    });
   };
+
+  useEffect(() => {
+    if (flatListRef.current && messages.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 50);
+    }
+  }, [messages]);
+
   return (
     <FlatList
       ref={flatListRef}
@@ -29,18 +42,38 @@ export default function Messages({ messages, onSuggestionClick }: MessagesProps)
       )}
       keyExtractor={(item) => item.id}
       contentContainerStyle={{
+        paddingTop: 16,
         paddingHorizontal: 16,
-        paddingVertical: 16,
-        paddingBottom: 120,
       }}
       keyboardShouldPersistTaps="handled"
-      onContentSizeChange={() => {
-        if (isAtBottomRef.current) {
-          flatListRef.current?.scrollToEnd({ animated: false });
+      ListHeaderComponent={() => (
+        <Text
+          style={[
+            (isDarkMode ? commonStylesDark : commonStylesLight).displayCard,
+            {
+              fontSize: 12,
+              textAlign: 'center',
+              borderWidth: 0,
+              paddingVertical: 12,
+              marginHorizontal: 8,
+              marginBottom: 16,
+              color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            },
+          ]}
+        >
+          Messages from Evra are AI-generated and for informational purposes only. For medical advice, please confirm
+          this information with your healthcare provider.
+        </Text>
+      )}
+      onContentSizeChange={(height) => {
+        if (height > contentHeight) {
+          setContentHeight(height);
+          setTimeout(() => {
+            scrollToBottom();
+          }, 50);
         }
       }}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
+      onLayout={() => scrollToBottom()}
     />
   );
 }
