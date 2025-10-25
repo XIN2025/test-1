@@ -42,8 +42,7 @@ export default function Message({ message, showAvatar = true, onSuggestionClick 
       <View
         style={[
           {
-            maxWidth: '85%',
-            minWidth: '60%',
+            width: '85%',
             backgroundColor: isUser ? (isDarkMode ? '#064e3b' : '#059669') : isDarkMode ? '#1f2937' : '#ffffff',
             borderRadius: 18,
             borderWidth: 0,
