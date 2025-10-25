@@ -13,14 +13,13 @@ interface MessageProps {
 }
 
 const LoadingMessage = ({ isDarkMode }: { isDarkMode: boolean }) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, marginTop: 4 }}>
+  <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 8, paddingBottom: 0 }}>
     <ActivityIndicator size="small" color={isDarkMode ? '#34d399' : '#114131'} />
     <Text
       style={{
         marginLeft: 8,
         fontSize: 14,
         color: isDarkMode ? '#d1d5db' : '#6b7280',
-        fontStyle: 'italic',
       }}
     >
       Evra is thinking...
@@ -44,6 +43,7 @@ export default function Message({ message, showAvatar = true, onSuggestionClick 
         style={[
           {
             maxWidth: '85%',
+            minWidth: '60%',
             backgroundColor: isUser ? (isDarkMode ? '#064e3b' : '#059669') : isDarkMode ? '#1f2937' : '#ffffff',
             borderRadius: 18,
             borderWidth: 0,

@@ -126,6 +126,12 @@ export default function ChatInput({ inputText, setInputText, onSendMessage }: Ch
         returnKeyType="default"
         enablesReturnKeyAutomatically={false}
         editable={!isRecording}
+        autoCorrect={true}
+        autoCapitalize="sentences"
+        spellCheck={false}
+        textContentType="none"
+        keyboardType="default"
+        blurOnSubmit={false}
       />
       <ActionButton isDarkMode={isDarkMode} onPress={handleMicPress} icon={Mic} highlighted={isRecording} />
       <ActionButton

@@ -35,7 +35,22 @@ const cleanTitle = (title: string | null | undefined): string => {
     return 'Lab Report';
   }
 
-  return title.replace(/[%&]/g, '').replace(/\s+/g, ' ').trim().substring(0, 50);
+  return title
+    .replace(/[%&<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .substring(0, 50);
+};
+
+const cleanDescription = (description: string | null | undefined): string => {
+  if (!description) {
+    return '';
+  }
+
+  return description
+    .replace(/[%&<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 };
 
 const UploadButton = ({ handleUpload }: { handleUpload: () => void }) => {
@@ -158,7 +173,7 @@ const ReportCard = ({
               }}
               numberOfLines={2}
             >
-              {report.test_description}
+              {cleanDescription(report.test_description)}
             </Text>
           ) : null}
 

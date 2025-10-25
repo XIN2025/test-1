@@ -91,7 +91,22 @@ export default function LabTestDetailsPage() {
       return 'Lab Report';
     }
 
-    return title.replace(/[%&]/g, '').replace(/\s+/g, ' ').trim().substring(0, 50);
+    return title
+      .replace(/[%&<>]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .substring(0, 50);
+  };
+
+  const cleanDescription = (description: string | null | undefined): string => {
+    if (!description) {
+      return '';
+    }
+
+    return description
+      .replace(/[%&<>]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
   };
 
   const getStatusIcon = (status: string) => {
@@ -343,7 +358,7 @@ export default function LabTestDetailsPage() {
                       lineHeight: 20,
                     }}
                   >
-                    {item.property_description || 'No additional details provided.'}
+                    {cleanDescription(item.property_description) || 'No additional details provided.'}
                   </Text>
                 </Accordion>
               </View>
