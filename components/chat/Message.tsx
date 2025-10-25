@@ -12,10 +12,19 @@ interface MessageProps {
   onSuggestionClick: (suggestion: string) => void;
 }
 
-const LoadingMessage = ({ isDarkMode }: { isDarkMode: boolean }) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}>
+const LoadingMessage = ({ isDarkMode, streamingStyle }: { isDarkMode: boolean; streamingStyle: boolean }) => (
+  <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, marginTop: streamingStyle ? 4 : 0 }}>
     <ActivityIndicator size="small" color={isDarkMode ? '#34d399' : '#114131'} />
-    <Text style={{ marginLeft: 8, fontSize: 14, color: isDarkMode ? '#d1d5db' : '#6b7280' }}>Evra is thinking...</Text>
+    <Text
+      style={{
+        marginLeft: 8,
+        fontSize: 14,
+        color: isDarkMode ? '#d1d5db' : '#6b7280',
+        fontStyle: streamingStyle ? 'italic' : 'normal',
+      }}
+    >
+      {streamingStyle ? 'Evra is typing...' : 'Evra is thinking...'}
+    </Text>
   </View>
 );
 
@@ -45,9 +54,7 @@ export default function Message({ message, showAvatar = true, onSuggestionClick 
           isUser ? { borderBottomRightRadius: 4 } : { borderBottomLeftRadius: 4 },
         ]}
       >
-        {!isUser && isLoading ? (
-          <LoadingMessage isDarkMode={isDarkMode} />
-        ) : (
+        {text && (
           <Markdown
             style={{
               body: { color: isUser ? '#ffffff' : isDarkMode ? '#e5e7eb' : '#111827' },
@@ -56,6 +63,7 @@ export default function Message({ message, showAvatar = true, onSuggestionClick 
             {text}
           </Markdown>
         )}
+        {!isUser && isLoading && <LoadingMessage isDarkMode={isDarkMode} streamingStyle={!!text} />}
       </View>
       {!isUser && suggestions && suggestions.length > 0 && !isLoading && (
         <MessageSuggestions suggestions={suggestions} onSuggestionClick={onSuggestionClick} />

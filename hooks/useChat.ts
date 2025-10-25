@@ -1,11 +1,10 @@
-import Constants from 'expo-constants';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Keyboard } from 'react-native';
 import EventSource from 'react-native-sse';
 import { useAuth } from '../context/AuthContext';
-import { Message, ChatHookReturn } from '../types/chat';
+import { Message } from '../types/chat';
+import { API_BASE_URL } from '@/utils/api';
 
-export const useChat = (): ChatHookReturn => {
+export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -13,7 +12,6 @@ export const useChat = (): ChatHookReturn => {
   const messageQueueRef = useRef<{ type: string; content: any }[]>([]);
   const isProcessingQueueRef = useRef(false);
 
-  const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://localhost:8000';
   const { user } = useAuth();
   const userEmail = user?.email || '';
 
@@ -183,21 +181,10 @@ export const useChat = (): ChatHookReturn => {
     };
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    handleSendMessage(suggestion);
-  };
-
-  const dismissKeyboard = () => {
-    Keyboard.dismiss();
-  };
-
   return {
     messages,
     inputText,
-    isTyping,
     setInputText,
     handleSendMessage,
-    handleSuggestionClick,
-    dismissKeyboard,
   };
 };
