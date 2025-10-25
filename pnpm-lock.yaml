@@ -164,6 +164,9 @@ importers:
       react-native-health-connect:
         specifier: ^3.4.0
         version: 3.4.0(@expo/config-plugins@10.1.2)(react-native@0.79.6(@babel/core@7.28.5)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      react-native-keyboard-controller:
+        specifier: ^1.19.2
+        version: 1.19.2(react-native-reanimated@3.17.5(@babel/core@7.28.5)(react-native@0.79.6(@babel/core@7.28.5)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.28.5)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react-native-keyboard-spacer:
         specifier: ^0.4.1
         version: 0.4.1
@@ -4781,6 +4784,13 @@ packages:
     peerDependencies:
       react: '*'
       react-native: '*'
+
+  react-native-keyboard-controller@1.19.2:
+    resolution: {integrity: sha512-121W+WLnYMTpVyAwm2tPjBc6NLKS2srQOvlkFMYZEYNIsZPvWLQ92n7kBlR32Wpsm8t9rE9xfWZEyNPhCoe+mQ==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+      react-native-reanimated: 3.17.5
 
   react-native-keyboard-spacer@0.4.1:
     resolution: {integrity: sha512-QPX2El4U2VfhRQm1YOTrTsOJIDjJBydpdz87jmiFOxBmKJfVn7CwiTzzipKTiLwfAFoUYQ+sB/xcnIhRZPF+SQ==}
@@ -11304,6 +11314,13 @@ snapshots:
     dependencies:
       react: 19.0.0
       react-native: 0.79.6(@babel/core@7.28.5)(@types/react@19.0.14)(react@19.0.0)
+
+  react-native-keyboard-controller@1.19.2(react-native-reanimated@3.17.5(@babel/core@7.28.5)(react-native@0.79.6(@babel/core@7.28.5)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.28.5)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+      react-native: 0.79.6(@babel/core@7.28.5)(@types/react@19.0.14)(react@19.0.0)
+      react-native-is-edge-to-edge: 1.2.1(react-native@0.79.6(@babel/core@7.28.5)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      react-native-reanimated: 3.17.5(@babel/core@7.28.5)(react-native@0.79.6(@babel/core@7.28.5)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
 
   react-native-keyboard-spacer@0.4.1: {}
 

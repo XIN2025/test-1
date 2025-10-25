@@ -1,5 +1,5 @@
 import React from 'react';
-import { KeyboardAvoidingView, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 import ChatInput from '../../components/chat/ChatInput';
@@ -8,6 +8,7 @@ import Messages from '../../components/chat/Messages';
 import { MessageCircle } from 'lucide-react-native';
 import Header from '@/components/ui/Header';
 import { useChat } from '@/hooks/useChat';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 export default function ChatPage() {
   const { isDarkMode } = useTheme();

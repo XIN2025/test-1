@@ -6,6 +6,7 @@ import { useFonts } from '../hooks/useFonts';
 import './global.css';
 import { HeadlessBackgroundSync } from '../components/HeadlessBackgroundSync';
 import { IOSHealthDataSync } from '../components/IOSHealthDataSync';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 export default function RootLayout() {
   const fontsLoaded = useFonts();
@@ -29,14 +30,16 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <>
-          <HeadlessBackgroundSync />
-          <IOSHealthDataSync />
-          <Stack screenOptions={{ headerShown: false }} />
-        </>
-      </AuthProvider>
-    </ThemeProvider>
+    <KeyboardProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <>
+            <HeadlessBackgroundSync />
+            <IOSHealthDataSync />
+            <Stack screenOptions={{ headerShown: false }} />
+          </>
+        </AuthProvider>
+      </ThemeProvider>
+    </KeyboardProvider>
   );
 }

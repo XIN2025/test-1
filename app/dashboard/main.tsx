@@ -117,6 +117,7 @@ function MainDashboard() {
   const { start, copilotEvents } = useCopilot();
   const userEmail = user?.email || '';
   const userName = user?.name || '';
+  const displayName = userName.split(' ')[0] || 'Superstar';
 
   const [dailyCompletion, setDailyCompletion] = useState<Record<string, number>>({});
   const router = useRouter();
@@ -345,7 +346,7 @@ function MainDashboard() {
       {/* Fixed Header */}
 
       <Header
-        title={`Hey, ${userName.split(' ')[0]}!`}
+        title={`Hey, ${displayName}!`}
         subtitle="Ready for a healthy day?"
         leftComponent={
           <UserAvatar

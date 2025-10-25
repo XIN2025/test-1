@@ -68,6 +68,7 @@
     "react-native-copilot": "^3.3.3",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-health-connect": "^3.4.0",
+    "react-native-keyboard-controller": "^1.19.2",
     "react-native-keyboard-spacer": "^0.4.1",
     "react-native-liquid-gauge": "^0.1.3",
     "react-native-live-audio-stream": "^1.1.1",

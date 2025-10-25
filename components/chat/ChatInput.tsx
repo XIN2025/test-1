@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TextInput, TouchableOpacity, View } from 'react-native';
-import { LucideIcon, Mic, Send, SendHorizontal } from 'lucide-react-native';
+import { LucideIcon, Mic, SendHorizontal } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { shadow } from '@/utils/commonStyles';
 import { useRawAudioTranscription } from '../../hooks/useRawAudioTranscription';
@@ -35,13 +35,12 @@ const ActionButton = ({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: highlighted ? '#059669' : isDarkMode ? '#1f2937' : '#f9fafb',
-        opacity: disabled ? 0.5 : 1,
         ...shadow.card,
       }}
       activeOpacity={0.7}
       disabled={disabled}
     >
-      <Icon size={20} color={highlighted ? '#fff' : isDarkMode ? '#9ca3af' : '#6b7280'} />
+      <Icon size={20} color={highlighted ? '#fff' : isDarkMode ? '#9ca3af' : '#6b7280'} opacity={disabled ? 0.5 : 1} />
     </TouchableOpacity>
   );
 };
