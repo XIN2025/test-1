@@ -208,7 +208,7 @@ export default function RegisterScreen() {
                 <View className="mb-4 w-full">
                   <Text className="mb-1 text-gray-700">Name</Text>
                   <TextInput
-                    className={`w-full rounded-md border bg-gray-50 px-4 py-3 text-base ${
+                    className={`w-full rounded-md border bg-gray-50 px-4 py-3 text-base text-black ${
                       errors.name ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Enter your name"
