@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Calendar, Activity, AlertCircle, CheckCircle, TrendingUp, TrendingDown } from 'lucide-react-native';
@@ -37,7 +37,10 @@ export default function LabTestDetailsPage() {
 
   if (!loading && !report) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }} edges={['top']}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }}
+        edges={Platform.OS === 'ios' ? ['top', 'bottom'] : ['top']}
+      >
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <Text
             style={{
@@ -155,7 +158,10 @@ export default function LabTestDetailsPage() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }} edges={['top']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }}
+      edges={Platform.OS === 'ios' ? ['top', 'bottom'] : ['top']}
+    >
       {/* Header */}
       <View
         style={{

@@ -16,7 +16,7 @@ import {
   Users,
 } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface CommunityPost {
@@ -384,7 +384,10 @@ export default function HealthHubPage() {
   const { isDarkMode } = useTheme();
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
+    <SafeAreaView
+      edges={Platform.OS === 'ios' ? ['top', 'bottom'] : ['top']}
+      style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}
+    >
       <Header
         title={tabs[activeTab].title}
         subtitle={tabs[activeTab].subtitle}

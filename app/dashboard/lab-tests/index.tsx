@@ -1,5 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+  Alert,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, FlaskConical, RefreshCw, Calendar, ChevronRight, Upload } from 'lucide-react-native';
@@ -420,7 +429,10 @@ export default function LabTestsPage() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }} edges={['top', 'bottom']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: isDarkMode ? '#1f2937' : '#ffffff' }}
+      edges={Platform.OS === 'ios' ? ['top', 'bottom'] : ['top']}
+    >
       <Header
         title="Lab Tests"
         subtitle="Connect to Labcorp"
