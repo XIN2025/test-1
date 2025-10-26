@@ -3,7 +3,7 @@ import ShinyText from '@/components/ShinyText';
 
 const MessageLoading = () => {
   return (
-    <div className='my-5 flex max-w-full items-center gap-3'>
+    <div className='flex max-w-full items-center gap-3'>
       <ShinyText text='Karmi is thinking...' className='font-medium' />
     </div>
   );

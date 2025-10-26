@@ -14,18 +14,15 @@ export class ToolsService {
     return tool({
       description:
         'Use this tool to search the web, you must use this tool when you needed live information, or needed any information from internet',
-      parameters: z.object({
+      inputSchema: z.object({
         query: z.string().describe('Be specific about what you want to search'),
       }),
       execute: async ({ query }) => {
         try {
           const { text } = await generateText({
-            model: google('gemini-2.0-flash', {
-              useSearchGrounding: true,
-            }),
+            model: google('gemini-2.0-flash'),
             prompt: query,
             system: this.chatConfigService.getChatConfig().webSearchPrompt,
-            maxSteps: 10,
           });
           return {
             success: true,
@@ -46,7 +43,7 @@ export class ToolsService {
     return tool({
       description:
         'Use this tool to get horoscope information based on the date of birth and location. For latitude and longitude use the tool web_search to get the information',
-      parameters: z.object({
+      inputSchema: z.object({
         dateOfBirth: z.string().describe('The date of birth in the format YYYY-MM-DDTHH:MM:SS.SSSZ'),
         latitude: z.number().describe('The latitude of the place of birth'),
         longitude: z.number().describe('The longitude of the place of birth'),

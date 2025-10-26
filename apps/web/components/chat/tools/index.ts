@@ -1,9 +1,9 @@
-import { ToolInvocation } from 'ai';
+import { ToolUIPart } from 'ai';
 import SearchWebTool from './SearchWebTool';
 import HoroscopeTool from './HoroscopeTool';
 
 export type ToolProps = {
-  tool: ToolInvocation;
+  tool: ToolUIPart;
 };
 
 export const toolComponents = {

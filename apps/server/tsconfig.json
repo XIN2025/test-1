@@ -17,6 +17,9 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@supermemory/tools/ai-sdk": ["../../node_modules/@supermemory/tools/dist/ai-sdk"]
+    }
   }
 }

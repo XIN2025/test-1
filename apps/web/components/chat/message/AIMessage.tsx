@@ -1,18 +1,19 @@
 import { cn } from '@repo/ui/lib/utils';
-import { Message } from '@ai-sdk/react';
 import React, { useState } from 'react';
 import CustomMarkdown from '../CustomMarkdown';
-import { format } from 'date-fns';
 import { toolComponents } from '../tools';
-import { Attachment } from 'ai';
+import { UIMessage, isToolUIPart, getToolName } from 'ai';
 import { Check } from 'lucide-react';
 import { Copy } from 'lucide-react';
+import { ChatStatus } from 'ai';
+import GenericTool from '../tools/GenericTool';
 
 type AIMessageProps = {
-  message: Message & { attachments: Attachment[] };
+  message: UIMessage;
+  status: ChatStatus;
 };
 
-const AIMessage = ({ message }: AIMessageProps) => {
+const AIMessage = ({ message, status }: AIMessageProps) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -37,32 +38,32 @@ const AIMessage = ({ message }: AIMessageProps) => {
           {message.parts?.map((part, index) => {
             const { type } = part;
             if (type === 'reasoning') {
-              return <CustomMarkdown key={index} className='text-sm italic' message={part.reasoning} />;
+              return <CustomMarkdown key={index} className='text-sm italic' message={part.text} />;
             }
             if (type === 'text') {
               return <CustomMarkdown key={index} message={part.text} />;
             }
-            if (type === 'tool-invocation') {
-              const { toolName } = part.toolInvocation;
+            if (isToolUIPart(part)) {
+              const toolInvocation = part;
+              const toolName = getToolName(toolInvocation);
               if (toolName in toolComponents) {
                 const ToolComponent = toolComponents[toolName as keyof typeof toolComponents];
-                return <ToolComponent key={index} tool={part.toolInvocation} />;
+                return <ToolComponent key={index} tool={toolInvocation} />;
               }
-              return null;
+              return <GenericTool key={index} tool={toolInvocation} />;
             }
           })}
         </div>
-        <div className='flex items-center gap-1.5'>
-          <span className={cn('text-xs', 'text-muted-foreground')}>
-            {format(new Date(message.createdAt || new Date()), 'h:mm a')}
-          </span>
-          <button
-            onClick={handleCopy}
-            className='hover:bg-muted text-muted-foreground flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm p-0.5'
-          >
-            {copied ? <Check size={13} /> : <Copy size={13} />}
-          </button>
-        </div>
+        {status === 'ready' && (
+          <div className='flex items-center gap-1.5'>
+            <button
+              onClick={handleCopy}
+              className='hover:bg-muted text-muted-foreground flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm p-0.5'
+            >
+              {copied ? <Check size={13} /> : <Copy size={13} />}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

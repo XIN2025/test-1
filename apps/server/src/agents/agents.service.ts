@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
-  appendClientMessage,
-  appendResponseMessages,
-  Message,
-  pipeDataStreamToResponse,
+  ModelMessage,
+  UIMessage,
+  convertToModelMessages,
+  createUIMessageStream,
+  pipeUIMessageStreamToResponse,
   smoothStream,
+  stepCountIs,
   streamText,
 } from 'ai';
 import { openai } from '@ai-sdk/openai';
@@ -15,8 +17,10 @@ import { google } from '@ai-sdk/google';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatConfigService } from './chat-config.service';
 import { RequestUser } from 'src/auth/dto/request-user.dto';
+import { supermemoryTools } from '@supermemory/tools/ai-sdk';
+import { MessageDto } from './dto/chat-agent.dto';
 
-const chatStore = new Map<string, Message[]>();
+const chatStore = new Map<string, ModelMessage[]>();
 
 @Injectable()
 export class AgentsService {
@@ -57,7 +61,7 @@ export class AgentsService {
     return { id: chatId };
   }
 
-  async chat(chatId: string, message: Message, user: RequestUser, res: Response): Promise<void> {
+  async chat(chatId: string, message: MessageDto, user: RequestUser, res: Response) {
     if (!chatStore.has(chatId)) {
       throw new NotFoundException('Chat not found');
     }
@@ -73,49 +77,56 @@ export class AgentsService {
       history.push({
         role: 'system',
         content: `User name: ${user.name}\n User Gender: ${userProfile?.gender}\n User DOB: ${userProfile?.dateOfBirth}\n User time of birth: ${userProfile?.timeOfBirth}\n User place of birth: ${userProfile?.placeOfBirth}\n User horoscope details: ${userProfile?.horoscopeDetails}`,
-        id: Math.random().toString(36).substring(2, 15),
       });
     }
-    history.push(message);
-
-    const messages = appendClientMessage({
-      messages: history,
-      message,
+    history.push({
+      role: 'user',
+      content: message.content,
     });
 
-    const model =
-      this.chatConfigService.getChatConfig().model === 'openai'
-        ? openai('gpt-4.1')
-        : google('gemini-2.0-flash', {
-            useSearchGrounding: true,
+    const model: any =
+      this.chatConfigService.getChatConfig().model === 'openai' ? openai('gpt-4.1') : google('gemini-2.0-flash');
+
+    pipeUIMessageStreamToResponse({
+      response: res,
+      stream: createUIMessageStream({
+        execute: ({ writer }) => {
+          const result = streamText({
+            model: model,
+            system: this.chatConfigService.getChatConfig().chatAgentPrompt,
+            messages: history,
+            stopWhen: stepCountIs(10),
+            experimental_transform: smoothStream({ chunking: 'word' }),
+            tools: {
+              ...this.toolsService.getTools(),
+              // ...supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
+              //   containerTags: [user.id],
+              // }),
+            },
+            temperature: 0.6,
+            onStepFinish: async ({ finishReason }) => {
+              console.log(finishReason);
+            },
+            onFinish: async ({ usage, text, finishReason }) => {
+              console.log('onFinish called');
+              console.log('usage', usage);
+              console.log('finishReason', finishReason);
+
+              history.push({
+                role: 'assistant',
+                content: text,
+              });
+              chatStore.set(chatId, history);
+            },
           });
 
-    pipeDataStreamToResponse(res, {
-      execute: (dataStream) => {
-        const result = streamText({
-          model: model,
-          system: this.chatConfigService.getChatConfig().chatAgentPrompt,
-          messages: messages,
-          maxSteps: 10,
-          tools: this.toolsService.getTools(),
-          toolCallStreaming: true,
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          onFinish: async ({ response }) => {
-            const [, assistantMessage] = appendResponseMessages({
-              messages: [message],
-              responseMessages: response.messages,
-            });
-            history.push(assistantMessage);
-            chatStore.set(chatId, history);
-          },
-          temperature: 0.6,
-        });
-        result.mergeIntoDataStream(dataStream);
-      },
-      onError: (error) => {
-        console.log('error', error);
-        return error instanceof Error ? error.message : String(error);
-      },
+          writer.merge(result.toUIMessageStream());
+        },
+        onError: (error) => {
+          console.log(error);
+          return error instanceof Error ? error.message : String(error);
+        },
+      }),
     });
   }
 

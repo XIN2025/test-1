@@ -2,7 +2,7 @@ import React, { useRef, ChangeEvent, useEffect } from 'react';
 import { Button } from '@repo/ui/components/button';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@repo/ui/lib/utils';
-import { UseChatHelpers } from '@ai-sdk/react';
+import { UIMessage, UseChatHelpers } from '@ai-sdk/react';
 
 interface ChatInputProps {
   isSubmitting: boolean;
@@ -10,7 +10,7 @@ interface ChatInputProps {
   query: string;
   setQuery: (query: string) => void;
   initialPage?: boolean;
-  onStop?: UseChatHelpers['stop'];
+  onStop?: UseChatHelpers<UIMessage>['stop'];
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({ isSubmitting, handleSubmit, query, setQuery, onStop }) => {

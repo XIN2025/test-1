@@ -1,18 +1,16 @@
 import { ChatMessage } from './ChatMessage';
-import { Message, UseChatHelpers } from '@ai-sdk/react';
 import MessageLoading from './MessageLoading';
 import ErrorMessage from './ErrorMessage';
-import { Attachment } from 'ai';
+import { ChatStatus, UIMessage } from 'ai';
 import { useRef, useEffect, useState, useCallback } from 'react';
 
 interface ChatMessagesProps {
-  messages: Message[];
-  status: UseChatHelpers['status'];
+  messages: UIMessage[];
+  status: ChatStatus;
   error?: Error;
-  isLoading: boolean;
 }
 
-const ChatMessages = ({ messages, status, error, isLoading }: ChatMessagesProps) => {
+const ChatMessages = ({ messages, status, error }: ChatMessagesProps) => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isFirstRender = useRef(true);
@@ -100,16 +98,23 @@ const ChatMessages = ({ messages, status, error, isLoading }: ChatMessagesProps)
     }
   }, [messages, status, isAtBottom, scrollToBottom]);
 
+  let isLoading = false;
+  if (messages && messages.length > 0) {
+    const lastMessage = messages[messages.length - 1];
+    if ((lastMessage?.parts?.length ?? 0) <= 1) {
+      if (status === 'submitted' || status === 'streaming') {
+        isLoading = true;
+      }
+    }
+  }
+
   return (
     <div className='mx-auto w-full flex-1 overflow-y-auto px-4 pt-4 md:mt-0' ref={messagesContainerRef}>
       <div className='mx-auto flex max-w-3xl min-w-0 flex-col gap-4'>
-        {messages.map((message, index) => (
-          <ChatMessage key={message.id || index} message={message as Message & { attachments: Attachment[] }} />
+        {messages?.map((message, index) => (
+          <ChatMessage key={message.id || index} message={message} status={status} />
         ))}
-        {status === 'submitted' && messages.length > 0 && messages[messages.length - 1]?.role === 'user' && (
-          <MessageLoading />
-        )}
-        {status === 'ready' && isLoading && <MessageLoading />}
+        {isLoading && <MessageLoading />}
         {status === 'error' && <ErrorMessage error={error?.message ?? 'An error occurred'} />}
       </div>
       <div ref={messagesEndRef} className='min-h-[24px] min-w-[24px] shrink-0' />

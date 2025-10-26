@@ -1,16 +1,18 @@
 import {
   TextUIPart,
   ReasoningUIPart,
-  ToolInvocationUIPart,
-  SourceUIPart,
+  DynamicToolUIPart,
+  SourceUrlUIPart,
   FileUIPart,
   StepStartUIPart,
-} from '@ai-sdk/ui-utils';
-import { Attachment, JSONValue, Message } from 'ai';
+  SourceDocumentUIPart,
+  ToolUIPart,
+} from 'ai';
+import { UIMessage } from 'ai';
 import { Type } from 'class-transformer';
 import { IsIn, IsISO8601, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 
-export class MessageDto implements Message {
+export class MessageDto implements UIMessage {
   @IsString()
   @IsNotEmpty()
   id: string;
@@ -25,19 +27,20 @@ export class MessageDto implements Message {
 
   @IsNotEmpty()
   @IsString()
-  @IsIn(['data', 'system', 'user', 'assistant'])
-  role: Message['role'];
+  @IsIn(['system', 'user', 'assistant'])
+  role: 'system' | 'user' | 'assistant';
 
   @IsOptional()
-  annotations?: JSONValue[] | undefined;
-
-  @IsOptional()
-  experimental_attachments?: Attachment[] | undefined;
-
-  @IsOptional()
-  parts?:
-    | (TextUIPart | ReasoningUIPart | ToolInvocationUIPart | SourceUIPart | FileUIPart | StepStartUIPart)[]
-    | undefined;
+  parts: (
+    | TextUIPart
+    | ReasoningUIPart
+    | DynamicToolUIPart
+    | ToolUIPart
+    | SourceUrlUIPart
+    | SourceDocumentUIPart
+    | FileUIPart
+    | StepStartUIPart
+  )[];
 }
 
 export class ChatAgentInputDto {

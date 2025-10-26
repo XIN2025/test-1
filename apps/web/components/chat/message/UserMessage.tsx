@@ -1,21 +1,22 @@
-import { Message } from '@ai-sdk/react';
 import React from 'react';
 import { cn } from '@repo/ui/lib/utils';
-import { format } from 'date-fns';
-import { Attachment } from 'ai';
 import { Copy, Check } from 'lucide-react';
 import { useState } from 'react';
+import { UIMessage } from 'ai';
+import AttachmentView from '../AttachmentView';
 
-interface UserMessageProps {
-  message: Message & { attachments: Attachment[] };
-}
-
-const UserMessage = ({ message }: UserMessageProps) => {
+const UserMessage = ({ message }: { message: UIMessage }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(message.content);
+      const content = message.parts
+        ?.filter((part) => part.type === 'text')
+        .map((part) => part.text)
+        .join('\n');
+      if (content) {
+        await navigator.clipboard.writeText(content);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -27,7 +28,14 @@ const UserMessage = ({ message }: UserMessageProps) => {
     <div className='flex w-full justify-end gap-3'>
       <div className={cn('flex flex-col gap-1', 'items-end')}>
         <div className={'bg-primary text-primary-foreground w-full rounded-2xl px-4 py-2'}>
-          <div className='text-sm whitespace-pre-wrap'>{message.content}</div>
+          <div className='text-sm whitespace-pre-wrap'>
+            {message.parts?.map((part, index) => {
+              if (part.type === 'text') {
+                return <div key={index}>{part.text}</div>;
+              }
+            })}
+            <AttachmentView attachments={[...(message.parts?.filter((part) => part.type === 'file') ?? [])]} />
+          </div>
         </div>
         <div className='flex items-center gap-1.5'>
           <button
@@ -36,9 +44,6 @@ const UserMessage = ({ message }: UserMessageProps) => {
           >
             {copied ? <Check size={13} /> : <Copy size={13} />}
           </button>
-          <span className={cn('text-sm max-sm:text-xs', 'text-muted-foreground')}>
-            {format(new Date(message.createdAt || new Date()), 'h:mm a')}
-          </span>
         </div>
       </div>
     </div>
