@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
   ModelMessage,
-  UIMessage,
-  convertToModelMessages,
   createUIMessageStream,
   pipeUIMessageStreamToResponse,
   smoothStream,
@@ -17,7 +15,6 @@ import { google } from '@ai-sdk/google';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatConfigService } from './chat-config.service';
 import { RequestUser } from 'src/auth/dto/request-user.dto';
-import { supermemoryTools } from '@supermemory/tools/ai-sdk';
 import { MessageDto } from './dto/chat-agent.dto';
 
 const chatStore = new Map<string, ModelMessage[]>();
@@ -93,15 +90,15 @@ export class AgentsService {
         execute: ({ writer }) => {
           const result = streamText({
             model: model,
-            system: this.chatConfigService.getChatConfig().chatAgentPrompt,
+            system:
+              this.chatConfigService.getChatConfig().chatAgentPrompt +
+              '\n\nCurrent date and time in UTC: ' +
+              new Date().toISOString(),
             messages: history,
             stopWhen: stepCountIs(10),
             experimental_transform: smoothStream({ chunking: 'word' }),
             tools: {
               ...this.toolsService.getTools(),
-              // ...supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
-              //   containerTags: [user.id],
-              // }),
             },
             temperature: 0.6,
             onStepFinish: async ({ finishReason }) => {

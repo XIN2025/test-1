@@ -44,7 +44,6 @@ const ChatMessages = ({ messages, status, error }: ChatMessagesProps) => {
             <ChatMessage
               key={message.id || index}
               message={message}
-              status={status}
               lastMessageId={lastMessage?.id}
               isMessageLoading={isMessageLoading}
               error={error}
