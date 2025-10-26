@@ -123,6 +123,20 @@ const Checkbox = ({
   const { isDarkMode } = useTheme();
   const colors = getColors(isDarkMode);
 
+  const isUnscheduled = item.start_time === '00:00' && item.end_time === '00:00';
+
+  const getTimeDisplay = () => {
+    if (isUnscheduled) {
+      return '';
+    }
+    if (item.start_time && item.end_time) {
+      return `${formatTimeHM(item.start_time)} - ${formatTimeHM(item.end_time)}`;
+    }
+    return formatTimeHM(item.start_time) || formatTimeHM(item.end_time) || '';
+  };
+
+  const timeDisplay = getTimeDisplay();
+
   return (
     <TouchableOpacity
       key={item.id}
@@ -144,7 +158,6 @@ const Checkbox = ({
         >
           {!togglePending && item.completed && <Check size={16} strokeWidth={2.5} color="white" />}
           {togglePending && <ActivityIndicator size="large" color="white" style={styles.activityIndicator} />}
-          {/* {togglePending && <LoaderCircle size={16} strokeWidth={2.5} color="white" />} */}
         </View>
         <View style={styles.textContainer}>
           <Text
@@ -172,20 +185,20 @@ const Checkbox = ({
           )}
         </View>
       </View>
-      <View style={styles.timeContainer}>
-        <Text
-          style={[
-            styles.timeText,
-            {
-              color: colors.timeText,
-            },
-          ]}
-        >
-          {item.start_time && item.end_time
-            ? `${formatTimeHM(item.start_time)} - ${formatTimeHM(item.end_time)}`
-            : formatTimeHM(item.start_time) || formatTimeHM(item.end_time) || ''}
-        </Text>
-      </View>
+      {timeDisplay && (
+        <View style={styles.timeContainer}>
+          <Text
+            style={[
+              styles.timeText,
+              {
+                color: colors.timeText,
+              },
+            ]}
+          >
+            {timeDisplay}
+          </Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };

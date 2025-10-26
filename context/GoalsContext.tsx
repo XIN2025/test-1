@@ -23,6 +23,7 @@ interface GoalsContextType {
   loadTodaysItems: () => Promise<void>;
   loadGoals: () => Promise<void>;
   loadStats: () => Promise<void>;
+  refreshGoalsAndCompletion: () => Promise<void>;
   refreshGoals: () => Promise<void>;
 }
 
@@ -51,9 +52,8 @@ export const GoalsProvider: React.FC<GoalsProviderProps> = ({ children }) => {
 
   const refreshGoals = useCallback(async () => {
     try {
-      await goalsHookRef.current.loadGoals();
-      await goalsHookRef.current.loadTodaysItems();
-      await goalsHookRef.current.loadStats();
+      // Use the new comprehensive refresh method
+      await goalsHookRef.current.refreshGoalsAndCompletion();
     } catch (error) {
       console.error('❌ Error refreshing goals:', error);
     }
