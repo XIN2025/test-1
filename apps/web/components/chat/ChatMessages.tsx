@@ -1,8 +1,7 @@
 import { ChatMessage } from './ChatMessage';
-import MessageLoading from './MessageLoading';
-import ErrorMessage from './ErrorMessage';
 import { ChatStatus, UIMessage } from 'ai';
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
+import { cn } from '@repo/ui/lib/utils';
 
 interface ChatMessagesProps {
   messages: UIMessage[];
@@ -11,111 +10,47 @@ interface ChatMessagesProps {
 }
 
 const ChatMessages = ({ messages, status, error }: ChatMessagesProps) => {
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isFirstRender = useRef(true);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-  const [isAtBottom, setIsAtBottom] = useState(true);
 
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
-
-    animationFrameRef.current = requestAnimationFrame(() => {
-      messagesEndRef.current?.scrollIntoView({
-        behavior,
-        block: 'end',
-        inline: 'nearest',
-      });
-    });
-  }, []);
-
-  const checkIfAtBottom = useCallback(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return true;
-
-    const threshold = 100;
-    const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
-    setIsAtBottom(isAtBottom);
-    return isAtBottom;
-  }, []);
-
-  const handleScroll = useCallback(() => {
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-
-    scrollTimeoutRef.current = setTimeout(() => {
-      checkIfAtBottom();
-    }, 16); // ~60fps
-  }, [checkIfAtBottom]);
+  };
 
   useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
+    scrollToBottom();
+  }, [messages.length]);
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [handleScroll]);
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      if (isFirstRender.current) {
-        scrollToBottom('instant');
-        isFirstRender.current = false;
-        setIsAtBottom(true);
-      } else if (status === 'streaming' && isAtBottom) {
-        scrollToBottom('smooth');
-      } else if (status === 'submitted') {
-        scrollToBottom('smooth');
-        setIsAtBottom(true);
-      }
-    }
-  }, [messages.length, status, isAtBottom, scrollToBottom]);
-
-  // Additional effect to handle streaming content updates
-  useEffect(() => {
-    if (status === 'streaming' && isAtBottom) {
-      // Use requestAnimationFrame for smoother streaming updates
-      const updateScroll = () => {
-        if (status === 'streaming' && isAtBottom) {
-          scrollToBottom('smooth');
-        }
-      };
-
-      const frameId = requestAnimationFrame(updateScroll);
-      return () => cancelAnimationFrame(frameId);
-    }
-  }, [messages, status, isAtBottom, scrollToBottom]);
-
-  let isLoading = false;
+  let isMessageLoading = false;
   if (messages && messages.length > 0) {
     const lastMessage = messages[messages.length - 1];
     if ((lastMessage?.parts?.length ?? 0) <= 1) {
       if (status === 'submitted' || status === 'streaming') {
-        isLoading = true;
+        isMessageLoading = true;
       }
     }
   }
 
+  const lastMessage = useMemo(() => {
+    return messages.length > 0 ? messages[messages.length - 1] : null;
+  }, [messages]);
+
   return (
-    <div className='mx-auto w-full flex-1 overflow-y-auto px-4 pt-4 md:mt-0' ref={messagesContainerRef}>
+    <div className='mx-auto w-full flex-1 overflow-y-auto px-4 pt-4 md:mt-0'>
       <div className='mx-auto flex max-w-3xl min-w-0 flex-col gap-4'>
         {messages?.map((message, index) => (
-          <ChatMessage key={message.id || index} message={message} status={status} />
+          <div key={message.id || index} className={cn(lastMessage?.id === message.id ? 'min-h-[50vh]' : '')}>
+            <ChatMessage
+              key={message.id || index}
+              message={message}
+              status={status}
+              lastMessageId={lastMessage?.id}
+              isMessageLoading={isMessageLoading}
+              error={error}
+            />
+          </div>
         ))}
-        {isLoading && <MessageLoading />}
-        {status === 'error' && <ErrorMessage error={error?.message ?? 'An error occurred'} />}
       </div>
       <div ref={messagesEndRef} className='min-h-[24px] min-w-[24px] shrink-0' />
     </div>

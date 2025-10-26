@@ -12,7 +12,6 @@ import { DefaultChatTransport } from 'ai';
 const ChatPage = () => {
   const { data: session } = useSession();
   const [input, setInput] = useState<string>('');
-  const [chatMessages, setChatMessages] = useState<UIMessage[]>([]);
   const { mutate: createChat, isPending: isCreatingChat } = useCreateChat();
 
   const [chatId, setChatId] = useState<string | undefined>(undefined);
@@ -27,9 +26,6 @@ const ChatPage = () => {
     }),
     messages: [],
     experimental_throttle: 200,
-    onFinish: ({ message }) => {
-      // setChatMessages((prev) => [...prev, message]);
-    },
     onError: (error) => {
       console.error('Error in chat:', error);
     },
