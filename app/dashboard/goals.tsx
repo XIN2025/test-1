@@ -1,32 +1,25 @@
-import { CircularProgressRing } from '@/components/CircularProgressRing';
-import GoalProgressTracker from '@/components/goals/GoalProgressTracker';
-import ActionItemCard from '@/components/goals/ActionItemCard';
 import ActionItemScheduleModal from '@/components/goals/ActionItemScheduleModal';
+import AddGoalModal from '@/components/goals/AddGoalModal';
 import EmptyGoals from '@/components/goals/EmptyGoals';
+import GoalCard from '@/components/goals/Goal';
 import LoadingScreen from '@/components/goals/LoadingScreen';
 import PreferencesModal from '@/components/goals/PreferencesModal';
-import HabitGoalIntegration from '@/components/HabitGoalIntegration';
+import UploadModal from '@/components/goals/UploadModal';
 import { Card } from '@/components/ui/card';
-import WeeklyGoalsSummary from '@/components/WeeklyGoalsSummary';
+import Header from '@/components/ui/Header';
 import WeeklyReflection from '@/components/WeeklyReflection';
 import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
 import { useGoalsContext } from '@/context/GoalsContext';
+import { useTheme } from '@/context/ThemeContext';
 import { goalsApi } from '@/services/goalsApi';
 import { ActionItem, Goal, GoalCategory, GoalFormData, GoalPriority } from '@/types/goals';
 import { PillarTimePreferences, PillarType, TimePreference } from '@/types/preferences';
+import { formatDate } from '@/utils/date';
 import * as DocumentPicker from 'expo-document-picker';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useFocusEffect } from 'expo-router';
-import { BarChart3, BookOpen, ChevronLeft, ChevronRight, Plus, Star, Target, Trash } from 'lucide-react-native';
+import { BookOpen, Plus, Star, Target } from 'lucide-react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AddGoalModal from '@/components/goals/AddGoalModal';
-import UploadModal from '@/components/goals/UploadModal';
-import Header from '@/components/ui/Header';
-import { formatDate } from '@/utils/date';
-import { commonStylesDark, commonStylesLight } from '@/utils/commonStyles';
-import GoalCard from '@/components/goals/Goal';
 
 interface ExtendedGoal extends Goal {
   action_plan?: {
@@ -485,7 +478,6 @@ export default function GoalsScreen() {
           <View style={{ paddingTop: 16, gap: 16 }}>
             <GeneratingBanner />
 
-            {}
             {loading && goals.length > 0 && generatingPlanGoalIds.length === 0 && (
               <View
                 style={{
@@ -513,10 +505,8 @@ export default function GoalsScreen() {
             )}
 
             <View style={{ paddingHorizontal: 16, gap: 16 }}>
-              {}
               {!loading && goals.length === 0 && <EmptyGoals setShowAddGoal={setShowAddGoal} />}
 
-              {}
               {goals.map((goal: any) => (
                 <GoalCard
                   key={goal.id}
@@ -531,7 +521,6 @@ export default function GoalsScreen() {
                 />
               ))}
 
-              {}
               {new Date().getDay() === 0 && (
                 <Card className="border-0 bg-blue-50">
                   <View className="p-4">
@@ -555,7 +544,6 @@ export default function GoalsScreen() {
           </View>
         </ScrollView>
 
-        {}
         {showAddGoal && (
           <AddGoalModal
             showAddGoal={showAddGoal}
@@ -568,7 +556,6 @@ export default function GoalsScreen() {
           />
         )}
 
-        {}
         {showReflection && (
           <WeeklyReflection
             weekStart={weekStart}
@@ -581,7 +568,6 @@ export default function GoalsScreen() {
           />
         )}
 
-        {}
         {selectedActionItem && (
           <ActionItemScheduleModal
             selectedActionItem={selectedActionItem}
@@ -589,7 +575,6 @@ export default function GoalsScreen() {
           />
         )}
 
-        {}
         {showPreferencesModal && (
           <PreferencesModal
             isDarkMode={isDarkMode}
@@ -603,7 +588,6 @@ export default function GoalsScreen() {
           />
         )}
 
-        {}
         {showUploadModal && (
           <UploadModal
             uploadMonitorActiveRef={uploadMonitorActiveRef}
