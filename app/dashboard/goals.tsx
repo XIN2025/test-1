@@ -5,7 +5,6 @@ import GoalCard from '@/components/goals/Goal';
 import LoadingScreen from '@/components/goals/LoadingScreen';
 import PreferencesModal from '@/components/goals/PreferencesModal';
 import UploadModal from '@/components/goals/UploadModal';
-import { Card } from '@/components/ui/card';
 import Header from '@/components/ui/Header';
 import WeeklyReflection from '@/components/WeeklyReflection';
 import { useAuth } from '@/context/AuthContext';
@@ -20,6 +19,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { BookOpen, Plus, Star, Target } from 'lucide-react-native';
 import { ActivityIndicator, Alert, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { commonStylesDark, commonStylesLight } from '@/utils/commonStyles';
 
 interface ExtendedGoal extends Goal {
   action_plan?: {
@@ -525,23 +525,23 @@ export default function GoalsScreen() {
               ))}
 
               {new Date().getDay() === 0 && (
-                <Card className="border-0 bg-blue-50">
-                  <View className="p-4">
-                    <View className="mb-3 flex-row items-center">
-                      <BookOpen size={20} color="#3b82f6" className="mr-2" />
-                      <Text className="text-lg font-semibold text-blue-800">Weekly Reflection</Text>
-                    </View>
-                    <Text className="mb-3 text-sm text-blue-700">
-                      Take a moment to reflect on your week and plan for the next one.
+                <View style={(isDarkMode ? commonStylesDark : commonStylesLight).pressableCard}>
+                  <View className="mb-3 flex-row items-center gap-2">
+                    <BookOpen size={20} color={isDarkMode ? '#34d399' : '#3b82f6'} />
+                    <Text className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-blue-800'}`}>
+                      Weekly Reflection
                     </Text>
-                    <TouchableOpacity
-                      onPress={() => setShowReflection(true)}
-                      className="self-start rounded-lg bg-blue-600 px-4 py-2"
-                    >
-                      <Text className="font-medium text-white">Start Reflection</Text>
-                    </TouchableOpacity>
                   </View>
-                </Card>
+                  <Text className={`mb-3 text-sm ${isDarkMode ? 'text-gray-200' : 'text-blue-700'}`}>
+                    Take a moment to reflect on your week and plan for the next one.
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setShowReflection(true)}
+                    className={`self-start rounded-lg ${isDarkMode ? 'bg-[#059669]' : 'bg-[#3b82f6]'} px-4 py-2`}
+                  >
+                    <Text className="font-medium text-white">Start Reflection</Text>
+                  </TouchableOpacity>
+                </View>
               )}
             </View>
           </View>
@@ -559,17 +559,16 @@ export default function GoalsScreen() {
           />
         )}
 
-        {showReflection && (
-          <WeeklyReflection
-            weekStart={weekStart}
-            weekEnd={weekEnd}
-            completedGoals={completedGoals}
-            totalGoals={totalGoals}
-            onSave={handleSaveReflection}
-            onClose={() => setShowReflection(false)}
-            isDarkMode={isDarkMode}
-          />
-        )}
+        <WeeklyReflection
+          visible={showReflection}
+          weekStart={weekStart}
+          weekEnd={weekEnd}
+          completedGoals={completedGoals}
+          totalGoals={totalGoals}
+          onSave={handleSaveReflection}
+          onClose={() => setShowReflection(false)}
+          isDarkMode={isDarkMode}
+        />
 
         {selectedActionItem && (
           <ActionItemScheduleModal
