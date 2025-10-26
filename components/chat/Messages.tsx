@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { FlatList, Text } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { FlatList, Keyboard, KeyboardEvent, Text } from 'react-native';
 import { Message } from '../../types/chat';
 import MessageComponent from './Message';
 import { useTheme } from '@/context/ThemeContext';
@@ -13,6 +13,38 @@ interface MessagesProps {
 export default function Messages({ messages, onSuggestionClick }: MessagesProps) {
   const flatListRef = useRef<FlatList<Message>>(null);
   const { isDarkMode } = useTheme();
+
+  const scrollToBottom = (animated = true) => {
+    requestAnimationFrame(() => {
+      flatListRef.current?.scrollToEnd({ animated });
+    });
+  };
+
+  useEffect(() => {
+    if (flatListRef.current && messages.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 50);
+      Keyboard.dismiss();
+    }
+  }, [messages.length]);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', (e: KeyboardEvent) => {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 150);
+    });
+
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      console.log('Keyboard hidden');
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   return (
     <FlatList
