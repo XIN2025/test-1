@@ -619,7 +619,6 @@ function MainDashboard() {
                     circleColor="#f97316"
                     waveColor="#f97316"
                     textColor="#1f2937"
-                    waveTextColor="#fff"
                   />
                 </View>
 
