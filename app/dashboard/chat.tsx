@@ -16,7 +16,14 @@ export default function ChatPage() {
   const { messages, inputText, setInputText, handleSendMessage } = useChat();
 
   return (
+<<<<<<< Updated upstream
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
+=======
+    <SafeAreaView
+      edges={Platform.OS === 'ios' ? ['top'] : ['top']}
+      style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}
+    >
+>>>>>>> Stashed changes
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <Header title="Chat with Evra" subtitle="Your AI Health Agent" leftIcon={{ icon: MessageCircle }} />
         <View style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#F0FDF4' }}>

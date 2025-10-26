@@ -12,9 +12,9 @@ import {
   CategoryTypeIdentifier,
   useHealthkitAuthorization,
   AuthorizationRequestStatus,
-  CategoryValueSleepAnalysis,
 } from '@kingstinct/react-native-healthkit';
 import { HealthKitData, HealthMetric } from '@/types/health';
+import { calculateSleepMetrics, getSleepTrackingDateRange, SleepSample } from '@/utils/sleepTracker';
 
 // Note: We now use the kingstinct useHealthkitAuthorization hook which handles all permissions
 // The permissions are defined directly in the hook call below
@@ -360,65 +360,41 @@ export function useHealthKit() {
 
       // Get today's date range (start of today to now)
       const now = new Date();
+
+      // For sleep tracking: Apple Health tracks from previous day 12 PM to current day 11:59 AM
+      const { startDate: sleepStartDate, endDate: sleepEndDate } = getSleepTrackingDateRange();
+
+      // For non-sleep metrics: start of today (midnight)
       const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
 
       if (isCategory) {
-        // Special handling for Sleep: aggregate all sleep segments in the last 24 hours
+        // Special handling for Sleep: use Apple Health-like sleep tracking
         if (type.includes('Sleep')) {
-          console.log('yyyyyyyyyyyyyyyyyyyyy');
-          console.log('type', type);
-          const now = new Date();
-          const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-          console.log('xxxxxxxxxxxxxxxxxxxxxxxxx');
-          console.log('twentyFourHoursAgo', twentyFourHoursAgo);
-          console.log('xxxxxxxxxxxxxxxxxxxxxxxxx');
-
           const samples = await queryCategorySamples(type as CategoryTypeIdentifier, {
             filter: {
-              startDate: twentyFourHoursAgo,
-              endDate: now,
+              startDate: sleepStartDate,
+              endDate: sleepEndDate,
               strictStartDate: true,
               strictEndDate: true,
             },
-            ascending: false,
+            ascending: true,
           });
 
           if (samples && samples.length > 0) {
-            // Sum durations for asleep categories only
-            const asleepValues = new Set<number>([
-              CategoryValueSleepAnalysis.asleepUnspecified,
-              CategoryValueSleepAnalysis.asleepCore,
-              CategoryValueSleepAnalysis.asleepDeep,
-              CategoryValueSleepAnalysis.asleepREM,
-            ]);
-            console.log('aaaaaaaaaaaaaaaaaaaaa');
-            console.log('samples', samples);
-            console.log('samples.length', samples.length);
-            console.log('asleepValues', asleepValues);
-            console.log('aaaaaaaaaaaaaaaaaaaaa');
+            // Convert samples to our SleepSample format
+            const sleepSamples: SleepSample[] = samples.map((s) => ({
+              startDate: s.startDate.toISOString(),
+              endDate: s.endDate.toISOString(),
+              value: s.value,
+            }));
 
-            let totalMs = 0;
-            let latestEnd: Date | undefined;
+            // Calculate sleep metrics using our modular approach
+            const metrics = calculateSleepMetrics(sleepSamples);
 
-            for (const s of samples) {
-              if (asleepValues.has(Number(s.value))) {
-                const startMs = new Date(s.startDate).getTime();
-                const endMs = new Date(s.endDate).getTime();
-                totalMs += Math.max(0, endMs - startMs);
-                if (!latestEnd || endMs > latestEnd.getTime()) {
-                  latestEnd = new Date(endMs);
-                }
-              }
-            }
-
-            const hours = totalMs / (1000 * 60 * 60);
-            console.log('zzzzzzzzzzzzzzzzzzz');
-            console.log('hours', hours);
-            console.log('zzzzzzzzzzzzzzzzzzz');
             return {
-              value: Math.round(hours * 10) / 10,
+              value: Math.round(metrics.totalHours * 10) / 10,
               unit: 'hrs',
-              date: latestEnd ?? now,
+              date: metrics.latestEndTime,
               isAvailable: true,
             };
           }
