@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { goalsApi } from '../services/goalsApi';
 import { Goal, GoalCreate, GoalStats, GoalUpdate, WeeklyReflection } from '../types/goals';
 
@@ -13,6 +13,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<GoalStats | null>(null);
   const [todaysItems, setTodaysItems] = useState<any[]>([]);
+  const actionItemsLoadedRef = useRef(false);
   const loadGoals = useCallback(async () => {
     if (!userEmail) return;
 
@@ -21,7 +22,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
 
     try {
       const goalsData = await goalsApi.getUserGoals(userEmail);
-      // console.log('goalsData', goalsData);
+
       setGoals(goalsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load goals');
@@ -30,11 +31,14 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     }
   }, [userEmail]);
 
-  const loadActionItemsAndCompletion = useCallback(async () => {
+  const loadActionItemsAndCompletion = useCallback(async (currentGoals: Goal[]) => {
+    if (actionItemsLoadedRef.current) return;
+
     try {
-      // Fetch action items and completion for all goals, then update state ONCE
+      actionItemsLoadedRef.current = true;
+
       const updatedGoals = await Promise.all(
-        goals.map(async (goal) => {
+        currentGoals.map(async (goal) => {
           console.log('Loading action items for goal:', goal.id);
           const actionItems = await goalsApi.getGoalActionItems(goal.id);
           const completionPercentage = await getGoalCompletionPercentage(goal.id);
@@ -45,10 +49,11 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
 
       setGoals(updatedGoals);
     } catch (err) {
+      actionItemsLoadedRef.current = false;
       const message = err instanceof Error ? err.message : 'Failed to load action items';
       setError(message);
     }
-  }, [goals]);
+  }, []);
 
   const loadTodaysItems = useCallback(async () => {
     if (!userEmail) return;
@@ -59,7 +64,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     try {
       const items = await goalsApi.getTodaysActionItems(userEmail);
       console.log("Today's action items:", items);
-      // Normalize shape for UI: use start_time/end_time and completed
+
       const normalized = (items || []).map((it: any) => ({
         ...it,
         start_time: it.start_time ?? it.startTime,
@@ -85,7 +90,6 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
 
       console.log(`Marking action item ${actionItemId} as ${completed ? 'completed' : 'not completed'}`);
 
-      // Optimistically update UI first
       const actionItem = todaysItems.find((item) => item.id === actionItemId);
       if (actionItem) {
         actionItem.completed = completed;
@@ -93,7 +97,6 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
         setTodaysItems([...todaysItems]);
       }
 
-      // Map JS weekday (0=Sun..6=Sat) to API weekday (0=Mon..6=Sun)
       const weekDayIndex = (new Date().getDay() + 6) % 7;
 
       try {
@@ -105,10 +108,63 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
             actionItem.completed = completed;
             actionItem.complete = completed;
             setTodaysItems([...todaysItems]);
+
+            const goalId = actionItem.goal_id;
+
+            if (goalId) {
+              try {
+                const actionItems = await goalsApi.getGoalActionItems(goalId);
+
+                if (actionItems && actionItems.length > 0) {
+                  const totalItems = actionItems.length;
+                  const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+                  let totalCompletedSlots = 0;
+                  let totalPossibleSlots = 0;
+
+                  actionItems.forEach((item: any) => {
+                    const weeklySchedule = item.weekly_schedule || {};
+                    console.log(`📋 Processing item ${item.id}:`, {
+                      title: item.title,
+                      weeklySchedule,
+                    });
+
+                    weekdays.forEach((day) => {
+                      const scheduleForDay = weeklySchedule[day];
+                      const isComplete = scheduleForDay && scheduleForDay.complete;
+
+                      const hasTimeSlot =
+                        scheduleForDay &&
+                        (scheduleForDay.start_time !== '00:00' || scheduleForDay.end_time !== '00:00');
+                      if (hasTimeSlot) {
+                        totalPossibleSlots++;
+                        if (isComplete) {
+                          totalCompletedSlots++;
+                        }
+                      }
+                    });
+                  });
+
+                  const updatedCompletionPercentage =
+                    totalPossibleSlots > 0 ? Math.round((totalCompletedSlots / totalPossibleSlots) * 100) : 0;
+                  console.log(
+                    `✅ Updated completion percentage: ${totalCompletedSlots}/${totalPossibleSlots} = ${updatedCompletionPercentage}%`,
+                  );
+
+                  setGoals((prevGoals) =>
+                    prevGoals.map((goal) =>
+                      goal.id === goalId ? { ...goal, completion_percentage: updatedCompletionPercentage } : goal,
+                    ),
+                  );
+                }
+              } catch (error) {
+                console.error('Error fetching action items for completion update:', error);
+              }
+            }
           }
           return true;
         }
-        // Revert optimistic update on failure
+
         if (actionItem) {
           actionItem.completed = !completed;
           actionItem.complete = !completed;
@@ -119,7 +175,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
         const message = err instanceof Error ? err.message : 'Failed to mark completion';
         setError(message);
         console.error('Error marking completion:', err);
-        // Revert optimistic update on error
+
         if (actionItem) {
           actionItem.completed = !completed;
           actionItem.complete = !completed;
@@ -138,11 +194,14 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     const totalItems = actionItems.length;
     console.log('totalItems', totalItems);
     let completedItems = 0;
+    const todayIndex = (new Date().getDay() + 6) % 7;
+    const todayKey = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][todayIndex];
+
     actionItems.forEach((item) => {
       const weeklySchedule = item.weekly_schedule || {};
-      const todayIndex = (new Date().getDay() + 6) % 7;
-      const todayKey = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][todayIndex];
-      const isComplete = weeklySchedule[todayKey] && weeklySchedule[todayKey].complete;
+      const scheduleForDay = weeklySchedule[todayKey];
+
+      const isComplete = scheduleForDay && scheduleForDay.complete;
       if (isComplete) completedItems++;
     });
     console.log('completedItems', completedItems);
@@ -160,7 +219,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
         }
       } catch (err) {
         console.error('Failed to load stats:', err);
-        // Don't set stats if there's an error
+
         setStats(null);
       }
     },
@@ -338,22 +397,20 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     }
   }, [userEmail]);
 
-  // Auto-load goals on mount
   useEffect(() => {
     if (autoLoad && userEmail) {
       loadGoals();
       loadTodaysItems();
-      // loadStats();
     }
-  }, [userEmail, autoLoad, loadGoals, loadStats]);
+  }, [userEmail, autoLoad, loadGoals, loadTodaysItems, loadStats]);
 
   useEffect(() => {
-    // Only enrich goals if they don't already have action items or completion calculated
     if (
       goals.length > 0 &&
+      !actionItemsLoadedRef.current &&
       goals.some((g) => !('action_items' in g) || g.action_items == null || g.completion_percentage == null)
     ) {
-      loadActionItemsAndCompletion();
+      loadActionItemsAndCompletion(goals);
     }
   }, [goals, loadActionItemsAndCompletion]);
 

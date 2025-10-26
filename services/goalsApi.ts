@@ -351,10 +351,12 @@ class GoalsApiService {
             id: item.id,
             title: item.title,
             goalId: goal.id,
+            goal_id: goal.id,
             goalTitle: goal.title,
             startTime: scheduleForDay.start_time,
             endTime: scheduleForDay.end_time,
             complete: !!scheduleForDay.complete,
+            completed: !!scheduleForDay.complete,
           });
         }
       });

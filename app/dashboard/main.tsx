@@ -1,7 +1,7 @@
 import { LiquidGauge } from 'react-native-liquid-gauge';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
-import { useGoals } from '@/hooks/useGoals';
+import { useGoalsContext } from '@/context/GoalsContext';
 import { CircularProgressRing } from '../../components/CircularProgressRing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -198,7 +198,7 @@ function MainDashboard() {
     fetchStreak();
   };
   const closeStreakModal = () => setShowStreakModal(false);
-  const { loadTodaysItems } = useGoals({ userEmail });
+  const { loadTodaysItems, refreshGoals } = useGoalsContext();
   const [healthScore, setHealthScore] = useState<number>(0);
   const [healthScoreLoading, setHealthScoreLoading] = useState<boolean>(false);
 
@@ -233,12 +233,13 @@ function MainDashboard() {
   // Refresh goals data when screen comes into focus
   useFocusEffect(
     useCallback(() => {
+      console.log('🎯 Dashboard useFocusEffect triggered');
       if (userEmail) {
         loadCriticalRiskAlerts();
         loadHealthScore();
-        loadTodaysItems?.();
+        refreshGoals(); // This will refresh all goals data including todaysItems
       }
-    }, [userEmail, loadCriticalRiskAlerts, loadHealthScore, loadTodaysItems]),
+    }, [userEmail, loadCriticalRiskAlerts, loadHealthScore]),
   );
   // Removed local demo tasks; weekly goals are now sourced from API via useGoals
 

@@ -1,7 +1,7 @@
 import { CircularProgressRing } from '@/components/CircularProgressRing';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
-import { useGoals } from '@/hooks/useGoals';
+import { useGoalsContext } from '@/context/GoalsContext';
 import { Goal } from '@/types/goals';
 
 import { useRouter } from 'expo-router';
@@ -88,10 +88,7 @@ const GoalItem = ({ goal }: { goal: Goal }) => {
 };
 
 export default function WeeklyGoals() {
-  const { user } = useAuth();
-  const userEmail = user?.email || '';
-
-  const { goals } = useGoals({ userEmail });
+  const { goals } = useGoalsContext();
   const router = useRouter();
   const { isDarkMode } = useTheme();
 

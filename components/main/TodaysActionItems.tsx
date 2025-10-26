@@ -1,6 +1,6 @@
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
-import { useGoals } from '@/hooks/useGoals';
+import { useGoalsContext } from '@/context/GoalsContext';
 import React, { useState } from 'react';
 import { Text, TouchableOpacity, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Check } from 'lucide-react-native';
@@ -192,9 +192,7 @@ const Checkbox = ({
 
 export default function TodaysActionItems() {
   const { isDarkMode } = useTheme();
-  const { user } = useAuth();
-  const userEmail = user?.email || '';
-  const { todaysItems, markCompletion } = useGoals({ userEmail });
+  const { todaysItems, markCompletion, refreshGoals } = useGoalsContext();
   const [togglePendingItemIds, setTogglePendingItemIds] = useState<string[]>([]);
   const [showAllTodayItems, setShowAllTodayItems] = useState(false);
 
