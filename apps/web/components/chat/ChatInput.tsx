@@ -3,6 +3,7 @@ import { Button } from '@repo/ui/components/button';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@repo/ui/lib/utils';
 import { UIMessage, UseChatHelpers } from '@ai-sdk/react';
+import { useIsMobile } from '@repo/ui/hooks/use-mobile';
 
 interface ChatInputProps {
   isSubmitting: boolean;
@@ -15,6 +16,7 @@ interface ChatInputProps {
 
 const ChatInput: React.FC<ChatInputProps> = ({ isSubmitting, handleSubmit, query, setQuery, onStop }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const isMobile = useIsMobile();
 
   const handleInput = (): void => {
     const textarea = textareaRef.current;
@@ -35,7 +37,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ isSubmitting, handleSubmit, query
 
   useEffect(() => {
     if (!isSubmitting && textareaRef.current) {
-      textareaRef.current.focus();
+      if (!isMobile) textareaRef.current.focus();
       handleInput();
     }
   }, [isSubmitting]);
