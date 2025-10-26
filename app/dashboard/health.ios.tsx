@@ -94,7 +94,7 @@ export default function HealthDashboardIOS() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#f9fafb' }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#f9fafb' }} edges={['top', 'bottom']}>
       <Header
         title="Health Dashboard"
         subtitle="Track your health"

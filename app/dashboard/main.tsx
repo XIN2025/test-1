@@ -342,7 +342,10 @@ function MainDashboard() {
   // }, [goals, getGoalCompletionPercentage, streak]);
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
+    <SafeAreaView
+      edges={Platform.OS === 'ios' ? ['top', 'bottom'] : ['top']}
+      style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}
+    >
       {/* Fixed Header */}
 
       <Header

@@ -102,15 +102,7 @@ function TabsNavigator() {
 export default function DashboardTabsLayout() {
   return (
     <ProtectedRoute>
-      {/* <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: isDarkMode ? '#111827' : '#FFF',
-        }}
-        edges={['top', 'bottom']}
-      > */}
       <TabsNavigator />
-      {/* </SafeAreaView> */}
     </ProtectedRoute>
   );
 }

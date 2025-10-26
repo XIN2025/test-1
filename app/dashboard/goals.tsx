@@ -18,7 +18,7 @@ import { PillarTimePreferences, PillarType, TimePreference } from '@/types/prefe
 import * as DocumentPicker from 'expo-document-picker';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { BarChart3, BookOpen, ChevronLeft, ChevronRight, Plus, Star, Target, Trash } from 'lucide-react-native';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AddGoalModal from '@/components/goals/AddGoalModal';
 import UploadModal from '@/components/goals/UploadModal';
@@ -471,7 +471,10 @@ export default function GoalsScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
+    <SafeAreaView
+      edges={Platform.OS === 'ios' ? ['top', 'bottom'] : ['top']}
+      style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}
+    >
       <View>
         <Header
           title="Weekly Goals"
