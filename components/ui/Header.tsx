@@ -3,7 +3,7 @@ import { useTheme } from '@/context/ThemeContext';
 import React from 'react';
 import { Pressable, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Utensils, FileText, Pill, ShoppingBag } from 'lucide-react-native';
+import { ArrowLeft, Utensils, FileText, Pill, ShoppingBag, LucideIcon } from 'lucide-react-native';
 import { shadow } from '@/utils/commonStyles';
 
 interface IconProps {
@@ -72,6 +72,7 @@ const MIcon = ({ icon, accessibilityLabel, onPress, variant = 'primary' }: IconP
 interface HeaderProps {
   title: string;
   subtitle: string;
+  subtitleIcon?: LucideIcon;
   showBackButton?: boolean;
   leftComponent?: React.ReactNode;
   leftIcon?: IconProps;
@@ -84,6 +85,7 @@ interface HeaderProps {
 export default function Header({
   title,
   subtitle,
+  subtitleIcon,
   showBackButton,
   leftComponent,
   leftIcon,
@@ -94,6 +96,7 @@ export default function Header({
 }: HeaderProps) {
   const router = useRouter();
   const { isDarkMode } = useTheme();
+  const SubtitleIcon = subtitleIcon;
 
   return (
     <View
@@ -125,14 +128,17 @@ export default function Header({
             >
               {title}
             </Text>
-            <Text
-              style={{
-                fontSize: 12,
-                color: isDarkMode ? '#9ca3af' : '#6b7280',
-              }}
-            >
-              {subtitle}
-            </Text>
+            <View className="flex-row items-center gap-1">
+              {SubtitleIcon && <SubtitleIcon size={12} color={isDarkMode ? '#9ca3af' : '#6b7280'} />}
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: isDarkMode ? '#9ca3af' : '#6b7280',
+                }}
+              >
+                {subtitle}
+              </Text>
+            </View>
           </View>
         </View>
         <View className="flex flex-row items-center gap-3">

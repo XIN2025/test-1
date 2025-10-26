@@ -41,7 +41,6 @@ export function Accordion({ title, children, isExpanded = false, onToggle, isDar
       style={{
         borderRadius: 12,
         backgroundColor: isDarkMode ? '#374151' : '#f9fafb',
-        marginBottom: 8,
         overflow: 'hidden',
       }}
     >
