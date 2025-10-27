@@ -1,5 +1,5 @@
 services:
-  karmi-web:
+  karmi-web-app:
     build:
       context: .
       dockerfile: Dockerfile
