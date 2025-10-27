@@ -1,6 +1,25 @@
 import { ApiClient } from '@/lib/api-client';
 import { ChatType } from '@repo/shared-types/types';
 
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface GetChatsResponse {
+  chats: ChatType[];
+  pagination: PaginationMeta;
+}
+
+export interface GetChatsQueryDto extends Record<string, unknown> {
+  page?: number;
+  limit?: number;
+}
+
 export class ChatService {
   static async createChat() {
     return await ApiClient.post<ChatType>('/api/agents/chat');
@@ -8,6 +27,10 @@ export class ChatService {
 
   static async getChatById(chatId: string) {
     return await ApiClient.get<ChatType>(`/api/agents/chat/${chatId}`);
+  }
+
+  static async getChats(query?: GetChatsQueryDto) {
+    return await ApiClient.get<GetChatsResponse>(`/api/agents/chats`, query);
   }
 
   static async deleteChat(chatId: string) {

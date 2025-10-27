@@ -59,10 +59,12 @@ export class UpdateChatDto {
 export class GetChatsQueryDto {
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   page: number = 1;
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   @Transform(({ value }) => Math.min(value, 50))
   limit: number = 10;
 }

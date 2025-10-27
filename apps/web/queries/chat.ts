@@ -3,7 +3,7 @@ import { ChatService } from '@/services';
 import { toast } from 'sonner';
 
 export const chatKeys = {
-  all: ['chat'] as const,
+  all: ['chats'] as const,
 };
 
 export const useCreateChat = () => {
@@ -15,6 +15,17 @@ export const useCreateChat = () => {
     },
     onError: (error) => {
       toast.error(error.message);
+    },
+  });
+};
+
+export const useDeleteChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (chatId: string) => ChatService.deleteChat(chatId),
+    onSuccess: () => {
+      toast.success('Chat deleted successfully');
+      queryClient.invalidateQueries({ queryKey: chatKeys.all });
     },
   });
 };

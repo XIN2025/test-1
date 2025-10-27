@@ -1,8 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { AgentsService } from './agents.service';
 import { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ChatAgentInputDto, UpdateChatDto } from './dto/chat-agent.dto';
+import { ChatAgentInputDto, GetChatsQueryDto, UpdateChatDto } from './dto/chat-agent.dto';
 import { CurrentUser } from 'src/auth/decorators/user.decorator';
 import { RequestUser } from 'src/auth/dto/request-user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -35,6 +35,12 @@ export class AgentsController {
   @ApiOperation({ summary: 'Get whole chat with messages' })
   getChat(@Param('chatId') chatId: string, @CurrentUser() user: RequestUser) {
     return this.agentsService.getChat(user.id, chatId);
+  }
+
+  @Get('chats')
+  @ApiOperation({ summary: 'Get all chats' })
+  getChats(@Query() query: GetChatsQueryDto, @CurrentUser() user: RequestUser) {
+    return this.agentsService.getChats(user.id, query);
   }
 
   @Delete('chat/:chatId')
