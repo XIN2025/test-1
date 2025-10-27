@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import LoadingButton from '@/components/general/LoadingButton';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 export default function LoginForm() {
@@ -21,7 +21,7 @@ export default function LoginForm() {
   const [isPending, setIsPending] = useState(false);
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
-  const router = useRouter();
+
   const form = useForm<LoginInput>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -37,13 +37,12 @@ export default function LoginForm() {
         email: data.email,
         password: data.password,
         redirect: false,
-        callbackUrl,
       });
       if (result?.error) {
         toast.error(result.error);
       } else {
         toast.success('Login successful');
-        router.push(callbackUrl);
+        window.location.href = callbackUrl;
       }
     } catch (error) {
       toast.error('Something went wrong');

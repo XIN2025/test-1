@@ -44,7 +44,7 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
       <div className='bg-background flex w-24 flex-shrink-0 flex-col items-center justify-between py-4 text-sm font-medium max-md:hidden'>
         <div className='flex w-full flex-col items-center justify-center gap-10'>
           <Link href='/'>
-            <Image alt='karmi' src={'/images/logo.png'} width={1000} height={1000} className='h-8 w-10 opacity-80' />
+            <Image alt='karmi' src={'/images/logo.webp'} width={1000} height={1000} className='h-8 w-10 opacity-80' />
           </Link>
           {routes.map((route) => {
             const isActive = pathname.startsWith(route.href);

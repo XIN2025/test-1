@@ -1,3 +1,4 @@
+import ProfileLoader from '@/components/auth/ProfileLoader';
 import ProfileSection from '@/components/profile/ProfileSection';
 import { Metadata } from 'next';
 import React from 'react';
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const ProfilePage = () => {
-  return <ProfileSection />;
+  return <ProfileLoader />;
 };
 
 export default ProfilePage;

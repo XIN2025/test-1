@@ -11,7 +11,7 @@ const KarmiPremiumCard = () => {
   return (
     <Card className='relative w-full overflow-hidden p-0'>
       <div className='absolute -top-14 -right-14 opacity-40'>
-        <Image src='/images/moon.svg' alt='Moon' width={200} height={200} className='h-52 w-52' />
+        <Image src='/images/moon.webp' alt='Moon' width={200} height={200} className='h-52 w-52' />
       </div>
 
       <CardContent className='relative p-4'>

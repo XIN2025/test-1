@@ -76,7 +76,7 @@ const ProfileLoader = ({ className, duration = 5, onComplete }: ProfileLoaderPro
       {/* Optimized Background */}
       <div className='absolute inset-0'>
         <Image
-          src='/images/profileload-bg.png'
+          src='/images/profileload-bg.webp'
           alt='Profile Loader Background'
           fill
           priority
@@ -118,7 +118,7 @@ const ProfileLoader = ({ className, duration = 5, onComplete }: ProfileLoaderPro
               >
                 {/* Optimized Star Image */}
                 <div className='relative drop-shadow-lg' style={{ width: '13vw', height: '6vw' }}>
-                  <Image src='/images/star.png' alt='Star' fill sizes='13vw' className='object-contain' />
+                  <Image src='/images/star.webp' alt='Star' fill sizes='13vw' className='object-contain' />
                 </div>
               </div>
             )}

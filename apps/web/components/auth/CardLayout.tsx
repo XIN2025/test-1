@@ -29,7 +29,7 @@ const CardLayout = ({
           {showLogo && (
             <>
               <Image
-                src='/images/logo.png'
+                src='/images/logo.webp'
                 alt='Karmi Logo'
                 className='!h-10 !w-10 object-contain'
                 width={1000}

@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/components/avatar';
+import { Avatar, AvatarFallback } from '@repo/ui/components/avatar';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@repo/ui/components/form';
 import { Input } from '@repo/ui/components/input';
 import { Select } from '@repo/ui/components/select';
@@ -42,16 +42,14 @@ const ProfileSection = () => {
   };
 
   useEffect(() => {
-    if (profileData) {
-      form.reset(getDefaultValues());
-    }
-  }, [profileData]);
+    form.reset(getDefaultValues());
+  }, [profileData, form]);
 
   return (
     <div className='container mx-auto flex flex-col items-center justify-center space-y-4 p-4 sm:p-6'>
       <div className='text-center'>
         <h1 className='text-3xl font-bold'>Your Profile</h1>
-        <p className='text-sm text-gray-500'>Manage your profile information and preferences</p>
+        <p className='text-muted-foreground text-sm'>Manage your profile information and preferences</p>
       </div>
       <div className='flex w-full flex-col gap-4 md:flex-row'>
         <div className='flex w-full justify-center md:w-2/3'>
@@ -61,7 +59,6 @@ const ProfileSection = () => {
             <Card className='w-full'>
               <CardHeader className='flex flex-col items-center justify-center'>
                 <Avatar className='size-20'>
-                  <AvatarImage src={profileData?.user?.name || ''} />
                   <AvatarFallback>{getInitials(profileData?.user?.name || '')}</AvatarFallback>
                 </Avatar>
                 <CardTitle>{profileData?.user?.name}</CardTitle>
@@ -86,7 +83,7 @@ const ProfileSection = () => {
                       control={form.control}
                       name='gender'
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem key={field.value}>
                           <FormLabel htmlFor='gender'>Gender</FormLabel>
                           <FormControl>
                             <Select onValueChange={field.onChange} value={field.value}>
