@@ -1,5 +1,5 @@
 import { ApiClient } from '@/lib/api-client';
-import { ChatConfigType } from '@repo/shared-types/types';
+import { ChatConfigType, UserType } from '@repo/shared-types/types';
 
 export class AdminService {
   static async getChatConfig() {
@@ -8,5 +8,9 @@ export class AdminService {
 
   static async updateChatConfig(config: Partial<ChatConfigType>) {
     return await ApiClient.put('/api/admin/chat-config', config);
+  }
+
+  static async getUsers() {
+    return await ApiClient.get<UserType[]>('/api/admin/users');
   }
 }

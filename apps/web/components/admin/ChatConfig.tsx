@@ -63,12 +63,9 @@ export const ChatConfig = () => {
   const hasChanges = markdown !== configData?.chatAgentPrompt || selectedModel !== (configData?.model as AIModel);
 
   return (
-    <div className='flex h-full flex-col gap-4 p-6'>
+    <div className='flex h-full flex-col gap-3'>
       <div className='flex items-center justify-between'>
-        <div>
-          <h1 className='text-2xl font-semibold'>Chat Config Editor</h1>
-          <p className='text-muted-foreground text-sm'>Edit the chat agent config</p>
-        </div>
+        <h1 className='text-xl font-semibold'>Chat Config</h1>
         <div className='flex items-center gap-3'>
           {hasChanges && <div className='text-sm text-amber-600 dark:text-amber-400'>You have unsaved changes</div>}
           {hasChanges && (
