@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import Svg, { Circle, Path, Text as SvgText, Defs, ClipPath } from 'react-native-svg';
-import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing, withRepeat } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedProps, withTiming, runOnJS, Easing } from 'react-native-reanimated';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -12,7 +12,6 @@ interface LiquidGaugeProps {
   circleColor?: string;
   waveColor?: string;
   textColor?: string;
-  waveTextColor?: string;
 }
 
 export const CustomLiquidGauge: React.FC<LiquidGaugeProps> = ({
@@ -22,7 +21,6 @@ export const CustomLiquidGauge: React.FC<LiquidGaugeProps> = ({
   circleColor = '#f97316',
   waveColor = '#f97316',
   textColor = '#1f2937',
-  waveTextColor = '#ffffff',
 }) => {
   const padding = 10;
   const svgWidth = width + padding * 2;
@@ -32,48 +30,48 @@ export const CustomLiquidGauge: React.FC<LiquidGaugeProps> = ({
   const centerX = svgWidth / 2;
   const centerY = svgHeight / 2;
 
-  const waveOffset = useSharedValue(0);
-  const fillLevel = useSharedValue(0);
+  const phase = useSharedValue(0);
+  const fillLevel = useSharedValue(value / 100);
+
+  const animatePhase = () => {
+    phase.value = withTiming(
+      phase.value + 2 * Math.PI,
+      {
+        duration: 4000,
+        easing: Easing.linear,
+      },
+      (finished) => {
+        if (finished) {
+          runOnJS(animatePhase)();
+        }
+      },
+    );
+  };
+
+  useEffect(() => {
+    animatePhase();
+  }, []);
 
   useEffect(() => {
     fillLevel.value = withTiming(value / 100, {
       duration: 1000,
       easing: Easing.out(Easing.cubic),
     });
-
-    // Create a continuous wave by animating through one complete wavelength
-    waveOffset.value = withRepeat(
-      withTiming(1, {
-        duration: 2000,
-        easing: Easing.linear,
-      }),
-      -1,
-      false,
-    );
   }, [value]);
 
   const animatedWaveProps = useAnimatedProps(() => {
-    const amplitude = radius * 0.08;
-    const waveLength = width * 0.6;
-    const fillHeight = radius * 2 * (1 - fillLevel.value) + padding;
+    const amplitude = radius * 0.07;
+    const wavelength = width * 0.7;
+    const fillY = centerY + radius * (1 - 2 * fillLevel.value);
 
-    // Use waveOffset (0 to 1) and multiply by wavelength for seamless loop
-    const offset = waveOffset.value * waveLength;
-
-    let path = `M ${padding} ${fillHeight}`;
-
-    // Draw the wave with continuous phase
-    for (let x = 0; x <= width; x += 3) {
-      const phase = ((x - offset) % waveLength) / waveLength;
-      const y = fillHeight + amplitude * Math.sin(phase * Math.PI * 2);
+    let path = `M ${padding} ${fillY}`;
+    for (let x = 0; x <= width; x += 2) {
+      const y = fillY + amplitude * Math.sin((x / wavelength) * 2 * Math.PI + phase.value);
       path += ` L ${x + padding} ${y}`;
     }
-
     path += ` L ${svgWidth - padding} ${svgHeight} L ${padding} ${svgHeight} Z`;
 
-    return {
-      d: path,
-    };
+    return { d: path };
   });
 
   return (
@@ -81,7 +79,7 @@ export const CustomLiquidGauge: React.FC<LiquidGaugeProps> = ({
       <Svg width={svgWidth} height={svgHeight}>
         <Defs>
           <ClipPath id="circleClip">
-            <Circle cx={centerX} cy={centerY} r={radius - radius * 0.05} />
+            <Circle cx={centerX} cy={centerY} r={radius * 0.9} />
           </ClipPath>
         </Defs>
 
@@ -90,8 +88,8 @@ export const CustomLiquidGauge: React.FC<LiquidGaugeProps> = ({
         <AnimatedPath
           animatedProps={animatedWaveProps}
           fill={waveColor}
-          fillOpacity={0.8}
           clipPath="url(#circleClip)"
+          fillOpacity={0.8}
         />
 
         <SvgText

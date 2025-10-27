@@ -51,6 +51,35 @@ const LoadingState = ({ isDarkMode }: { isDarkMode: boolean }) => {
   );
 };
 
+const UnavailableState = ({ isDarkMode }: { isDarkMode: boolean }) => {
+  return (
+    <>
+      <View
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 24,
+          backgroundColor: isDarkMode ? '#064e3b' : '#f0fdf4',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 12,
+        }}
+      >
+        <Activity size={24} color={isDarkMode ? '#34d399' : '#059669'} />
+      </View>
+      <Text
+        style={{
+          fontSize: 12,
+          color: isDarkMode ? '#9ca3af' : '#6b7280',
+          textAlign: 'center',
+        }}
+      >
+        Health Connect is not available on this device.
+      </Text>
+    </>
+  );
+};
+
 const ConnectButton = ({ isDarkMode }: { isDarkMode: boolean }) => {
   return (
     <>
@@ -203,11 +232,6 @@ export default function HealthCard({ onPress, width, height }: HealthCardProps) 
     }
   }, [hasPermissions, checkPermissionsStatus]);
 
-  // If health data is not available, don't show the health card
-  if (!isAvailable) {
-    return null;
-  }
-
   const handlePress = async () => {
     if (!hasPermissions) {
       await requestPermissions();
@@ -242,8 +266,11 @@ export default function HealthCard({ onPress, width, height }: HealthCardProps) 
         },
       ]}
       activeOpacity={0.7}
+      disabled={isLoading || !isAvailable}
     >
-      {isLoading ? (
+      {!isAvailable ? (
+        <UnavailableState isDarkMode={isDarkMode} />
+      ) : isLoading ? (
         <LoadingState isDarkMode={isDarkMode} />
       ) : !hasPermissions ? (
         <ConnectButton isDarkMode={isDarkMode} />

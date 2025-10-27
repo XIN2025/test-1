@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { goalsApi } from '../services/goalsApi';
 import { Goal, GoalCreate, GoalStats, GoalUpdate, WeeklyReflection } from '../types/goals';
 
@@ -13,6 +13,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<GoalStats | null>(null);
   const [todaysItems, setTodaysItems] = useState<any[]>([]);
+  const actionItemsLoadedRef = useRef(false);
   const loadGoals = useCallback(async () => {
     if (!userEmail) return;
 
@@ -21,7 +22,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
 
     try {
       const goalsData = await goalsApi.getUserGoals(userEmail);
-      // console.log('goalsData', goalsData);
+
       setGoals(goalsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load goals');
@@ -30,25 +31,69 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     }
   }, [userEmail]);
 
-  const loadActionItemsAndCompletion = useCallback(async () => {
-    try {
-      // Fetch action items and completion for all goals, then update state ONCE
-      const updatedGoals = await Promise.all(
-        goals.map(async (goal) => {
-          console.log('Loading action items for goal:', goal.id);
-          const actionItems = await goalsApi.getGoalActionItems(goal.id);
-          const completionPercentage = await getGoalCompletionPercentage(goal.id);
-          console.log(`Goal ${goal.id} - Completion Percentage: ${completionPercentage}%`);
-          return { ...goal, action_items: actionItems, completion_percentage: completionPercentage } as Goal;
-        }),
-      );
+  const getGoalCompletionPercentage = useCallback(async (goalId: string): Promise<number> => {
+    const actionItems = await goalsApi.getGoalActionItems(goalId);
+    console.log('actionItems', actionItems);
+    if (!actionItems || actionItems.length === 0) return 0;
+    const totalItems = actionItems.length;
+    console.log('totalItems', totalItems);
 
-      setGoals(updatedGoals);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load action items';
-      setError(message);
-    }
-  }, [goals]);
+    const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    let totalCompletedSlots = 0;
+    let totalPossibleSlots = 0;
+
+    actionItems.forEach((item) => {
+      const weeklySchedule = item.weekly_schedule || {};
+      console.log(`📋 Processing item ${item.id}:`, {
+        title: item.title,
+        weeklySchedule,
+      });
+
+      weekdays.forEach((day) => {
+        const scheduleForDay = weeklySchedule[day];
+
+        if (scheduleForDay) {
+          totalPossibleSlots++;
+          if (scheduleForDay.complete) {
+            totalCompletedSlots++;
+          }
+        }
+      });
+    });
+
+    const completionPercentage =
+      totalPossibleSlots > 0 ? Math.round((totalCompletedSlots / totalPossibleSlots) * 100) : 0;
+
+    console.log(`✅ Completion: ${totalCompletedSlots}/${totalPossibleSlots} = ${completionPercentage}%`);
+    return completionPercentage;
+  }, []);
+
+  const loadActionItemsAndCompletion = useCallback(
+    async (currentGoals: Goal[]) => {
+      if (actionItemsLoadedRef.current) return;
+
+      try {
+        actionItemsLoadedRef.current = true;
+
+        const updatedGoals = await Promise.all(
+          currentGoals.map(async (goal) => {
+            console.log('Loading action items for goal:', goal.id);
+            const actionItems = await goalsApi.getGoalActionItems(goal.id);
+            const completionPercentage = await getGoalCompletionPercentage(goal.id);
+            console.log(`Goal ${goal.id} - Completion Percentage: ${completionPercentage}%`);
+            return { ...goal, action_items: actionItems, completion_percentage: completionPercentage } as Goal;
+          }),
+        );
+
+        setGoals(updatedGoals);
+      } catch (err) {
+        actionItemsLoadedRef.current = false;
+        const message = err instanceof Error ? err.message : 'Failed to load action items';
+        setError(message);
+      }
+    },
+    [getGoalCompletionPercentage],
+  );
 
   const loadTodaysItems = useCallback(async () => {
     if (!userEmail) return;
@@ -59,7 +104,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     try {
       const items = await goalsApi.getTodaysActionItems(userEmail);
       console.log("Today's action items:", items);
-      // Normalize shape for UI: use start_time/end_time and completed
+
       const normalized = (items || []).map((it: any) => ({
         ...it,
         start_time: it.start_time ?? it.startTime,
@@ -85,7 +130,6 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
 
       console.log(`Marking action item ${actionItemId} as ${completed ? 'completed' : 'not completed'}`);
 
-      // Optimistically update UI first
       const actionItem = todaysItems.find((item) => item.id === actionItemId);
       if (actionItem) {
         actionItem.completed = completed;
@@ -93,7 +137,6 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
         setTodaysItems([...todaysItems]);
       }
 
-      // Map JS weekday (0=Sun..6=Sat) to API weekday (0=Mon..6=Sun)
       const weekDayIndex = (new Date().getDay() + 6) % 7;
 
       try {
@@ -105,10 +148,28 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
             actionItem.completed = completed;
             actionItem.complete = completed;
             setTodaysItems([...todaysItems]);
+
+            const goalId = actionItem.goal_id;
+
+            if (goalId) {
+              try {
+                // Recalculate completion percentage for the goal
+                const updatedCompletionPercentage = await getGoalCompletionPercentage(goalId);
+                console.log(`✅ Updated completion percentage: ${updatedCompletionPercentage}%`);
+
+                setGoals((prevGoals) =>
+                  prevGoals.map((goal) =>
+                    goal.id === goalId ? { ...goal, completion_percentage: updatedCompletionPercentage } : goal,
+                  ),
+                );
+              } catch (error) {
+                console.error('Error recalculating completion percentage:', error);
+              }
+            }
           }
           return true;
         }
-        // Revert optimistic update on failure
+
         if (actionItem) {
           actionItem.completed = !completed;
           actionItem.complete = !completed;
@@ -119,7 +180,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
         const message = err instanceof Error ? err.message : 'Failed to mark completion';
         setError(message);
         console.error('Error marking completion:', err);
-        // Revert optimistic update on error
+
         if (actionItem) {
           actionItem.completed = !completed;
           actionItem.complete = !completed;
@@ -128,26 +189,8 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
         return false;
       }
     },
-    [todaysItems],
+    [todaysItems, getGoalCompletionPercentage],
   );
-
-  const getGoalCompletionPercentage = async (goalId: string): Promise<number> => {
-    const actionItems = await goalsApi.getGoalActionItems(goalId);
-    console.log('actionItems', actionItems);
-    if (!actionItems || actionItems.length === 0) return 0;
-    const totalItems = actionItems.length;
-    console.log('totalItems', totalItems);
-    let completedItems = 0;
-    actionItems.forEach((item) => {
-      const weeklySchedule = item.weekly_schedule || {};
-      const todayIndex = (new Date().getDay() + 6) % 7;
-      const todayKey = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][todayIndex];
-      const isComplete = weeklySchedule[todayKey] && weeklySchedule[todayKey].complete;
-      if (isComplete) completedItems++;
-    });
-    console.log('completedItems', completedItems);
-    return Math.round((completedItems / totalItems) * 100);
-  };
 
   const loadStats = useCallback(
     async (weeks: number = 4) => {
@@ -160,7 +203,7 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
         }
       } catch (err) {
         console.error('Failed to load stats:', err);
-        // Don't set stats if there's an error
+
         setStats(null);
       }
     },
@@ -338,24 +381,57 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     }
   }, [userEmail]);
 
-  // Auto-load goals on mount
   useEffect(() => {
     if (autoLoad && userEmail) {
       loadGoals();
       loadTodaysItems();
-      // loadStats();
     }
-  }, [userEmail, autoLoad, loadGoals, loadStats]);
+  }, [userEmail, autoLoad, loadGoals, loadTodaysItems, loadStats]);
 
   useEffect(() => {
-    // Only enrich goals if they don't already have action items or completion calculated
     if (
       goals.length > 0 &&
+      !actionItemsLoadedRef.current &&
       goals.some((g) => !('action_items' in g) || g.action_items == null || g.completion_percentage == null)
     ) {
-      loadActionItemsAndCompletion();
+      loadActionItemsAndCompletion(goals);
     }
   }, [goals, loadActionItemsAndCompletion]);
+
+  const refreshGoalsAndCompletion = useCallback(async () => {
+    if (!userEmail) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      actionItemsLoadedRef.current = false;
+
+      const goalsData = await goalsApi.getUserGoals(userEmail);
+
+      const updatedGoals = await Promise.all(
+        goalsData.map(async (goal) => {
+          console.log('Refreshing action items for goal:', goal.id);
+          const actionItems = await goalsApi.getGoalActionItems(goal.id);
+          const completionPercentage = await getGoalCompletionPercentage(goal.id);
+          console.log(`Goal ${goal.id} - Completion Percentage: ${completionPercentage}%`);
+          return { ...goal, action_items: actionItems, completion_percentage: completionPercentage } as Goal;
+        }),
+      );
+
+      setGoals(updatedGoals);
+
+      await loadTodaysItems();
+
+      await loadStats();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to refresh goals';
+      setError(message);
+      console.error('Error refreshing goals:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [userEmail, getGoalCompletionPercentage, loadTodaysItems, loadStats]);
 
   return {
     goals,
@@ -377,5 +453,6 @@ export const useGoals = ({ userEmail, autoLoad = true }: UseGoalsOptions) => {
     getGoalCompletionPercentage,
     markCompletion,
     loadTodaysItems,
+    refreshGoalsAndCompletion,
   };
 };

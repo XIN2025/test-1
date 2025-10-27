@@ -1,33 +1,26 @@
-import { CircularProgressRing } from '@/components/CircularProgressRing';
-import GoalProgressTracker from '@/components/goals/GoalProgressTracker';
-import ActionItemCard from '@/components/goals/ActionItemCard';
 import ActionItemScheduleModal from '@/components/goals/ActionItemScheduleModal';
+import AddGoalModal from '@/components/goals/AddGoalModal';
 import EmptyGoals from '@/components/goals/EmptyGoals';
+import GoalCard from '@/components/goals/Goal';
 import LoadingScreen from '@/components/goals/LoadingScreen';
 import PreferencesModal from '@/components/goals/PreferencesModal';
-import HabitGoalIntegration from '@/components/HabitGoalIntegration';
-import { Card } from '@/components/ui/card';
-import WeeklyGoalsSummary from '@/components/WeeklyGoalsSummary';
+import UploadModal from '@/components/goals/UploadModal';
+import Header from '@/components/ui/Header';
 import WeeklyReflection from '@/components/WeeklyReflection';
 import { useAuth } from '@/context/AuthContext';
+import { useGoalsContext } from '@/context/GoalsContext';
 import { useTheme } from '@/context/ThemeContext';
-import { useGoals } from '@/hooks/useGoals';
 import { goalsApi } from '@/services/goalsApi';
 import { ActionItem, Goal, GoalCategory, GoalFormData, GoalPriority } from '@/types/goals';
 import { PillarTimePreferences, PillarType, TimePreference } from '@/types/preferences';
+import { formatDate } from '@/utils/date';
 import * as DocumentPicker from 'expo-document-picker';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { BarChart3, BookOpen, ChevronLeft, ChevronRight, Plus, Star, Target, Trash } from 'lucide-react-native';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { BookOpen, Plus, Star, Target } from 'lucide-react-native';
+import { ActivityIndicator, Alert, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AddGoalModal from '@/components/goals/AddGoalModal';
-import UploadModal from '@/components/goals/UploadModal';
-import Header from '@/components/ui/Header';
-import { formatDate } from '@/utils/date';
 import { commonStylesDark, commonStylesLight } from '@/utils/commonStyles';
-import GoalCard from '@/components/goals/Goal';
 
-// Extend the Goal interface to include action_plan
 interface ExtendedGoal extends Goal {
   action_plan?: {
     goal_id: string;
@@ -109,7 +102,8 @@ export default function GoalsScreen() {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [showReflection, setShowReflection] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [generatingPlan] = useState(false);
+  const [generatingPlan, setGeneratingPlan] = useState(false);
+  const [addingGoal, setAddingGoal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [selectedActionItem, setSelectedActionItem] = useState<ActionItem | null>(null);
@@ -117,26 +111,9 @@ export default function GoalsScreen() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [generatingPlanGoalIds, setGeneratingPlanGoalIds] = useState<string[]>([]);
 
-  // Use the goals hook for backend integration
-  const { goals, loading, createGoal, updateGoalProgress, saveWeeklyReflection, loadGoals, deleteGoal } = useGoals({
-    userEmail,
-  }) as {
-    goals: ExtendedGoal[];
-    loading: boolean;
-    createGoal: Function;
-    updateGoal: Function;
-    updateGoalProgress: Function;
-    addGoalNote: Function;
-    saveWeeklyReflection: Function;
-    loadGoals: Function;
-    deleteGoal: Function;
-  };
+  const { goals, loading, createGoal, updateGoalProgress, saveWeeklyReflection, loadGoals, deleteGoal, refreshGoals } =
+    useGoalsContext();
 
-  useEffect(() => {
-    loadGoals();
-  }, [loadGoals]);
-
-  // Form state for adding/editing goals
   const [formData, setFormData] = useState<Partial<GoalFormData>>({
     title: '',
     description: '',
@@ -159,12 +136,16 @@ export default function GoalsScreen() {
       return;
     }
 
+    if (addingGoal) return;
+
+    setAddingGoal(true);
+
     try {
       await createGoal({
         title: formData.title,
         description: formData.description,
-        priority: formData.priority,
-        category: formData.category,
+        priority: formData.priority || 'medium',
+        category: formData.category || 'health',
       });
 
       setShowAddGoal(false);
@@ -177,6 +158,8 @@ export default function GoalsScreen() {
       });
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create goal');
+    } finally {
+      setAddingGoal(false);
     }
   };
 
@@ -224,7 +207,6 @@ export default function GoalsScreen() {
     return Array.from(map.values());
   }, []);
 
-  // Fetch existing uploaded files when modal is opened
   useEffect(() => {
     const fetchFiles = async () => {
       if (!showUploadModal) return;
@@ -258,7 +240,6 @@ export default function GoalsScreen() {
     };
   }, []);
 
-  // Preferences state
   const emptyPref: TimePreference = {
     preferred_time: '07:00',
     duration_minutes: 30,
@@ -278,7 +259,6 @@ export default function GoalsScreen() {
     [PillarType.PERSONAL]: { ...emptyPref, preferred_time: '20:00' },
   });
 
-  // Inline banner to inform user while plan is being generated
   const GeneratingBanner = () =>
     generatingPlanGoalIds.length > 0 ? (
       <View
@@ -287,8 +267,11 @@ export default function GoalsScreen() {
         }`}
       >
         <ActivityIndicator size="small" color={isDarkMode ? '#34d399' : '#059669'} />
-        <Text className={`ml-2 text-sm ${isDarkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>
-          Generating plan… You can come back later once it is ready, as creating a detailed plan may take a while.
+        <Text
+          className={`ml-2 flex-1 text-sm ${isDarkMode ? 'text-emerald-400' : 'text-emerald-900'}`}
+          numberOfLines={2}
+        >
+          Generating plan… You can come back later once it&apos;s ready.
         </Text>
       </View>
     ) : null;
@@ -299,7 +282,6 @@ export default function GoalsScreen() {
     try {
       const existing = await goalsApi.getTimePreferences(userEmail);
       if (existing?.preferences) {
-        // existing.preferences keys are dynamic
         setTimePreferences((prev) => ({ ...prev, ...existing.preferences }));
       }
     } catch (e) {
@@ -344,38 +326,39 @@ export default function GoalsScreen() {
   const handleGeneratePlan = async (goalId: string, goal: ExtendedGoal) => {
     if (generatingPlan) return;
 
-    // Default preferences - replace with actual preferences if needed
+    setGeneratingPlan(true);
+
     const defaultPreferences: PillarTimePreferences = {
       user_email: userEmail,
       preferences: {
         [PillarType.HEALTH]: {
           preferred_time: '07:00',
           duration_minutes: 45,
-          days_of_week: [1, 3, 5], // Tue, Thu, Sat
+          days_of_week: [1, 3, 5],
           reminder_before_minutes: 15,
         },
         [PillarType.FITNESS]: {
           preferred_time: '08:00',
           duration_minutes: 60,
-          days_of_week: [0, 2, 4], // Mon, Wed, Fri
+          days_of_week: [0, 2, 4],
           reminder_before_minutes: 15,
         },
         [PillarType.NUTRITION]: {
           preferred_time: '12:00',
           duration_minutes: 30,
-          days_of_week: [0, 1, 2, 3, 4, 5, 6], // Every day
+          days_of_week: [0, 1, 2, 3, 4, 5, 6],
           reminder_before_minutes: 15,
         },
         [PillarType.MENTAL]: {
           preferred_time: '18:00',
           duration_minutes: 30,
-          days_of_week: [0, 2, 4, 6], // Mon, Wed, Fri, Sun
+          days_of_week: [0, 2, 4, 6],
           reminder_before_minutes: 15,
         },
         [PillarType.PERSONAL]: {
           preferred_time: '20:00',
           duration_minutes: 45,
-          days_of_week: [1, 3, 5], // Tue, Thu, Sat
+          days_of_week: [1, 3, 5],
           reminder_before_minutes: 15,
         },
       },
@@ -387,30 +370,17 @@ export default function GoalsScreen() {
     setGeneratingPlanGoalIds((prev) => (prev.includes(goalId) ? prev : [...prev, goalId]));
 
     try {
-      // Debug log
       console.log(`Generating plan for goal ${goalId}:`, goal);
 
-      // Generate the plan (returns { actionPlan, weeklySchedule })
       const { actionItems } = await goalsApi.generatePlan(goalId, userEmail, [defaultPreferences]);
 
       console.log('Plan generation response:', { actionItems });
 
-      // Defensive checks
       if (!actionItems) {
         throw new Error('Plan generation returned incomplete data');
       }
 
-      // Debug logs
-      console.log('Action items:', actionItems);
-
-      // Reload all goals so the specific goal reflects new action items
-      try {
-        await loadGoals();
-      } catch (reloadErr) {
-        console.warn('Goals reload after plan generation failed:', reloadErr);
-      }
-
-      // Success – we already set expectations above, so no extra modal needed
+      await refreshGoals();
     } catch (error) {
       console.error('Error generating plan:', error);
       Alert.alert(
@@ -424,6 +394,7 @@ export default function GoalsScreen() {
       );
     } finally {
       setGeneratingPlanGoalIds((prev) => prev.filter((id) => id !== goalId));
+      setGeneratingPlan(false);
     }
   };
 
@@ -436,9 +407,7 @@ export default function GoalsScreen() {
     }
     setCurrentWeek(newDate);
 
-    // Load goals for the new week
-    const { start } = getWeekDates(newDate);
-    loadGoals(start.toISOString());
+    loadGoals();
   };
 
   const handleSaveReflection = async (reflection: string, rating: number, nextWeekGoals: string[]) => {
@@ -465,13 +434,15 @@ export default function GoalsScreen() {
 
   const { isDarkMode } = useTheme();
 
-  // Show enhanced loading screen while initial load
   if (loading && goals.length === 0) {
     return <LoadingScreen weekStart={weekStart} weekEnd={weekEnd} />;
   }
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}>
+    <SafeAreaView
+      edges={Platform.OS === 'ios' ? ['top', 'bottom'] : ['top']}
+      style={{ flex: 1, backgroundColor: isDarkMode ? '#111827' : '#FFFFFF' }}
+    >
       <View>
         <Header
           title="Weekly Goals"
@@ -510,8 +481,7 @@ export default function GoalsScreen() {
           <View style={{ paddingTop: 16, gap: 16 }}>
             <GeneratingBanner />
 
-            {/* Show loading indicator while refreshing (when goals exist) */}
-            {loading && goals.length > 0 && (
+            {loading && goals.length > 0 && generatingPlanGoalIds.length === 0 && (
               <View
                 style={{
                   backgroundColor: isDarkMode ? '#1e40af' : '#dbeafe',
@@ -538,15 +508,15 @@ export default function GoalsScreen() {
             )}
 
             <View style={{ paddingHorizontal: 16, gap: 16 }}>
-              {/* Empty State */}
               {!loading && goals.length === 0 && <EmptyGoals setShowAddGoal={setShowAddGoal} />}
 
-              {/* Goals List */}
               {goals.map((goal: any) => (
                 <GoalCard
                   key={goal.id}
                   goal={goal}
-                  onDelete={() => deleteGoal(goal.id)}
+                  onDelete={async () => {
+                    await deleteGoal(goal.id);
+                  }}
                   onGeneratePlan={handleGeneratePlan}
                   onProgressUpdate={handleUpdateProgress}
                   onSelectActionItem={setSelectedActionItem}
@@ -554,31 +524,29 @@ export default function GoalsScreen() {
                 />
               ))}
 
-              {/* Weekend Reflection */}
-              {new Date().getDay() === 0 && ( // Sunday
-                <Card className="border-0 bg-blue-50">
-                  <View className="p-4">
-                    <View className="mb-3 flex-row items-center">
-                      <BookOpen size={20} color="#3b82f6" className="mr-2" />
-                      <Text className="text-lg font-semibold text-blue-800">Weekly Reflection</Text>
-                    </View>
-                    <Text className="mb-3 text-sm text-blue-700">
-                      Take a moment to reflect on your week and plan for the next one.
+              {new Date().getDay() === 0 && (
+                <View style={(isDarkMode ? commonStylesDark : commonStylesLight).pressableCard}>
+                  <View className="mb-3 flex-row items-center gap-2">
+                    <BookOpen size={20} color={isDarkMode ? '#34d399' : '#3b82f6'} />
+                    <Text className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-blue-800'}`}>
+                      Weekly Reflection
                     </Text>
-                    <TouchableOpacity
-                      onPress={() => setShowReflection(true)}
-                      className="self-start rounded-lg bg-blue-600 px-4 py-2"
-                    >
-                      <Text className="font-medium text-white">Start Reflection</Text>
-                    </TouchableOpacity>
                   </View>
-                </Card>
+                  <Text className={`mb-3 text-sm ${isDarkMode ? 'text-gray-200' : 'text-blue-700'}`}>
+                    Take a moment to reflect on your week and plan for the next one.
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setShowReflection(true)}
+                    className={`self-start rounded-lg ${isDarkMode ? 'bg-[#059669]' : 'bg-[#3b82f6]'} px-4 py-2`}
+                  >
+                    <Text className="font-medium text-white">Start Reflection</Text>
+                  </TouchableOpacity>
+                </View>
               )}
             </View>
           </View>
         </ScrollView>
 
-        {/* Add Goal Modal */}
         {showAddGoal && (
           <AddGoalModal
             showAddGoal={showAddGoal}
@@ -591,20 +559,17 @@ export default function GoalsScreen() {
           />
         )}
 
-        {/* Weekly Reflection Modal */}
-        {showReflection && (
-          <WeeklyReflection
-            weekStart={weekStart}
-            weekEnd={weekEnd}
-            completedGoals={completedGoals}
-            totalGoals={totalGoals}
-            onSave={handleSaveReflection}
-            onClose={() => setShowReflection(false)}
-            isDarkMode={isDarkMode}
-          />
-        )}
+        <WeeklyReflection
+          visible={showReflection}
+          weekStart={weekStart}
+          weekEnd={weekEnd}
+          completedGoals={completedGoals}
+          totalGoals={totalGoals}
+          onSave={handleSaveReflection}
+          onClose={() => setShowReflection(false)}
+          isDarkMode={isDarkMode}
+        />
 
-        {/* Action Item Schedule Modal */}
         {selectedActionItem && (
           <ActionItemScheduleModal
             selectedActionItem={selectedActionItem}
@@ -612,7 +577,6 @@ export default function GoalsScreen() {
           />
         )}
 
-        {/* Preferences Modal */}
         {showPreferencesModal && (
           <PreferencesModal
             isDarkMode={isDarkMode}
@@ -626,7 +590,6 @@ export default function GoalsScreen() {
           />
         )}
 
-        {/* Upload Modal */}
         {showUploadModal && (
           <UploadModal
             uploadMonitorActiveRef={uploadMonitorActiveRef}

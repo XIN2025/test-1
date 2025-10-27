@@ -173,24 +173,46 @@ const ActionItemScheduleModal: React.FC<ActionItemScheduleModalProps> = ({
                       borderLeftColor: isDarkMode ? '#34d399' : '#10b981',
                     }}
                   >
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Text
+                    {schedule.start_time !== '00:00' || schedule.end_time !== '00:00' ? (
+                      <View
                         style={{
-                          fontSize: 16,
-                          color: isDarkMode ? '#f3f4f6' : '#1f2937',
-                          fontWeight: '600',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: 4,
                         }}
                       >
-                        {schedule.start_time} - {schedule.end_time}
-                      </Text>
-                    </View>
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            color: isDarkMode ? '#f3f4f6' : '#1f2937',
+                            fontWeight: '600',
+                          }}
+                        >
+                          {schedule.start_time} - {schedule.end_time}
+                        </Text>
+                      </View>
+                    ) : (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            color: isDarkMode ? '#9ca3af' : '#6b7280',
+                            fontWeight: '600',
+                            fontStyle: 'italic',
+                          }}
+                        >
+                          Not scheduled
+                        </Text>
+                      </View>
+                    )}
 
                     <View
                       style={{

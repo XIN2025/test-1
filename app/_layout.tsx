@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { Text, View } from 'react-native';
 import { AuthProvider } from '../context/AuthContext';
 import { ThemeProvider } from '../context/ThemeContext';
+import { GoalsProvider } from '../context/GoalsContext';
 import { useFonts } from '../hooks/useFonts';
 import './global.css';
 import { HeadlessBackgroundSync } from '../components/HeadlessBackgroundSync';
@@ -33,11 +34,13 @@ export default function RootLayout() {
     <KeyboardProvider>
       <ThemeProvider>
         <AuthProvider>
-          <>
-            <HeadlessBackgroundSync />
-            <IOSHealthDataSync />
-            <Stack screenOptions={{ headerShown: false }} />
-          </>
+          <GoalsProvider>
+            <>
+              <HeadlessBackgroundSync />
+              <IOSHealthDataSync />
+              <Stack screenOptions={{ headerShown: false }} />
+            </>
+          </GoalsProvider>
         </AuthProvider>
       </ThemeProvider>
     </KeyboardProvider>

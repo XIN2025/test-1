@@ -120,7 +120,7 @@ export default function VerifyRegistrationOtpScreen() {
                 <View className="mb-4 w-full">
                   <Text className="mb-1 text-gray-700">OTP</Text>
                   <TextInput
-                    className={`w-full rounded-md border bg-gray-50 px-4 py-3 text-base focus:border-green-500 ${
+                    className={`w-full rounded-md border bg-gray-50 px-4 py-3 text-base text-black focus:border-green-500 ${
                       errors.otp ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Enter OTP"
