@@ -31,15 +31,15 @@ export class AgentsController {
     return this.agentsService.chat(chatId, body.message, user, res);
   }
 
-  @Get('chat/:chatId/messages')
-  @ApiOperation({ summary: 'Get the messages for a chat' })
-  getChatMessages(@Param('chatId') chatId: string) {
-    return this.agentsService.getChatMessages(chatId);
+  @Get('chat/:chatId')
+  @ApiOperation({ summary: 'Get whole chat with messages' })
+  getChat(@Param('chatId') chatId: string, @CurrentUser() user: RequestUser) {
+    return this.agentsService.getChat(chatId, user.id);
   }
 
   @Delete('chat/:chatId')
   @ApiOperation({ summary: 'Delete a chat' })
-  deleteChat(@Param('chatId') chatId: string) {
-    return this.agentsService.deleteChat(chatId);
+  deleteChat(@Param('chatId') chatId: string, @CurrentUser() user: RequestUser) {
+    return this.agentsService.deleteChat(chatId, user.id);
   }
 }
