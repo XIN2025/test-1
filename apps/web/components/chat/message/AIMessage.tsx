@@ -2,16 +2,18 @@ import { cn } from '@repo/ui/lib/utils';
 import React, { useState } from 'react';
 import CustomMarkdown from '../CustomMarkdown';
 import { toolComponents } from '../tools';
-import { UIMessage, isToolUIPart, getToolName } from 'ai';
+import { UIMessage, isToolUIPart, getToolName, ChatStatus } from 'ai';
 import { Check } from 'lucide-react';
 import { Copy } from 'lucide-react';
 import GenericTool from '../tools/GenericTool';
 
 type AIMessageProps = {
   message: UIMessage;
+  status: ChatStatus;
+  isLast: boolean;
 };
 
-const AIMessage = ({ message }: AIMessageProps) => {
+const AIMessage = ({ message, status, isLast }: AIMessageProps) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -52,14 +54,16 @@ const AIMessage = ({ message }: AIMessageProps) => {
             }
           })}
         </div>
-        <div className='flex items-center gap-1.5'>
-          <button
-            onClick={handleCopy}
-            className='hover:bg-muted text-muted-foreground flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm p-0.5'
-          >
-            {copied ? <Check size={13} /> : <Copy size={13} />}
-          </button>
-        </div>
+        {(status === 'ready' || !isLast) && (
+          <div className='flex items-center gap-1.5'>
+            <button
+              onClick={handleCopy}
+              className='hover:bg-muted text-muted-foreground flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm p-0.5'
+            >
+              {copied ? <Check size={13} /> : <Copy size={13} />}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

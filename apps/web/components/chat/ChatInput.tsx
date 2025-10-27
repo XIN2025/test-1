@@ -4,19 +4,21 @@ import { ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@repo/ui/lib/utils';
 import { UIMessage, UseChatHelpers } from '@ai-sdk/react';
 import { useIsMobile } from '@repo/ui/hooks/use-mobile';
+import { useChatTransition } from '@/hooks/useChatTransition';
 
 interface ChatInputProps {
   isSubmitting: boolean;
-  handleSubmit: (e?: React.FormEvent<HTMLFormElement>) => void;
+  onSubmit: UseChatHelpers<UIMessage>['sendMessage'];
   query: string;
   setQuery: (query: string) => void;
   initialPage?: boolean;
   onStop?: UseChatHelpers<UIMessage>['stop'];
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ isSubmitting, handleSubmit, query, setQuery, onStop }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ isSubmitting, onSubmit, initialPage, query, setQuery, onStop }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const isMobile = useIsMobile();
+  const { clearTransition } = useChatTransition();
 
   const handleInput = (): void => {
     const textarea = textareaRef.current;
@@ -26,12 +28,19 @@ const ChatInput: React.FC<ChatInputProps> = ({ isSubmitting, handleSubmit, query
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (query?.trim() && !isSubmitting) {
-        handleSubmit();
-      }
+  const handleSubmit = async () => {
+    if (initialPage) {
+      onSubmit();
+      return;
+    }
+    clearTransition();
+    onSubmit();
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSubmit();
     }
   };
 
@@ -58,7 +67,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ isSubmitting, handleSubmit, query
             value={query}
             onInput={handleInput}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
+            onKeyDown={handleKeyPress}
             placeholder='How can I help you today?'
             className={cn(
               'placeholder:text-muted-foreground/60 h-auto max-h-[200px] min-h-[50px] w-full resize-none bg-transparent px-4 py-4 outline-none focus:ring-0',

@@ -1,13 +1,12 @@
 'use client';
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui/components/card';
-import { Avatar, AvatarFallback } from '@repo/ui/components/avatar';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@repo/ui/components/form';
 import { Input } from '@repo/ui/components/input';
 import { Select } from '@repo/ui/components/select';
 import { SelectTrigger, SelectContent, SelectItem, SelectValue } from '@repo/ui/components/select';
 import { GenderEnum } from '@repo/shared-types/enums/auth.enum';
-import { enumToText, getInitials } from '@repo/shared-types/utils';
+import { enumToText, getConsistentColors, getInitials } from '@repo/shared-types/utils';
 import LoadingButton from '../general/LoadingButton';
 import { ProfileSchema } from '@repo/shared-types/schemas/profile.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,6 +44,8 @@ const ProfileSection = () => {
     form.reset(getDefaultValues());
   }, [profileData, form]);
 
+  const randomColor = getConsistentColors(profileData?.user?.name || '');
+
   return (
     <div className='container mx-auto flex flex-col items-center justify-center space-y-4 p-4 sm:p-6'>
       <div className='text-center'>
@@ -58,9 +59,12 @@ const ProfileSection = () => {
           ) : (
             <Card className='w-full'>
               <CardHeader className='flex flex-col items-center justify-center'>
-                <Avatar className='size-20'>
-                  <AvatarFallback>{getInitials(profileData?.user?.name || '')}</AvatarFallback>
-                </Avatar>
+                <div
+                  style={{ backgroundColor: randomColor.background, color: randomColor.text }}
+                  className='flex size-20 items-center justify-center rounded-full'
+                >
+                  {getInitials(profileData?.user?.name || '')}
+                </div>
                 <CardTitle>{profileData?.user?.name}</CardTitle>
               </CardHeader>
               <CardContent>

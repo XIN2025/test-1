@@ -1,55 +1,54 @@
 'use client';
 import { UIMessage, useChat } from '@ai-sdk/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { envConfig } from '@/config';
 import { useSession } from 'next-auth/react';
 import ChatInput from './ChatInput';
 import ChatMessages from './ChatMessages';
 import Greeting from './Greeting';
-import { useCreateChat } from '@/queries/chat';
 import { DefaultChatTransport } from 'ai';
+import { ChatType } from '@repo/shared-types/types';
+import { useChatTransition } from '@/hooks/useChatTransition';
 
-const ChatPage = () => {
+type ChatPageProps = {
+  chat: ChatType;
+};
+
+const ChatPage = ({ chat }: ChatPageProps) => {
+  const { query, chatId, clearTransition } = useChatTransition();
   const { data: session } = useSession();
-  const [input, setInput] = useState<string>('');
-  const { mutate: createChat, isPending: isCreatingChat } = useCreateChat();
-
-  const [chatId, setChatId] = useState<string | undefined>(undefined);
+  const initialMessageSentRef = useRef(false);
+  const [input, setInput] = useState('');
 
   const { messages, sendMessage, status, error, stop } = useChat({
-    id: chatId,
+    id: chat.id,
     transport: new DefaultChatTransport({
-      api: `${envConfig.apiUrl}/api/agents/chat/${chatId}`,
+      api: `${envConfig.apiUrl}/api/agents/chat/${chat.id}`,
       headers: {
         Authorization: `Bearer ${session?.user.token}`,
       },
     }),
-    messages: [],
-    experimental_throttle: 200,
+    messages: chat.chatMessages as unknown as UIMessage[],
+    experimental_throttle: 50,
+    onFinish: ({ message }) => {
+      console.log('onFinish called', message);
+    },
     onError: (error) => {
       console.error('Error in chat:', error);
     },
   });
 
-  const handleCreateChat = () => {
-    createChat(undefined, {
-      onSuccess: (data) => {
-        setChatId(data.id);
-      },
-    });
-  };
-
-  const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
-    e?.preventDefault();
-    if (input.trim() && !isCreatingChat) {
-      sendMessage(
+  const handleSubmit = async () => {
+    if (input.trim()) {
+      setInput('');
+      await sendMessage(
         {
-          text: input,
+          text: input || query,
         },
         {
           body: {
             message: {
-              content: input,
+              content: input || query,
               role: 'user',
               id: Math.random().toString(36).substring(2, 15),
               createdAt: new Date(),
@@ -57,18 +56,41 @@ const ChatPage = () => {
           },
         }
       );
-      setInput('');
     }
   };
 
   useEffect(() => {
-    if (chatId) {
-      handleSubmit();
-    }
-  }, [chatId]);
+    const sendInitialMessage = async () => {
+      if (chat.id === chatId && query && !initialMessageSentRef.current) {
+        initialMessageSentRef.current = true;
+        sendMessage(
+          {
+            text: input || query,
+          },
+          {
+            body: {
+              message: {
+                id: Math.random().toString(36).substring(2, 15),
+                content: input || query,
+                role: 'user',
+                parts: {},
+                attachments: [],
+              },
+            },
+          }
+        );
+
+        clearTransition();
+      }
+    };
+
+    sendInitialMessage();
+  }, [chat.id, chatId, query, clearTransition, sendMessage, input]);
 
   if (messages.length === 0) {
-    return <Greeting query={input} setQuery={setInput} isSubmitting={isCreatingChat} handleSubmit={handleCreateChat} />;
+    return (
+      <Greeting query={input} setQuery={setInput} isSubmitting={status === 'streaming'} handleSubmit={handleSubmit} />
+    );
   }
   return (
     <div className='flex h-full w-full flex-col'>
@@ -77,7 +99,7 @@ const ChatPage = () => {
       </div>
       <div className='flex-shrink-0 p-4 pt-0'>
         <ChatInput
-          handleSubmit={handleSubmit}
+          onSubmit={handleSubmit}
           query={input}
           setQuery={setInput}
           isSubmitting={status === 'streaming'}
