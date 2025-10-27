@@ -3,7 +3,7 @@ import { AgentsService } from './agents.service';
 import { AgentsController } from './agents.controller';
 import { ToolsService } from './tools.service';
 import { AstrologyApiModule } from 'src/astrology-apis/astrology-api.module';
-import { ChatConfigService } from './chat-config.service';
+import { ChatConfigService } from '../admin/chat-config/chat-config.service';
 
 @Module({
   imports: [AstrologyApiModule],

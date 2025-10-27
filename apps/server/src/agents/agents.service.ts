@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
-  ModelMessage,
   createUIMessageStream,
+  generateObject,
   pipeUIMessageStreamToResponse,
   smoothStream,
   stepCountIs,
@@ -13,11 +13,13 @@ import { ToolsService } from './tools.service';
 import { Response } from 'express';
 import { google } from '@ai-sdk/google';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ChatConfigService } from './chat-config.service';
+import { ChatConfigService } from '../admin/chat-config/chat-config.service';
 import { RequestUser } from 'src/auth/dto/request-user.dto';
-import { MessageDto } from './dto/chat-agent.dto';
-
-const chatStore = new Map<string, ModelMessage[]>();
+import { GetChatsQueryDto, MessageDto, UpdateChatDto } from './dto/chat-agent.dto';
+import z from 'zod';
+import { dbToModelMessage, dbToUIMessage } from './dto/db-message.dto';
+import { InputJsonValue } from '@repo/db/generated/prisma/runtime/library';
+import { ChatConfig, UserProfile } from '@repo/db';
 
 @Injectable()
 export class AgentsService {
@@ -27,62 +29,89 @@ export class AgentsService {
     private readonly chatConfigService: ChatConfigService
   ) {}
 
-  async loadChatConfigFromDb() {
-    const chatConfig = await this.prisma.chatConfig.findFirst({
-      orderBy: {
-        updatedAt: 'desc',
-      },
-      take: 1,
-    });
-    return chatConfig;
-  }
+  private constructSystemPrompt({
+    chatConfig,
+    userProfile,
+    user,
+  }: {
+    chatConfig?: ChatConfig | null;
+    userProfile?: UserProfile | null;
+    user?: RequestUser;
+  }) {
+    let systemPrompt = chatConfig?.chatAgentPrompt || fallbackPrompts.getChatAgentPrompt();
 
-  async onModuleInit() {
-    const config = await this.loadChatConfigFromDb();
-    this.chatConfigService.setChatConfig(
-      config || {
-        id: '',
-        model: 'openai',
-        chatAgentPrompt: fallbackPrompts.getChatAgentPrompt(),
-        webSearchPrompt: fallbackPrompts.getWebSearchPrompt(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
+    systemPrompt += `\n\nCurrent date and time in UTC: ${new Date().toISOString()}`;
+
+    if (userProfile) {
+      const { dateOfBirth, gender, placeOfBirth, timeOfBirth } = userProfile;
+
+      const userInfoParts: string[] = [];
+
+      if (user?.name) userInfoParts.push(`Name: ${user.name}`);
+      if (gender) userInfoParts.push(`Gender: ${gender}`);
+      if (dateOfBirth) userInfoParts.push(`Date of Birth: ${dateOfBirth}`);
+      if (timeOfBirth) userInfoParts.push(`Time of Birth: ${timeOfBirth}`);
+      if (placeOfBirth) userInfoParts.push(`Place of Birth: ${placeOfBirth}`);
+
+      if (userInfoParts.length > 0) {
+        systemPrompt += `\n\nUser Profile Information:\n${userInfoParts.join('\n')}`;
       }
-    );
+    }
+
+    return systemPrompt;
   }
 
   async createChat(userId: string) {
-    console.log('createChat', userId);
-    const chatId = Math.random().toString(36).substring(2, 15);
-    chatStore.set(chatId, []);
-    return { id: chatId };
+    const existingChat = await this.prisma.chat.findFirst({
+      where: {
+        userId,
+      },
+      include: {
+        chatMessages: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    if (existingChat && existingChat.chatMessages.length === 0) {
+      return existingChat;
+    }
+    return await this.prisma.chat.create({
+      data: {
+        userId,
+      },
+    });
   }
 
   async chat(chatId: string, message: MessageDto, user: RequestUser, res: Response) {
-    if (!chatStore.has(chatId)) {
-      throw new NotFoundException('Chat not found');
-    }
-    const history = chatStore.get(chatId) || [];
-    const systemMessage = history.find((msg) => msg.role === 'system');
-    if (!systemMessage) {
-      console.log('creating system message from user profile');
-      const userProfile = await this.prisma.userProfile.findUnique({
+    const [chatConfig, chat, userProfile] = await Promise.all([
+      this.chatConfigService.getChatConfig(),
+      this.getChat(user.id, chatId),
+      this.prisma.userProfile.findUnique({
         where: {
           userId: user.id,
         },
-      });
-      history.push({
-        role: 'system',
-        content: `User name: ${user.name}\n User Gender: ${userProfile?.gender}\n User DOB: ${userProfile?.dateOfBirth}\n User time of birth: ${userProfile?.timeOfBirth}\n User place of birth: ${userProfile?.placeOfBirth}\n User horoscope details: ${userProfile?.horoscopeDetails}`,
-      });
-    }
-    history.push({
-      role: 'user',
-      content: message.content,
+      }),
+    ]);
+    const newMessage = await this.prisma.chatMessage.create({
+      data: {
+        chatId,
+        content: message.content,
+        role: message.role,
+        parts: message.parts as unknown as InputJsonValue,
+      },
     });
 
-    const model: any =
-      this.chatConfigService.getChatConfig().model === 'openai' ? openai('gpt-4.1') : google('gemini-2.0-flash');
+    if (chat.chatMessages.length === 0 && chat.title === 'New Chat') {
+      await this.generateAndChangeTitle(message.content, chatId);
+    }
+
+    const convertedMessage = dbToModelMessage(newMessage);
+    const messages = [...chat.chatMessages, convertedMessage];
+
+    const model = chatConfig?.model && chatConfig.model === 'openai' ? openai('gpt-4.1') : google('gemini-2.0-flash');
+
+    const systemPrompt = this.constructSystemPrompt({ chatConfig, userProfile, user });
 
     pipeUIMessageStreamToResponse({
       response: res,
@@ -90,11 +119,8 @@ export class AgentsService {
         execute: ({ writer }) => {
           const result = streamText({
             model: model,
-            system:
-              this.chatConfigService.getChatConfig().chatAgentPrompt +
-              '\n\nCurrent date and time in UTC: ' +
-              new Date().toISOString(),
-            messages: history,
+            system: systemPrompt,
+            messages: messages,
             stopWhen: stepCountIs(10),
             experimental_transform: smoothStream({ chunking: 'word' }),
             tools: {
@@ -109,11 +135,28 @@ export class AgentsService {
               console.log('usage', usage);
               console.log('finishReason', finishReason);
 
-              history.push({
-                role: 'assistant',
-                content: text,
+              await this.prisma.chatMessage.create({
+                data: {
+                  chatId,
+                  content: text,
+                  role: 'assistant',
+                  parts: [{ type: 'text', text: text }],
+                },
               });
-              chatStore.set(chatId, history);
+              await this.prisma.userChatStat.upsert({
+                where: { userId: user.id },
+                update: {
+                  totalTokensUsed: { increment: usage.totalTokens },
+                  totalChats: { increment: 1 },
+                  totalQuestions: { increment: 1 },
+                },
+                create: {
+                  userId: user.id,
+                  totalTokensUsed: usage.totalTokens,
+                  totalChats: 1,
+                  totalQuestions: 1,
+                },
+              });
             },
           });
 
@@ -127,18 +170,103 @@ export class AgentsService {
     });
   }
 
-  getChatMessages(chatId: string) {
-    if (!chatStore.has(chatId)) {
+  async getChat(userId: string, chatId: string) {
+    const chat = await this.prisma.chat.findUnique({
+      where: {
+        id: chatId,
+        userId,
+      },
+      include: {
+        chatMessages: {
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+      },
+    });
+    if (!chat) {
       throw new NotFoundException('Chat not found');
     }
-    return chatStore.get(chatId) || [];
+    return {
+      ...chat,
+      chatMessages: chat.chatMessages.map(dbToUIMessage),
+    };
   }
 
-  deleteChat(chatId: string) {
-    if (!chatStore.has(chatId)) {
+  async getChats(userId: string, query: GetChatsQueryDto) {
+    const { page, limit } = query;
+    const skip = (page - 1) * limit;
+    const [chats, total] = await Promise.all([
+      this.prisma.chat.findMany({
+        where: {
+          userId,
+        },
+        orderBy: {
+          updatedAt: 'desc',
+        },
+        skip,
+        take: limit,
+      }),
+      this.prisma.chat.count({
+        where: {
+          userId,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    return {
+      chats,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage,
+        hasPreviousPage,
+      },
+    };
+  }
+
+  async updateChat(userId: string, chatId: string, body: UpdateChatDto) {
+    const chat = await this.prisma.chat.update({
+      where: { id: chatId, userId },
+      data: body,
+    });
+    if (!chat) {
       throw new NotFoundException('Chat not found');
     }
-    chatStore.delete(chatId);
-    return true;
+    return { message: 'Chat updated successfully' };
+  }
+
+  async deleteChat(userId: string, chatId: string) {
+    const chat = await this.prisma.chat.delete({
+      where: { id: chatId, userId },
+    });
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
+    return { message: 'Chat deleted successfully' };
+  }
+
+  private async generateAndChangeTitle(userMessage: string, chatId: string) {
+    const res = await generateObject({
+      model: openai('gpt-4o-mini'),
+      schema: z.object({
+        title: z.string(),
+      }),
+      prompt: `Generate a concise title (max 5 words) that summarizes the intent or topic of the following user message. Avoid punctuation unless necessary. 
+			User message:
+			${userMessage}`,
+    });
+    if (res.object.title) {
+      await this.prisma.chat.update({
+        where: { id: chatId },
+        data: { title: res.object.title },
+      });
+    }
   }
 }

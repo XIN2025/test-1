@@ -3,13 +3,10 @@ import { tool, generateText, Tool } from 'ai';
 import { z } from 'zod';
 import { google } from '@ai-sdk/google';
 import { AstrologyApiService } from 'src/astrology-apis/astrology-api.service';
-import { ChatConfigService } from './chat-config.service';
+import { fallbackPrompts } from './prompts';
 @Injectable()
 export class ToolsService {
-  constructor(
-    private readonly astrologyApiService: AstrologyApiService,
-    private readonly chatConfigService: ChatConfigService
-  ) {}
+  constructor(private readonly astrologyApiService: AstrologyApiService) {}
   websiteSearchTool(): Tool {
     return tool({
       description:
@@ -22,7 +19,7 @@ export class ToolsService {
           const { text } = await generateText({
             model: google('gemini-2.0-flash'),
             prompt: query,
-            system: this.chatConfigService.getChatConfig().webSearchPrompt,
+            system: fallbackPrompts.getWebSearchPrompt(),
           });
           return {
             success: true,

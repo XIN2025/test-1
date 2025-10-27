@@ -44,8 +44,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  auth    UserAuth?
-  profile UserProfile?
+  auth      UserAuth?
+  profile   UserProfile?
+  chats     Chat[]
+  chatStats UserChatStat?
 
   @@map("users")
 }
@@ -84,4 +86,53 @@ model UserProfile {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
+}
+
+model Chat {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  title  String @default("New Chat")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatMessages ChatMessage[]
+
+  @@index([userId])
+  @@index([updatedAt])
+  @@map("chats")
+}
+
+model ChatMessage {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId      String   @db.ObjectId
+  content     String
+  role        String
+  parts       Json?
+  attachments Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([updatedAt])
+  @@map("chat_messages")
+}
+
+model UserChatStat {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  totalQuestions  Int      @default(1)
+  totalTokensUsed Int      @default(1)
+  totalChats      Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@index([updatedAt])
+  @@map("user_chat_stats")
 }

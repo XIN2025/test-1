@@ -9,8 +9,8 @@ import {
   ToolUIPart,
 } from 'ai';
 import { UIMessage } from 'ai';
-import { Type } from 'class-transformer';
-import { IsIn, IsISO8601, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsIn, IsISO8601, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class MessageDto implements UIMessage {
   @IsString()
@@ -48,4 +48,21 @@ export class ChatAgentInputDto {
   @ValidateNested()
   @Type(() => MessageDto)
   message: MessageDto;
+}
+
+export class UpdateChatDto {
+  @IsNotEmpty()
+  @IsString()
+  title: string;
+}
+
+export class GetChatsQueryDto {
+  @IsOptional()
+  @IsNumber()
+  page: number = 1;
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => Math.min(value, 50))
+  limit: number = 10;
 }
