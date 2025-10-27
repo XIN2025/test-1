@@ -76,10 +76,23 @@ export class AgentsService {
     if (existingChat && existingChat.chatMessages.length === 0) {
       return existingChat;
     }
-    return await this.prisma.chat.create({
-      data: {
-        userId,
-      },
+    await this.prisma.$transaction(async (tx) => {
+      const chat = await tx.chat.create({
+        data: {
+          userId,
+        },
+      });
+      await tx.userChatStat.upsert({
+        where: { userId },
+        update: {
+          totalChats: { increment: 1 },
+        },
+        create: {
+          userId,
+          totalChats: 1,
+        },
+      });
+      return chat;
     });
   }
 
@@ -147,13 +160,11 @@ export class AgentsService {
                 where: { userId: user.id },
                 update: {
                   totalTokensUsed: { increment: usage.totalTokens },
-                  totalChats: { increment: 1 },
                   totalQuestions: { increment: 1 },
                 },
                 create: {
                   userId: user.id,
                   totalTokensUsed: usage.totalTokens,
-                  totalChats: 1,
                   totalQuestions: 1,
                 },
               });
