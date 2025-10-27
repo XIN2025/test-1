@@ -76,7 +76,7 @@ export class AgentsService {
     if (existingChat && existingChat.chatMessages.length === 0) {
       return existingChat;
     }
-    await this.prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       const chat = await tx.chat.create({
         data: {
           userId,
