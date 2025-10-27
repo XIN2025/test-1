@@ -323,7 +323,7 @@ export function useHealthConnect() {
         const readOptions = {
           timeRangeFilter: timeRange || {
             operator: 'between',
-            startTime: startTime.toISOString(), // Last 24 hours
+            startTime: startTime.toISOString(), // from 12:00 AM today
             endTime: endTime,
           },
         };

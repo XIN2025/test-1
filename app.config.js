@@ -2,7 +2,7 @@ export default {
   expo: {
     name: 'Evra',
     slug: 'evra',
-    owner: 'evrahealth',
+    owner: 'gamma-heizen',
     version: '1.0.5',
     orientation: 'portrait',
     icon: './assets/images/logo.png',
@@ -167,12 +167,12 @@ export default {
     extra: {
       API_BASE_URL: process.env.API_BASE_URL || 'https://api.evra.opengig.work',
       eas: {
-        projectId: '29057e40-c485-49b4-a2b4-6c71c1878caa',
+        projectId: 'e25ba26a-90e5-4708-a76c-63ba61de3089',
       },
     },
   },
   updates: {
-    url: 'https://u.expo.dev/29057e40-c485-49b4-a2b4-6c71c1878caa',
+    url: 'https://u.expo.dev/e25ba26a-90e5-4708-a76c-63ba61de3089',
   },
   runtimeVersion: {
     policy: 'appVersion',
