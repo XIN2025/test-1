@@ -304,11 +304,11 @@ export default function RegisterScreen() {
                       selectedValue={formData.timezone}
                       onValueChange={(value: string) => handleInputChange('timezone', value)}
                       enabled={!loading}
-                      style={{ color: formData.timezone ? '#374151' : '#374151', backgroundColor: 'transparent' }}
+                      style={{ color: formData.timezone ? '#000000' : '#535353', backgroundColor: 'transparent' }}
                     >
-                      <Picker.Item label="Select your timezone" value="" color="#374151" />
+                      <Picker.Item label="Select your timezone" value="" color="#374151" style={{ fontSize: 14 }} />
                       {timezones.map((tz) => (
-                        <Picker.Item key={tz} label={tz} value={tz} color="#374151" />
+                        <Picker.Item key={tz} label={tz} value={tz} color="#374151" style={{ fontSize: 14 }} />
                       ))}
                     </Picker>
                   </View>
