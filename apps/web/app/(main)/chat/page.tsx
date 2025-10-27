@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import React from 'react';
-import ChatPageComponent from '@/components/chat/ChatPage';
+import InitialChatPage from '@/components/chat/InitialChatPage';
 
 export const metadata: Metadata = {
   title: 'Karmi Chat',
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const ChatPage = () => {
-  return <ChatPageComponent />;
+  return <InitialChatPage />;
 };
 
 export default ChatPage;

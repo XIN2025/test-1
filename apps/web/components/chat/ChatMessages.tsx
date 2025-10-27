@@ -2,6 +2,8 @@ import { ChatMessage } from './ChatMessage';
 import { ChatStatus, UIMessage } from 'ai';
 import { useRef, useEffect, useMemo } from 'react';
 import { cn } from '@repo/ui/lib/utils';
+import MessageLoading from './MessageLoading';
+import ErrorMessage from './ErrorMessage';
 
 interface ChatMessagesProps {
   messages: UIMessage[];
@@ -44,10 +46,15 @@ const ChatMessages = ({ messages, status, error }: ChatMessagesProps) => {
             <ChatMessage
               key={message.id || index}
               message={message}
-              lastMessageId={lastMessage?.id}
-              isMessageLoading={isMessageLoading}
-              error={error}
+              status={status}
+              isLast={index === messages.length - 1}
             />
+            {index === messages.length - 1 && (
+              <>
+                {isMessageLoading && <MessageLoading />}
+                {error && <ErrorMessage error={error?.message ?? 'An error occurred'} />}
+              </>
+            )}
           </div>
         ))}
       </div>

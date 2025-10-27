@@ -6,7 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from '@repo/ui/components/avatar';
 import { getConsistentColors, getInitials } from '@repo/shared-types/utils';
 import NavBar from './Navbar';
 import Bottombar from './Bottombar';
@@ -64,12 +63,12 @@ const AppSidebar = ({ children }: { children: React.ReactNode }) => {
           })}
         </div>
         <Link href='/profile' className='mb-2 flex flex-col items-center justify-center gap-1'>
-          <Avatar className='size-10'>
-            <AvatarImage src={user?.name || ''} />
-            <AvatarFallback style={{ backgroundColor: randomColor.background, color: randomColor.text }}>
-              {getInitials(user?.name || '')}
-            </AvatarFallback>
-          </Avatar>
+          <div
+            style={{ backgroundColor: randomColor.background, color: randomColor.text }}
+            className='flex size-10 items-center justify-center rounded-full'
+          >
+            {getInitials(user?.name || '')}
+          </div>
           <span className='text-xs'>Profile</span>
         </Link>
       </div>

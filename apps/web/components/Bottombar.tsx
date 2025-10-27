@@ -4,7 +4,6 @@ import { cn } from '@repo/ui/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from '@repo/ui/components/avatar';
 import { getConsistentColors, getInitials } from '@repo/shared-types/utils';
 import { routes } from './AppSidebar';
 
@@ -41,15 +40,12 @@ const Bottombar = () => {
             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
         )}
       >
-        <Avatar className='size-6'>
-          <AvatarImage src={user?.name || ''} />
-          <AvatarFallback
-            className='text-xs'
-            style={{ backgroundColor: randomColor.background, color: randomColor.text }}
-          >
-            {getInitials(user?.name || '')}
-          </AvatarFallback>
-        </Avatar>
+        <div
+          style={{ backgroundColor: randomColor.background, color: randomColor.text }}
+          className='flex size-10 items-center justify-center rounded-full'
+        >
+          {getInitials(user?.name || '')}
+        </div>
         <span className='text-xs font-medium'>Profile</span>
       </Link>
     </nav>

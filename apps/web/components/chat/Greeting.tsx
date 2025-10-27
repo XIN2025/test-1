@@ -2,6 +2,7 @@ import { Compass, Heart, Sparkles, Stars, Target } from 'lucide-react';
 import React from 'react';
 import ChatInput from './ChatInput';
 import { Card } from '@repo/ui/components/card';
+import { UIMessage, UseChatHelpers } from '@ai-sdk/react';
 
 const suggestedPrompts = [
   {
@@ -30,7 +31,7 @@ type GreetingProps = {
   query: string;
   setQuery: (query: string) => void;
   isSubmitting: boolean;
-  handleSubmit: (e?: React.FormEvent<HTMLFormElement>) => void;
+  handleSubmit: UseChatHelpers<UIMessage>['sendMessage'];
 };
 
 const Greeting = ({ query, setQuery, isSubmitting, handleSubmit }: GreetingProps) => {
@@ -38,8 +39,9 @@ const Greeting = ({ query, setQuery, isSubmitting, handleSubmit }: GreetingProps
     setQuery(prompt);
     setTimeout(() => {
       handleSubmit();
-    }, 200);
+    }, 300);
   };
+
   return (
     <div className='mx-auto flex min-h-full max-w-4xl flex-col items-center justify-center px-4 py-8'>
       {/* Header Section */}
@@ -59,7 +61,13 @@ const Greeting = ({ query, setQuery, isSubmitting, handleSubmit }: GreetingProps
 
       {/* Input Section */}
       <div className='mb-8 w-full max-w-3xl'>
-        <ChatInput query={query} setQuery={setQuery} isSubmitting={isSubmitting} handleSubmit={handleSubmit} />
+        <ChatInput
+          query={query}
+          setQuery={setQuery}
+          isSubmitting={isSubmitting}
+          onSubmit={handleSubmit}
+          initialPage={true}
+        />
       </div>
 
       {/* Suggested Prompts */}
