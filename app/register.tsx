@@ -16,16 +16,19 @@ import {
   View,
 } from 'react-native';
 import EvraLogo from '../components/EvraLogo';
+import { Picker } from '@react-native-picker/picker';
 
 // TypeScript interfaces
 interface RegisterFormData {
   name: string;
   email: string;
+  timezone: string;
 }
 
 interface ValidationErrors {
   name?: string;
   email?: string;
+  timezone?: string;
 }
 
 interface ApiResponse {
@@ -37,6 +40,7 @@ export default function RegisterScreen() {
   const [formData, setFormData] = useState<RegisterFormData>({
     name: '',
     email: '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
@@ -55,6 +59,24 @@ export default function RegisterScreen() {
   if (isLoading || isAuthenticated) {
     return null;
   }
+
+  // Timezone list (short, can be expanded)
+  const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const curatedTimezones = [
+    'UTC',
+    'America/New_York',
+    'America/Chicago',
+    'America/Denver',
+    'America/Los_Angeles',
+    'Europe/London',
+    'Europe/Berlin',
+    'Europe/Paris',
+    'Asia/Kolkata',
+    'Asia/Tokyo',
+    'Asia/Shanghai',
+    'Australia/Sydney',
+  ];
+  const timezones = Array.from(new Set(detectedTimezone ? [...curatedTimezones, detectedTimezone] : curatedTimezones));
 
   // Validation functions
   const validateName = (name: string): string | undefined => {
@@ -81,6 +103,16 @@ export default function RegisterScreen() {
     return undefined;
   };
 
+  const validateTimezone = (timezone: string): string | undefined => {
+    if (!timezone) {
+      return 'Timezone is required';
+    }
+    if (!timezones.includes(timezone)) {
+      return 'Please select a valid timezone';
+    }
+    return undefined;
+  };
+
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
 
@@ -92,6 +124,11 @@ export default function RegisterScreen() {
     const emailError = validateEmail(formData.email);
     if (emailError) {
       newErrors.email = emailError;
+    }
+
+    const timezoneError = validateTimezone(formData.timezone);
+    if (timezoneError) {
+      newErrors.timezone = timezoneError;
     }
 
     setErrors(newErrors);
@@ -126,6 +163,7 @@ export default function RegisterScreen() {
         body: JSON.stringify({
           name: formData.name.trim(),
           email: formData.email.trim(),
+          timezone: formData.timezone,
         }),
       });
 
@@ -141,10 +179,13 @@ export default function RegisterScreen() {
         const backendMsg = data?.detail || (data as any)?.message;
         const message = backendMsg || 'Registration failed. Please try again.';
 
-        // Map known 400 detail to the email field error if applicable
+        // Map known 400 detail to the email or timezone field error if applicable
         if (response.status === 400 && backendMsg) {
           if (/email/i.test(backendMsg)) {
             setErrors((prev) => ({ ...prev, email: backendMsg }));
+          }
+          if (/timezone/i.test(backendMsg)) {
+            setErrors((prev) => ({ ...prev, timezone: backendMsg }));
           }
         }
         setApiError(message);
@@ -157,6 +198,7 @@ export default function RegisterScreen() {
         params: {
           email: formData.email.trim(),
           name: formData.name.trim(),
+          timezone: formData.timezone,
         },
       });
     } catch (err) {
@@ -168,7 +210,10 @@ export default function RegisterScreen() {
   };
 
   const isFormValid =
-    formData.name.trim().length > 0 && formData.email.trim().length > 0 && Object.keys(errors).length === 0;
+    formData.name.trim().length > 0 &&
+    formData.email.trim().length > 0 &&
+    formData.timezone.length > 0 &&
+    Object.keys(errors).length === 0;
 
   return (
     <SafeAreaView className="flex-1 bg-green-50">
@@ -245,6 +290,29 @@ export default function RegisterScreen() {
                     onSubmitEditing={Keyboard.dismiss}
                   />
                   {errors.email && <Text className="mt-1 text-sm text-red-500">{errors.email}</Text>}
+                </View>
+                {/* Timezone Dropdown */}
+                <View className="mb-4 w-full">
+                  <Text className="mb-1 text-gray-700">Timezone</Text>
+                  <View
+                    className={`w-full rounded-md border bg-gray-50 text-gray-700 ${errors.timezone ? 'border-red-500' : 'border-gray-300'}`}
+                    style={{ paddingHorizontal: 4, paddingVertical: 0 }}
+                  >
+                    {/* Use Picker for dropdown */}
+                    {/* @ts-ignore: Picker import for demo, replace with community picker for production */}
+                    <Picker
+                      selectedValue={formData.timezone}
+                      onValueChange={(value: string) => handleInputChange('timezone', value)}
+                      enabled={!loading}
+                      style={{ color: formData.timezone ? '#000000' : '#535353', backgroundColor: 'transparent' }}
+                    >
+                      <Picker.Item label="Select your timezone" value="" color="#374151" style={{ fontSize: 14 }} />
+                      {timezones.map((tz) => (
+                        <Picker.Item key={tz} label={tz} value={tz} color="#374151" style={{ fontSize: 14 }} />
+                      ))}
+                    </Picker>
+                  </View>
+                  {errors.timezone && <Text className="mt-1 text-sm text-red-500">{errors.timezone}</Text>}
                 </View>
                 {/* Register Button */}
                 <TouchableOpacity
