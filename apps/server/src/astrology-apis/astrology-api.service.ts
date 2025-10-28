@@ -4,27 +4,6 @@ import { config } from '../common/config';
 
 @Injectable()
 export class AstrologyApiService {
-  private flattenDashaData(data: any) {
-    const result: any[] = [];
-    for (const maha in data) {
-      if (Object.prototype.hasOwnProperty.call(data, maha)) {
-        const antarDashas = data[maha];
-        for (const antar in antarDashas) {
-          if (Object.prototype.hasOwnProperty.call(antarDashas, antar)) {
-            const { start_time, end_time } = antarDashas[antar];
-            result.push({
-              maha,
-              antar,
-              start: start_time,
-              end: end_time,
-            });
-          }
-        }
-      }
-    }
-    return result;
-  }
-
   async getHoroscopeChartImageUrl(dto: GetHoroscopeDto) {
     const { apiKey } = config.freeAstrology;
 
@@ -240,59 +219,52 @@ export class AstrologyApiService {
   }
 
   async getAntarAndMahaDasas(dto: GetHoroscopeDto) {
-    const { apiKey } = config.freeAstrology;
+    const { apiKey } = config.jyotishamAstro;
 
     if (!apiKey) {
-      throw new HttpException('Missing Astrology API credentials', 500);
+      throw new HttpException('Missing JyotishamAstro API credentials', 500);
     }
 
     const [datePart, timePart] = dto.dateOfBirth.split('T');
     const [year, month, date] = datePart.split('-').map(Number);
     const [hours, minutes] = timePart.split(':').map(Number);
 
-    const data = JSON.stringify({
-      date,
-      month,
-      year,
-      hours,
-      minutes,
-      seconds: 0,
-      latitude: dto.latitude,
-      longitude: dto.longitude,
-      timezone: dto.timezoneOffset,
+    const formattedDate = `${String(date).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+    const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+    const params = new URLSearchParams({
+      date: formattedDate,
+      time: formattedTime,
+      latitude: dto.latitude.toString(),
+      longitude: dto.longitude.toString(),
+      tz: dto.timezoneOffset.toString(),
+      lang: 'en',
     });
 
-    const url = `https://json.freeastrologyapi.com/vimsottari/maha-dasas-and-antar-dasas`;
+    const url = `https://api.jyotishamastroapi.com/api/dasha/current-mahadasha-full?${params.toString()}`;
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: 'GET',
       headers: {
-        'x-api-key': apiKey,
-        'Content-Type': 'application/json',
+        key: apiKey,
       },
-      body: data,
     });
 
     if (!response.ok) {
-      const err = await response.json();
-      console.log(response);
-      throw new HttpException(err?.msg || 'Failed to fetch antar and maha dasas', response.status);
-    }
-
-    let responseData = (await response.json())?.output;
-
-    if (typeof responseData === 'string') {
+      const errorText = await response.text();
+      let err;
       try {
-        responseData = JSON.parse(responseData);
-      } catch (e) {
-        console.error('Failed to parse stringified JSON:', e);
+        err = JSON.parse(errorText);
+      } catch {
+        err = { msg: errorText };
       }
+      throw new HttpException(err?.msg || err?.message || 'Failed to fetch antar and maha dasas', response.status);
     }
 
-    const flatData = this.flattenDashaData(responseData);
+    const responseData = await response.json();
 
     return {
-      data: flatData,
+      data: responseData,
     };
   }
 }
