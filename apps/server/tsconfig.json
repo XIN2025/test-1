@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["node"],
+    "types": ["node", "jest"],
     "module": "commonjs",
     "resolveJsonModule": true,
     "declaration": true,
