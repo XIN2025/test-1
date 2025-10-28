@@ -86,7 +86,7 @@ export function ChatSidebar({ isCollapsed, setIsCollapsed }: ChatSidebarProps) {
 
         {!isCollapsed && <div className='mx-4 border-b' />}
 
-        <div className='flex-1 overflow-y-auto p-2'>
+        <div className='h-full flex-1 overflow-y-auto p-2'>
           <ChatHistory />
         </div>
       </div>

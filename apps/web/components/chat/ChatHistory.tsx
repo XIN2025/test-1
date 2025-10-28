@@ -2,8 +2,7 @@
 
 import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarMenu, useSidebar } from '@repo/ui/components/sidebar';
 import { ChatItem } from './ChatItem';
 import useSWRInfinite from 'swr/infinite';
@@ -61,12 +60,13 @@ export function getChatHistoryPaginationKey(pageIndex: number, previousPageData:
 
   if (pageIndex === 0) return '1';
 
-  return String(previousPageData.pagination.page + 1);
+  return String(pageIndex + 1);
 }
 
 export function ChatHistory() {
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const {
     data: paginatedChatHistories,
@@ -100,6 +100,10 @@ export function ChatHistory() {
     },
     {
       fallbackData: [],
+      revalidateFirstPage: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      persistSize: true,
     }
   );
 
@@ -137,6 +141,30 @@ export function ChatHistory() {
       },
     });
   };
+
+  useEffect(() => {
+    if (!loadMoreRef.current || hasReachedEnd || isValidating) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !isValidating && !hasReachedEnd) {
+          setSize((size) => size + 1);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px', // Start loading 100px before the element is visible
+      }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [hasReachedEnd, isValidating, setSize]);
 
   if (isLoading) {
     return (
@@ -185,7 +213,9 @@ export function ChatHistory() {
                   (paginatedChatHistory) => paginatedChatHistory.chats
                 );
 
-                const groupedChats = groupChatsByDate(chatsFromHistory);
+                const uniqueChats = Array.from(new Map(chatsFromHistory.map((chat) => [chat.id, chat])).values());
+
+                const groupedChats = groupChatsByDate(uniqueChats);
 
                 return (
                   <div className='flex flex-col gap-2'>
@@ -285,20 +315,14 @@ export function ChatHistory() {
               })()}
           </SidebarMenu>
 
-          <motion.div
-            onViewportEnter={() => {
-              if (!isValidating && !hasReachedEnd) {
-                setSize((size) => size + 1);
-              }
-            }}
-          />
+          <div ref={loadMoreRef} className='h-10 w-full' />
 
           {hasReachedEnd ? (
-            <div className='mt-8 flex w-full flex-row items-center justify-center gap-2 px-2 text-sm text-zinc-500'>
+            <div className='flex w-full flex-row items-center justify-center gap-2 px-2 text-sm text-zinc-500'>
               You have reached the end of your chat history.
             </div>
           ) : (
-            <div className='mt-8 flex flex-row items-center gap-2 p-2 text-zinc-500 dark:text-zinc-400'>
+            <div className='flex flex-row items-center gap-2 p-2 text-zinc-500 dark:text-zinc-400'>
               <div className='animate-spin'>
                 <LoaderIcon />
               </div>

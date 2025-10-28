@@ -9,6 +9,8 @@ import Greeting from './Greeting';
 import { DefaultChatTransport } from 'ai';
 import { ChatType } from '@repo/shared-types/types';
 import { useChatTransition } from '@/hooks/useChatTransition';
+import { unstable_serialize, useSWRConfig } from 'swr';
+import { getChatHistoryPaginationKey } from './ChatHistory';
 
 type ChatPageProps = {
   chat: ChatType;
@@ -18,6 +20,7 @@ const ChatPage = ({ chat }: ChatPageProps) => {
   const { query, chatId, clearTransition } = useChatTransition();
   const { data: session } = useSession();
   const initialMessageSentRef = useRef(false);
+  const { mutate } = useSWRConfig();
   const [input, setInput] = useState('');
 
   const { messages, sendMessage, status, error, stop } = useChat({
@@ -30,8 +33,8 @@ const ChatPage = ({ chat }: ChatPageProps) => {
     }),
     messages: chat.chatMessages as unknown as UIMessage[],
     experimental_throttle: 50,
-    onFinish: ({ message }) => {
-      console.log('onFinish called', message);
+    onFinish: () => {
+      mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
       console.error('Error in chat:', error);
