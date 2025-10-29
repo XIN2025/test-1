@@ -41,15 +41,15 @@ export class ToolsService {
       description:
         'Use this tool to get horoscope information based on the date of birth and location. For latitude and longitude use the tool web_search to get the information',
       inputSchema: z.object({
-        dateOfBirth: z.string().describe('The date of birth in the format YYYY-MM-DDTHH:MM:SS.SSSZ'),
+        dateAndTime: z.string().describe('The date and time of birth in the format YYYY-MM-DDTHH:MM:SS.SSSZ'),
         latitude: z.number().describe('The latitude of the place of birth'),
         longitude: z.number().describe('The longitude of the place of birth'),
         timezoneOffset: z.number().describe('The timezone offset of the place of birth'),
       }),
-      execute: async ({ dateOfBirth, latitude, longitude, timezoneOffset }) => {
+      execute: async ({ dateAndTime, latitude, longitude, timezoneOffset }) => {
         try {
           const horoscope = await this.astrologyApiService.getHoroscope({
-            dateOfBirth,
+            dateAndTime,
             latitude,
             longitude,
             timezoneOffset,
