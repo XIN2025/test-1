@@ -1,5 +1,7 @@
 import ChatPage from '@/components/chat/ChatPage';
 import { ChatService } from '@/services';
+import { UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai';
+import { formatISO } from 'date-fns';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React from 'react';
@@ -34,7 +36,15 @@ const ChatItemPage = async ({ params }: { params: Promise<{ id: string }> }) => 
     if (!chat) {
       return notFound();
     }
-    return <ChatPage chat={chat} />;
+    const uiMessages: UIMessage[] = chat.chatMessages.map((message) => ({
+      id: message.id,
+      role: message.role as 'system' | 'user' | 'assistant',
+      parts: message.parts as UIMessagePart<UIDataTypes, UITools>[],
+      metadata: {
+        createdAt: formatISO(message.createdAt),
+      },
+    }));
+    return <ChatPage id={id} initialMessages={uiMessages} />;
   } catch (error) {
     return notFound();
   }

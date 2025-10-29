@@ -107,7 +107,6 @@ model Chat {
 model ChatMessage {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   chatId      String   @db.ObjectId
-  content     String
   role        String
   parts       Json?
   attachments Json?

@@ -1,25 +1,11 @@
-import {
-  TextUIPart,
-  ReasoningUIPart,
-  DynamicToolUIPart,
-  SourceUrlUIPart,
-  FileUIPart,
-  StepStartUIPart,
-  SourceDocumentUIPart,
-  ToolUIPart,
-} from 'ai';
-import { UIMessage } from 'ai';
+import { TextUIPart } from 'ai';
 import { Transform, Type } from 'class-transformer';
-import { IsIn, IsISO8601, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsIn, IsISO8601, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 
-export class MessageDto implements UIMessage {
+export class MessageDto {
   @IsString()
   @IsNotEmpty()
   id: string;
-
-  @IsString()
-  @IsNotEmpty()
-  content: string;
 
   @IsOptional()
   @IsISO8601()
@@ -31,16 +17,12 @@ export class MessageDto implements UIMessage {
   role: 'system' | 'user' | 'assistant';
 
   @IsOptional()
-  parts: (
-    | TextUIPart
-    | ReasoningUIPart
-    | DynamicToolUIPart
-    | ToolUIPart
-    | SourceUrlUIPart
-    | SourceDocumentUIPart
-    | FileUIPart
-    | StepStartUIPart
-  )[];
+  parts: TextUIPart[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  attachments: string[];
 }
 
 export class ChatAgentInputDto {
