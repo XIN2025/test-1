@@ -12,7 +12,7 @@ import {
 import { openai } from '@ai-sdk/openai';
 import { fallbackPrompts } from 'src/agents/prompts';
 import { ToolsService } from './tools.service';
-import { response, Response } from 'express';
+import { Response } from 'express';
 import { google } from '@ai-sdk/google';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatConfigService } from '../admin/chat-config/chat-config.service';
@@ -41,11 +41,18 @@ export class AgentsService {
   }) {
     let systemPrompt = chatConfig?.chatAgentPrompt || fallbackPrompts.getChatAgentPrompt();
 
-    systemPrompt += `\n\nCurrent date and time in UTC: ${new Date().toISOString()}`;
+    const currentUtc = new Date().toISOString();
+
+    systemPrompt += `
+  \n\n### Temporal Context
+  The current real-world date and time (UTC) is: ${currentUtc}.
+  Always use this value for any time, date, astrological, or stock-market–related reasoning or calculations or any other time-related information.
+  Ignore any internal or prior knowledge about the current year or date from your training data.
+  When interpreting user input related to "current time", treat "${currentUtc}" as now.
+  `;
 
     if (userProfile) {
       const { dateOfBirth, gender, placeOfBirth, timeOfBirth } = userProfile;
-
       const userInfoParts: string[] = [];
 
       if (user?.name) userInfoParts.push(`Name: ${user.name}`);
@@ -55,7 +62,7 @@ export class AgentsService {
       if (placeOfBirth) userInfoParts.push(`Place of Birth: ${placeOfBirth}`);
 
       if (userInfoParts.length > 0) {
-        systemPrompt += `\n\nUser Profile Information:\n${userInfoParts.join('\n')}`;
+        systemPrompt += `\n\n### User Profile Information\n${userInfoParts.join('\n')}`;
       }
     }
 
