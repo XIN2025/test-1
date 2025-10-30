@@ -46,6 +46,7 @@
     "@ai-sdk/react": "^2.0.79",
     "@repo/db": "^0.0.0",
     "@repo/shared-types": "*",
+    "@supermemory/tools": "^1.3.2",
     "@tailwindcss/typography": "^0.5.19",
     "@tanstack/react-query": "^5.80.7",
     "ai": "^5.0.79",

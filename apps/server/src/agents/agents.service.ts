@@ -21,6 +21,9 @@ import { GetChatsQueryDto, MessageDto, UpdateChatDto } from './dto/chat-agent.dt
 import { convertToUIMessages } from './dto/db-message.dto';
 import { ChatConfig, UserProfile } from '@repo/db';
 import { InputJsonValue } from '@repo/db/generated/prisma/runtime/library';
+import { supermemoryTools } from '@supermemory/tools/ai-sdk';
+import { config } from 'src/common/config';
+import { getMemoryProtocolPrompt, getTemporalContextPrompt, getToolsPrompt } from './prompts/dynamic-prompts';
 
 @Injectable()
 export class AgentsService {
@@ -40,16 +43,11 @@ export class AgentsService {
     user?: RequestUser;
   }) {
     let systemPrompt = chatConfig?.chatAgentPrompt || fallbackPrompts.getChatAgentPrompt();
+    const temporalContextPrompt = getTemporalContextPrompt();
+    const memoryProtocolPrompt = getMemoryProtocolPrompt();
+    const toolsPrompt = getToolsPrompt();
 
-    const currentUtc = new Date().toISOString();
-
-    systemPrompt += `
-  \n\n### Temporal Context
-  The current real-world date and time (UTC) is: ${currentUtc}.
-  Always use this value for any time, date, astrological, or stock-market–related reasoning or calculations or any other time-related information.
-  Ignore any internal or prior knowledge about the current year or date from your training data.
-  When interpreting user input related to "current time", treat "${currentUtc}" as now.
-  `;
+    systemPrompt += memoryProtocolPrompt + toolsPrompt + temporalContextPrompt;
 
     if (userProfile) {
       const { dateOfBirth, gender, placeOfBirth, timeOfBirth } = userProfile;
@@ -65,7 +63,6 @@ export class AgentsService {
         systemPrompt += `\n\n### User Profile Information\n${userInfoParts.join('\n')}`;
       }
     }
-
     return systemPrompt;
   }
 
@@ -146,6 +143,9 @@ export class AgentsService {
             experimental_transform: smoothStream({ chunking: 'word' }),
             tools: {
               ...this.toolsService.getTools(),
+              ...supermemoryTools(config.supermemory.apiKey, {
+                containerTags: [user.id],
+              }),
             },
             temperature: 0.6,
             onStepFinish: async ({ finishReason }) => {
