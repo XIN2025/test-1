@@ -8,8 +8,9 @@ import ChatMessages from './ChatMessages';
 import Greeting from './Greeting';
 import { DefaultChatTransport } from 'ai';
 import { useChatTransition } from '@/hooks/useChatTransition';
-import { unstable_serialize, useSWRConfig } from 'swr';
+import { useSWRConfig } from 'swr';
 import { getChatHistoryPaginationKey } from './ChatHistory';
+import { unstable_serialize } from 'swr/infinite';
 
 type ChatPageProps = {
   id: string;

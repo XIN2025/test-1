@@ -51,7 +51,6 @@ export class AgentsService {
 
     if (userProfile) {
       const { dateOfBirth, gender, placeOfBirth, timeOfBirth } = userProfile;
-
       const userInfoParts: string[] = [];
 
       if (user?.name) userInfoParts.push(`Name: ${user.name}`);
@@ -61,7 +60,7 @@ export class AgentsService {
       if (placeOfBirth) userInfoParts.push(`Place of Birth: ${placeOfBirth}`);
 
       if (userInfoParts.length > 0) {
-        systemPrompt += `\n\nUser Profile Information:\n${userInfoParts.join('\n')}`;
+        systemPrompt += `\n\n### User Profile Information\n${userInfoParts.join('\n')}`;
       }
     }
     return systemPrompt;
