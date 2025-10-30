@@ -34,4 +34,7 @@ export const config = {
   jyotishamAstro: {
     apiKey: process.env.JYOTISHAM_ASTRO_API_KEY || '',
   },
+  supermemory: {
+    apiKey: process.env.SUPERMEMORY_API_KEY || '',
+  },
 };

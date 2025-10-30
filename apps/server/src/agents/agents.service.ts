@@ -12,7 +12,7 @@ import {
 import { openai } from '@ai-sdk/openai';
 import { fallbackPrompts } from 'src/agents/prompts';
 import { ToolsService } from './tools.service';
-import { response, Response } from 'express';
+import { Response } from 'express';
 import { google } from '@ai-sdk/google';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatConfigService } from '../admin/chat-config/chat-config.service';
@@ -21,6 +21,8 @@ import { GetChatsQueryDto, MessageDto, UpdateChatDto } from './dto/chat-agent.dt
 import { convertToUIMessages } from './dto/db-message.dto';
 import { ChatConfig, UserProfile } from '@repo/db';
 import { InputJsonValue } from '@repo/db/generated/prisma/runtime/library';
+import { supermemoryTools } from '@supermemory/tools/ai-sdk';
+import { config } from 'src/common/config';
 
 @Injectable()
 export class AgentsService {
@@ -139,6 +141,9 @@ export class AgentsService {
             experimental_transform: smoothStream({ chunking: 'word' }),
             tools: {
               ...this.toolsService.getTools(),
+              ...supermemoryTools(config.supermemory.apiKey, {
+                containerTags: [user.id],
+              }),
             },
             temperature: 0.6,
             onStepFinish: async ({ finishReason }) => {
