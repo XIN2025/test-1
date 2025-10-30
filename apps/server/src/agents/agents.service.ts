@@ -23,6 +23,7 @@ import { ChatConfig, UserProfile } from '@repo/db';
 import { InputJsonValue } from '@repo/db/generated/prisma/runtime/library';
 import { supermemoryTools } from '@supermemory/tools/ai-sdk';
 import { config } from 'src/common/config';
+import { getMemoryProtocolPrompt, getTemporalContextPrompt, getToolsPrompt } from './prompts/dynamic-prompts';
 
 @Injectable()
 export class AgentsService {
@@ -42,8 +43,11 @@ export class AgentsService {
     user?: RequestUser;
   }) {
     let systemPrompt = chatConfig?.chatAgentPrompt || fallbackPrompts.getChatAgentPrompt();
+    const temporalContextPrompt = getTemporalContextPrompt();
+    const memoryProtocolPrompt = getMemoryProtocolPrompt();
+    const toolsPrompt = getToolsPrompt();
 
-    systemPrompt += `\n\nCurrent date and time in UTC: ${new Date().toISOString()}`;
+    systemPrompt += memoryProtocolPrompt + toolsPrompt + temporalContextPrompt;
 
     if (userProfile) {
       const { dateOfBirth, gender, placeOfBirth, timeOfBirth } = userProfile;
@@ -60,7 +64,6 @@ export class AgentsService {
         systemPrompt += `\n\nUser Profile Information:\n${userInfoParts.join('\n')}`;
       }
     }
-
     return systemPrompt;
   }
 
