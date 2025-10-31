@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
+  convertToModelMessages,
   createUIMessageStream,
-  generateObject,
+  generateText,
   pipeUIMessageStreamToResponse,
   smoothStream,
   stepCountIs,
   streamText,
+  UIMessage,
 } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { fallbackPrompts } from 'src/agents/prompts';
@@ -16,17 +18,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatConfigService } from '../admin/chat-config/chat-config.service';
 import { RequestUser } from 'src/auth/dto/request-user.dto';
 import { GetChatsQueryDto, MessageDto, UpdateChatDto } from './dto/chat-agent.dto';
-import z from 'zod';
-import { dbToModelMessage, dbToUIMessage } from './dto/db-message.dto';
-import { InputJsonValue } from '@repo/db/generated/prisma/runtime/library';
+import { convertToUIMessages } from './dto/db-message.dto';
 import { ChatConfig, UserProfile } from '@repo/db';
+import { InputJsonValue } from '@repo/db/generated/prisma/runtime/library';
+import { supermemoryTools } from '@supermemory/tools/ai-sdk';
+import { config } from 'src/common/config';
+import { getMemoryProtocolPrompt, getTemporalContextPrompt, getToolsPrompt } from './prompts/dynamic-prompts';
 
 @Injectable()
 export class AgentsService {
   constructor(
-    private readonly toolsService: ToolsService,
     private readonly prisma: PrismaService,
-    private readonly chatConfigService: ChatConfigService
+    private readonly chatConfigService: ChatConfigService,
+    private readonly toolsService: ToolsService
   ) {}
 
   private constructSystemPrompt({
@@ -39,12 +43,14 @@ export class AgentsService {
     user?: RequestUser;
   }) {
     let systemPrompt = chatConfig?.chatAgentPrompt || fallbackPrompts.getChatAgentPrompt();
+    const temporalContextPrompt = getTemporalContextPrompt();
+    const memoryProtocolPrompt = getMemoryProtocolPrompt();
+    const toolsPrompt = getToolsPrompt();
 
-    systemPrompt += `\n\nCurrent date and time in UTC: ${new Date().toISOString()}`;
+    systemPrompt += memoryProtocolPrompt + toolsPrompt + temporalContextPrompt;
 
     if (userProfile) {
       const { dateOfBirth, gender, placeOfBirth, timeOfBirth } = userProfile;
-
       const userInfoParts: string[] = [];
 
       if (user?.name) userInfoParts.push(`Name: ${user.name}`);
@@ -54,10 +60,9 @@ export class AgentsService {
       if (placeOfBirth) userInfoParts.push(`Place of Birth: ${placeOfBirth}`);
 
       if (userInfoParts.length > 0) {
-        systemPrompt += `\n\nUser Profile Information:\n${userInfoParts.join('\n')}`;
+        systemPrompt += `\n\n### User Profile Information\n${userInfoParts.join('\n')}`;
       }
     }
-
     return systemPrompt;
   }
 
@@ -76,10 +81,23 @@ export class AgentsService {
     if (existingChat && existingChat.chatMessages.length === 0) {
       return existingChat;
     }
-    return await this.prisma.chat.create({
-      data: {
-        userId,
-      },
+    return await this.prisma.$transaction(async (tx) => {
+      const chat = await tx.chat.create({
+        data: {
+          userId,
+        },
+      });
+      await tx.userChatStat.upsert({
+        where: { userId },
+        update: {
+          totalChats: { increment: 1 },
+        },
+        create: {
+          userId,
+          totalChats: 1,
+        },
+      });
+      return chat;
     });
   }
 
@@ -93,21 +111,21 @@ export class AgentsService {
         },
       }),
     ]);
-    const newMessage = await this.prisma.chatMessage.create({
-      data: {
-        chatId,
-        content: message.content,
-        role: message.role,
-        parts: message.parts as unknown as InputJsonValue,
-      },
-    });
 
     if (chat.chatMessages.length === 0 && chat.title === 'New Chat') {
-      await this.generateAndChangeTitle(message.content, chatId);
+      await this.generateAndChangeTitle(message, chatId);
     }
 
-    const convertedMessage = dbToModelMessage(newMessage);
-    const messages = [...chat.chatMessages, convertedMessage];
+    const uiMessages = [...convertToUIMessages(chat.chatMessages), message];
+
+    await this.prisma.chatMessage.create({
+      data: {
+        chatId,
+        role: message.role,
+        parts: message.parts,
+        attachments: message.attachments,
+      },
+    });
 
     const model = chatConfig?.model && chatConfig.model === 'openai' ? openai('gpt-4.1') : google('gemini-2.0-flash');
 
@@ -120,40 +138,33 @@ export class AgentsService {
           const result = streamText({
             model: model,
             system: systemPrompt,
-            messages: messages,
+            messages: convertToModelMessages(uiMessages),
             stopWhen: stepCountIs(10),
             experimental_transform: smoothStream({ chunking: 'word' }),
             tools: {
               ...this.toolsService.getTools(),
+              ...supermemoryTools(config.supermemory.apiKey, {
+                containerTags: [user.id],
+              }),
             },
             temperature: 0.6,
             onStepFinish: async ({ finishReason }) => {
               console.log(finishReason);
             },
-            onFinish: async ({ usage, text, finishReason }) => {
+            onFinish: async ({ usage, finishReason }) => {
               console.log('onFinish called');
               console.log('usage', usage);
               console.log('finishReason', finishReason);
 
-              await this.prisma.chatMessage.create({
-                data: {
-                  chatId,
-                  content: text,
-                  role: 'assistant',
-                  parts: [{ type: 'text', text: text }],
-                },
-              });
               await this.prisma.userChatStat.upsert({
                 where: { userId: user.id },
                 update: {
                   totalTokensUsed: { increment: usage.totalTokens },
-                  totalChats: { increment: 1 },
                   totalQuestions: { increment: 1 },
                 },
                 create: {
                   userId: user.id,
                   totalTokensUsed: usage.totalTokens,
-                  totalChats: 1,
                   totalQuestions: 1,
                 },
               });
@@ -161,6 +172,16 @@ export class AgentsService {
           });
 
           writer.merge(result.toUIMessageStream());
+        },
+        onFinish: async (response) => {
+          const lastMessage = response.messages[response.messages.length - 1];
+          await this.prisma.chatMessage.create({
+            data: {
+              chatId,
+              role: lastMessage.role,
+              parts: lastMessage.parts as InputJsonValue,
+            },
+          });
         },
         onError: (error) => {
           console.log(error);
@@ -187,10 +208,7 @@ export class AgentsService {
     if (!chat) {
       throw new NotFoundException('Chat not found');
     }
-    return {
-      ...chat,
-      chatMessages: chat.chatMessages.map(dbToUIMessage),
-    };
+    return chat;
   }
 
   async getChats(userId: string, query: GetChatsQueryDto) {
@@ -252,20 +270,21 @@ export class AgentsService {
     return { message: 'Chat deleted successfully' };
   }
 
-  private async generateAndChangeTitle(userMessage: string, chatId: string) {
-    const res = await generateObject({
+  private async generateAndChangeTitle(userMessage: UIMessage, chatId: string) {
+    const { text: title } = await generateText({
       model: openai('gpt-4o-mini'),
-      schema: z.object({
-        title: z.string(),
-      }),
-      prompt: `Generate a concise title (max 5 words) that summarizes the intent or topic of the following user message. Avoid punctuation unless necessary. 
-			User message:
-			${userMessage}`,
+      system: `\n
+      - you will generate a short title based on the first message a user begins a conversation with
+      - ensure it is not more than 80 characters long
+      - the title should be a summary of the user's message
+      - do not use quotes or colons`,
+      prompt: JSON.stringify(userMessage),
     });
-    if (res.object.title) {
+
+    if (title) {
       await this.prisma.chat.update({
         where: { id: chatId },
-        data: { title: res.object.title },
+        data: { title },
       });
     }
   }

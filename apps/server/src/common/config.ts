@@ -1,5 +1,4 @@
 import 'dotenv/config';
-
 export const config = {
   port: parseInt(process.env.PORT || '8080', 10),
   jwt: {
@@ -31,5 +30,11 @@ export const config = {
   },
   freeAstrology: {
     apiKey: process.env.FREE_ASTROLOGY_API_KEY || '',
+  },
+  jyotishamAstro: {
+    apiKey: process.env.JYOTISHAM_ASTRO_API_KEY || '',
+  },
+  supermemory: {
+    apiKey: process.env.SUPERMEMORY_API_KEY || '',
   },
 };

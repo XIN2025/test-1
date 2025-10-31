@@ -1,6 +1,7 @@
 {
   "name": "@repo/shared-types",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "lint": "eslint \"{types,schemas,enums}/**/*.ts\" --fix"

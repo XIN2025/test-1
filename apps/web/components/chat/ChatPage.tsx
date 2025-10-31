@@ -7,31 +7,43 @@ import ChatInput from './ChatInput';
 import ChatMessages from './ChatMessages';
 import Greeting from './Greeting';
 import { DefaultChatTransport } from 'ai';
-import { ChatType } from '@repo/shared-types/types';
 import { useChatTransition } from '@/hooks/useChatTransition';
+import { useSWRConfig } from 'swr';
+import { getChatHistoryPaginationKey } from './ChatHistory';
+import { unstable_serialize } from 'swr/infinite';
 
 type ChatPageProps = {
-  chat: ChatType;
+  id: string;
+  initialMessages: UIMessage[];
 };
 
-const ChatPage = ({ chat }: ChatPageProps) => {
+const ChatPage = ({ id, initialMessages }: ChatPageProps) => {
   const { query, chatId, clearTransition } = useChatTransition();
   const { data: session } = useSession();
   const initialMessageSentRef = useRef(false);
+  const { mutate } = useSWRConfig();
   const [input, setInput] = useState('');
 
   const { messages, sendMessage, status, error, stop } = useChat({
-    id: chat.id,
+    id,
     transport: new DefaultChatTransport({
-      api: `${envConfig.apiUrl}/api/agents/chat/${chat.id}`,
+      api: `${envConfig.apiUrl}/api/agents/chat/${id}`,
       headers: {
         Authorization: `Bearer ${session?.user.token}`,
       },
+      prepareSendMessagesRequest(request) {
+        return {
+          body: {
+            message: request.messages.at(-1),
+            ...request.body,
+          },
+        };
+      },
     }),
-    messages: chat.chatMessages as unknown as UIMessage[],
-    experimental_throttle: 50,
-    onFinish: ({ message }) => {
-      console.log('onFinish called', message);
+    messages: initialMessages,
+    experimental_throttle: 100,
+    onFinish: () => {
+      mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
       console.error('Error in chat:', error);
@@ -41,51 +53,28 @@ const ChatPage = ({ chat }: ChatPageProps) => {
   const handleSubmit = async () => {
     if (input.trim()) {
       setInput('');
-      await sendMessage(
-        {
-          text: input || query,
-        },
-        {
-          body: {
-            message: {
-              content: input || query,
-              role: 'user',
-              id: Math.random().toString(36).substring(2, 15),
-              createdAt: new Date(),
-            },
-          },
-        }
-      );
+      await sendMessage({
+        role: 'user',
+        parts: [{ type: 'text', text: input || query }],
+      });
     }
   };
 
   useEffect(() => {
     const sendInitialMessage = async () => {
-      if (chat.id === chatId && query && !initialMessageSentRef.current) {
+      if (id === chatId && query && !initialMessageSentRef.current) {
         initialMessageSentRef.current = true;
-        sendMessage(
-          {
-            text: input || query,
-          },
-          {
-            body: {
-              message: {
-                id: Math.random().toString(36).substring(2, 15),
-                content: input || query,
-                role: 'user',
-                parts: {},
-                attachments: [],
-              },
-            },
-          }
-        );
+        sendMessage({
+          role: 'user',
+          parts: [{ type: 'text', text: input || query }],
+        });
 
         clearTransition();
       }
     };
 
     sendInitialMessage();
-  }, [chat.id, chatId, query, clearTransition, sendMessage, input]);
+  }, [id, chatId, query, clearTransition, sendMessage, input]);
 
   if (messages.length === 0) {
     return (
