@@ -5,10 +5,10 @@ import { UpdateChatConfigDto } from './dto/chat-update.dto';
 import { ChatConfigService } from 'src/admin/chat-config/chat-config.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-@Controller('admin/chat-config')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, AdminGuard)
-@ApiTags('Admin')
+@ApiTags('Admin - Chat Config')
+@Controller('admin/chat-config')
 export class ChatConfigController {
   constructor(private readonly chatConfigService: ChatConfigService) {}
 

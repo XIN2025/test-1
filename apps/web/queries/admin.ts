@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 export const adminKeys = {
   all: ['admin'] as const,
   chatConfig: () => ['chatConfig'] as const,
+  users: () => ['users'] as const,
 };
 
 export const useGetChatConfig = () => {
@@ -26,5 +27,12 @@ export const useUpdateChatConfig = () => {
     onError: (error) => {
       toast.error(error.message);
     },
+  });
+};
+
+export const useGetUsers = () => {
+  return useQuery({
+    queryKey: adminKeys.users(),
+    queryFn: () => AdminService.getUsers(),
   });
 };
