@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 const AdminPage = () => {
-  redirect('/admin/chat');
+  redirect('/admin/users');
 };
 
 export default AdminPage;

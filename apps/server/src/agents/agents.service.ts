@@ -95,6 +95,11 @@ export class AgentsService {
         create: {
           userId,
           totalChats: 1,
+          totalQuestions: 0,
+          totalTokensUsed: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          cachedTokens: 0,
         },
       });
       return chat;
@@ -155,23 +160,36 @@ export class AgentsService {
             onStepFinish: async ({ finishReason }) => {
               console.log(finishReason);
             },
-            onFinish: async ({ usage, finishReason }) => {
-              console.log('onFinish called');
-              console.log('usage', usage);
-              console.log('finishReason', finishReason);
+            onFinish: async ({ usage }) => {
+              try {
+                const tokenData = {
+                  totalTokens: usage.totalTokens || 0,
+                  inputTokens: usage.inputTokens || 0,
+                  outputTokens: usage.outputTokens || 0,
+                  cachedTokens: usage.cachedInputTokens || 0,
+                };
 
-              await this.prisma.userChatStat.upsert({
-                where: { userId: user.id },
-                update: {
-                  totalTokensUsed: { increment: usage.totalTokens },
-                  totalQuestions: { increment: 1 },
-                },
-                create: {
-                  userId: user.id,
-                  totalTokensUsed: usage.totalTokens,
-                  totalQuestions: 1,
-                },
-              });
+                await this.prisma.userChatStat.upsert({
+                  where: { userId: user.id },
+                  update: {
+                    totalTokensUsed: { increment: tokenData.totalTokens },
+                    inputTokens: { increment: tokenData.inputTokens },
+                    outputTokens: { increment: tokenData.outputTokens },
+                    cachedTokens: { increment: tokenData.cachedTokens },
+                    totalQuestions: { increment: 1 },
+                  },
+                  create: {
+                    userId: user.id,
+                    totalTokensUsed: tokenData.totalTokens,
+                    inputTokens: tokenData.inputTokens,
+                    outputTokens: tokenData.outputTokens,
+                    cachedTokens: tokenData.cachedTokens,
+                    totalQuestions: 1,
+                  },
+                });
+              } catch (error) {
+                console.error('Error saving token stats:', error);
+              }
             },
           });
 
