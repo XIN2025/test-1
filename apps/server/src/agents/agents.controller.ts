@@ -32,9 +32,15 @@ export class AgentsController {
   }
 
   @Get('chat/:chatId')
-  @ApiOperation({ summary: 'Get whole chat with messages' })
+  @ApiOperation({ summary: 'Get chat' })
   getChat(@Param('chatId') chatId: string, @CurrentUser() user: RequestUser) {
     return this.agentsService.getChat(user.id, chatId);
+  }
+
+  @Get('chat/:chatId/messages')
+  @ApiOperation({ summary: 'Get chat with messages' })
+  getChatWithMessages(@Param('chatId') chatId: string, @CurrentUser() user: RequestUser) {
+    return this.agentsService.getChatWithMessages(user.id, chatId);
   }
 
   @Get('chats')

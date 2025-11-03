@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 const ChatItemPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
   try {
-    const chat = await ChatService.getChatById(id);
+    const chat = await ChatService.getChatWithMessages(id);
     if (!chat) {
       return notFound();
     }
@@ -44,7 +44,7 @@ const ChatItemPage = async ({ params }: { params: Promise<{ id: string }> }) => 
         createdAt: formatISO(message.createdAt),
       },
     }));
-    return <ChatPage id={id} initialMessages={uiMessages} isPublic={chat.isPublic} ownerId={chat.userId} />;
+    return <ChatPage id={id} initialMessages={uiMessages} />;
   } catch (error) {
     return notFound();
   }

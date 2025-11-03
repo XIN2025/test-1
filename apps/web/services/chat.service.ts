@@ -29,6 +29,10 @@ export class ChatService {
     return await ApiClient.get<ChatType>(`/api/agents/chat/${chatId}`);
   }
 
+  static async getChatWithMessages(chatId: string) {
+    return await ApiClient.get<ChatType>(`/api/agents/chat/${chatId}/messages`);
+  }
+
   static async getChats(query?: GetChatsQueryDto) {
     return await ApiClient.get<GetChatsResponse>(`/api/agents/chats`, query);
   }

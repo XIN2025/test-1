@@ -104,7 +104,7 @@ export class AgentsService {
   async chat(chatId: string, message: MessageDto, user: RequestUser, res: Response) {
     const [chatConfig, chat, userProfile] = await Promise.all([
       this.chatConfigService.getChatConfig(),
-      this.getChat(user.id, chatId),
+      this.getChatWithMessages(user.id, chatId),
       this.prisma.userProfile.findUnique({
         where: {
           userId: user.id,
@@ -195,7 +195,7 @@ export class AgentsService {
     });
   }
 
-  async getChat(userId: string, chatId: string) {
+  async getChatWithMessages(userId: string, chatId: string) {
     const chat = await this.prisma.chat.findUnique({
       where: {
         id: chatId,
@@ -207,6 +207,16 @@ export class AgentsService {
           },
         },
       },
+    });
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
+    return chat;
+  }
+
+  async getChat(userId: string, chatId: string) {
+    const chat = await this.prisma.chat.findUnique({
+      where: { id: chatId },
     });
     if (!chat) {
       throw new NotFoundException('Chat not found');

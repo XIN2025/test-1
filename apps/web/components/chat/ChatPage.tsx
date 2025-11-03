@@ -12,23 +12,27 @@ import { useSWRConfig } from 'swr';
 import { getChatHistoryPaginationKey } from './ChatHistory';
 import { unstable_serialize } from 'swr/infinite';
 import { ShareButton } from './ShareButton';
+import { chatKeys, useGetChatById } from '@/queries/chat';
+import { DataLoader } from '../general/DataLoader';
+import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 type ChatPageProps = {
   id: string;
   initialMessages: UIMessage[];
-  isPublic?: boolean;
-  ownerId?: string;
 };
 
-const ChatPage = ({ id, initialMessages, isPublic = false, ownerId }: ChatPageProps) => {
+const ChatPage = ({ id, initialMessages }: ChatPageProps) => {
   const { query, chatId, clearTransition } = useChatTransition();
   const { data: session } = useSession();
+  const { data: chat, isLoading: isLoadingChat } = useGetChatById(id);
   const initialMessageSentRef = useRef(false);
   const { mutate } = useSWRConfig();
   const [input, setInput] = useState('');
-
-  const isViewingSharedChat = isPublic && ownerId && session?.user.id !== ownerId;
-  const isOwner = session?.user.id === ownerId;
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const isViewingSharedChat = chat?.isPublic && chat?.userId !== session?.user.id;
+  const isOwner = session?.user.id === chat?.userId;
 
   const { messages, sendMessage, status, error, stop } = useChat({
     id,
@@ -49,6 +53,10 @@ const ChatPage = ({ id, initialMessages, isPublic = false, ownerId }: ChatPagePr
     messages: initialMessages,
     experimental_throttle: 100,
     onFinish: () => {
+      if (messages.length < 3) {
+        router.refresh();
+        queryClient.invalidateQueries({ queryKey: chatKeys.chat(id) });
+      }
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
@@ -82,17 +90,23 @@ const ChatPage = ({ id, initialMessages, isPublic = false, ownerId }: ChatPagePr
     sendInitialMessage();
   }, [id, chatId, query, clearTransition, sendMessage, input]);
 
+  if (isLoadingChat && messages.length === 0) {
+    return <DataLoader />;
+  }
+
   if (messages.length === 0 && !isViewingSharedChat) {
     return (
       <Greeting query={input} setQuery={setInput} isSubmitting={status === 'streaming'} handleSubmit={handleSubmit} />
     );
   }
+
   return (
     <div className='flex h-full w-full flex-col'>
-      {messages.length > 0 && (
-        <div className='flex-shrink-0 border-b p-3'>
+      {messages.length > 0 && !isViewingSharedChat && (
+        <div className='flex flex-shrink-0 items-center justify-between border-b px-4 py-2'>
+          <p className='text-muted-foreground text-sm font-medium'>{chat?.title}</p>
           <div className='flex items-center justify-end'>
-            <ShareButton chatId={id} isPublic={isPublic} isOwner={isOwner} />
+            <ShareButton chatId={id} isPublic={chat?.isPublic ?? false} isOwner={isOwner} />
           </div>
         </div>
       )}
