@@ -37,7 +37,7 @@ export class ChatService {
     return await ApiClient.delete(`/api/agents/chat/${chatId}`);
   }
 
-  static async updateChat(chatId: string, body: { title: string }) {
+  static async updateChat(chatId: string, body: { title?: string; isPublic?: boolean }) {
     return await ApiClient.put(`/api/agents/chat/${chatId}`, body);
   }
 }

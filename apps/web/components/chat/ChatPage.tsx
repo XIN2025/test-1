@@ -11,18 +11,24 @@ import { useChatTransition } from '@/hooks/useChatTransition';
 import { useSWRConfig } from 'swr';
 import { getChatHistoryPaginationKey } from './ChatHistory';
 import { unstable_serialize } from 'swr/infinite';
+import { ShareButton } from './ShareButton';
 
 type ChatPageProps = {
   id: string;
   initialMessages: UIMessage[];
+  isPublic?: boolean;
+  ownerId?: string;
 };
 
-const ChatPage = ({ id, initialMessages }: ChatPageProps) => {
+const ChatPage = ({ id, initialMessages, isPublic = false, ownerId }: ChatPageProps) => {
   const { query, chatId, clearTransition } = useChatTransition();
   const { data: session } = useSession();
   const initialMessageSentRef = useRef(false);
   const { mutate } = useSWRConfig();
   const [input, setInput] = useState('');
+
+  const isViewingSharedChat = isPublic && ownerId && session?.user.id !== ownerId;
+  const isOwner = session?.user.id === ownerId;
 
   const { messages, sendMessage, status, error, stop } = useChat({
     id,
@@ -76,25 +82,34 @@ const ChatPage = ({ id, initialMessages }: ChatPageProps) => {
     sendInitialMessage();
   }, [id, chatId, query, clearTransition, sendMessage, input]);
 
-  if (messages.length === 0) {
+  if (messages.length === 0 && !isViewingSharedChat) {
     return (
       <Greeting query={input} setQuery={setInput} isSubmitting={status === 'streaming'} handleSubmit={handleSubmit} />
     );
   }
   return (
     <div className='flex h-full w-full flex-col'>
+      {messages.length > 0 && (
+        <div className='flex-shrink-0 border-b p-3'>
+          <div className='flex items-center justify-end'>
+            <ShareButton chatId={id} isPublic={isPublic} isOwner={isOwner} />
+          </div>
+        </div>
+      )}
       <div className='flex-1 overflow-auto'>
         <ChatMessages messages={messages} status={status} error={error} />
       </div>
-      <div className='flex-shrink-0 p-4 pt-0'>
-        <ChatInput
-          onSubmit={handleSubmit}
-          query={input}
-          setQuery={setInput}
-          isSubmitting={status === 'streaming'}
-          onStop={stop}
-        />
-      </div>
+      {!isViewingSharedChat && (
+        <div className='flex-shrink-0 p-4 pt-0'>
+          <ChatInput
+            onSubmit={handleSubmit}
+            query={input}
+            setQuery={setInput}
+            isSubmitting={status === 'streaming'}
+            onStop={stop}
+          />
+        </div>
+      )}
     </div>
   );
 };

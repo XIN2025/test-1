@@ -44,7 +44,7 @@ const ChatItemPage = async ({ params }: { params: Promise<{ id: string }> }) => 
         createdAt: formatISO(message.createdAt),
       },
     }));
-    return <ChatPage id={id} initialMessages={uiMessages} />;
+    return <ChatPage id={id} initialMessages={uiMessages} isPublic={chat.isPublic} ownerId={chat.userId} />;
   } catch (error) {
     return notFound();
   }

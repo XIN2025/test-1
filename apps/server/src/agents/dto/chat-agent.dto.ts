@@ -1,6 +1,16 @@
 import { TextUIPart } from 'ai';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsIn, IsISO8601, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsISO8601,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class MessageDto {
   @IsString()
@@ -33,9 +43,13 @@ export class ChatAgentInputDto {
 }
 
 export class UpdateChatDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  title: string;
+  title?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPublic?: boolean;
 }
 
 export class GetChatsQueryDto {

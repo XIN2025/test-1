@@ -100,7 +100,7 @@ export function ChatHistory() {
     },
     {
       fallbackData: [],
-      revalidateFirstPage: false,
+      revalidateFirstPage: true,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       persistSize: true,

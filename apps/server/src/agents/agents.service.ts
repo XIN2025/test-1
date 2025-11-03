@@ -112,6 +112,10 @@ export class AgentsService {
       }),
     ]);
 
+    if (chat.userId !== user.id) {
+      throw new NotFoundException('Chat not found');
+    }
+
     if (chat.chatMessages.length === 0 && chat.title === 'New Chat') {
       await this.generateAndChangeTitle(message, chatId);
     }
@@ -195,7 +199,6 @@ export class AgentsService {
     const chat = await this.prisma.chat.findUnique({
       where: {
         id: chatId,
-        userId,
       },
       include: {
         chatMessages: {
@@ -206,6 +209,9 @@ export class AgentsService {
       },
     });
     if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
+    if (chat.userId !== userId && !chat.isPublic) {
       throw new NotFoundException('Chat not found');
     }
     return chat;
@@ -250,6 +256,14 @@ export class AgentsService {
   }
 
   async updateChat(userId: string, chatId: string, body: UpdateChatDto) {
+    const existingChat = await this.prisma.chat.findUnique({
+      where: { id: chatId },
+    });
+
+    if (!existingChat || existingChat.userId !== userId) {
+      throw new NotFoundException('Chat not found');
+    }
+
     const chat = await this.prisma.chat.update({
       where: { id: chatId, userId },
       data: body,
