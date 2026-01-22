@@ -1,0 +1,14 @@
+node_modules
+**/__pycache__
+**/.env
+app/evra-fcm-firebase-adminsdk-fbsvc-aa3eba28fe.json
+app/google-services.json
+venv
+.venv
+**/.DS_STORE
+**/app.log
+**/mealogic_api_responses.log
+
+# Pleroma runtime data (generated at runtime, don't commit)
+pleroma-docker/postgres/
+pleroma-docker/uploads/

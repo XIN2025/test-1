@@ -1,0 +1,52 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: pleroma_db
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: pleroma
+      POSTGRES_PASSWORD: pleroma
+      POSTGRES_DB: pleroma
+      POSTGRES_HOST_AUTH_METHOD: trust # ADD THIS for development
+    command: postgres -c listen_addresses='*' -c max_connections=200 # ADD THIS
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pleroma_network
+
+  pleroma:
+    image: git.pleroma.social:5050/pleroma/pleroma:latest
+    container_name: pleroma
+    restart: always
+    ports:
+      - '4000:4000'
+    environment:
+      DOMAIN: localhost
+      INSTANCE_NAME: 'Evra'
+      ADMIN_EMAIL: admin@localhost
+      NOTIFY_EMAIL: noreply@localhost
+      DB_HOST: postgres
+      DB_USER: pleroma
+      DB_PASS: pleroma
+      DB_NAME: pleroma
+      PLEROMA_SECRET_KEY_BASE: ${PLEROMA_SECRET_KEY_BASE}
+    volumes:
+      - pleroma_uploads:/var/lib/pleroma/uploads
+      - pleroma_config:/etc/pleroma
+    depends_on:
+      - postgres
+    networks:
+      - pleroma_network
+
+volumes:
+  postgres_data:
+  pleroma_uploads:
+  pleroma_config:
+
+networks:
+  pleroma_network:
+    driver: bridge

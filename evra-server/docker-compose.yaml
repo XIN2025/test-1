@@ -1,0 +1,73 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'
+    env_file:
+      - api/.env
+    environment:
+      - ENVIRONMENT=production
+      - PORT=8000
+      - CORS_ORIGINS=https://web.evra.opengig.work
+      - ALLOWED_HOSTS=api.evra.opengig.work,localhost,127.0.0.1
+    restart: unless-stopped
+    networks:
+      - app_network
+    depends_on:
+      - postgres
+      - pleroma
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: pleroma_db
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: pleroma
+      POSTGRES_PASSWORD: pleroma
+      POSTGRES_DB: pleroma
+      POSTGRES_HOST_AUTH_METHOD: trust
+    command: postgres -c listen_addresses='*' -c max_connections=200
+    volumes:
+      - pleroma_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  pleroma:
+    image: git.pleroma.social:5050/pleroma/pleroma:latest
+    container_name: pleroma
+    restart: always
+    ports:
+      - '4000:4000'
+    env_file:
+      - api/.env
+    environment:
+      DOMAIN: localhost
+      INSTANCE_NAME: 'Evra'
+      ADMIN_EMAIL: admin@localhost
+      NOTIFY_EMAIL: noreply@localhost
+      DB_HOST: postgres
+      DB_USER: pleroma
+      DB_PASS: pleroma
+      DB_NAME: pleroma
+      HOME: /opt/pleroma
+    volumes:
+      - pleroma_uploads:/var/lib/pleroma/uploads
+      - pleroma_static:/var/lib/pleroma/static
+      - ./pleroma-docker/config:/etc/pleroma:ro
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+
+volumes:
+  pleroma_postgres_data:
+  pleroma_uploads:
+  pleroma_static:
+
+networks:
+  app_network:
+    driver: bridge

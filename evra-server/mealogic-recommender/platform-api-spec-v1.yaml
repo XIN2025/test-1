@@ -1,0 +1,1692 @@
+openapi: 3.0.0
+x-stoplight:
+  id: wayh1ysd195o9
+info:
+  title: Mealogic API
+  version: '1'
+  contact: {}
+servers:
+  - url: 'https://api.mealogic.io/v1'
+    description: Production
+  - url: 'https://api-stg.mealogic.io/v1'
+    description: Staging
+paths:
+  /carts:
+    get:
+      summary: List Carts
+      tags:
+        - Carts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: A list of carts
+                    items:
+                      $ref: '#/components/schemas/Cart'
+                required:
+                  - data
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      - uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
+                        deliveryWeek: '2022-10-16'
+                        recipient:
+                          name: Bob Bobbers
+                          addressLine1: 1 Apple St
+                          addressLine2: Apt 100
+                          city: New York City
+                          state: NY
+                          postalCode: '10001'
+                          deliveryNotes: The gate code is 345
+                          contactInformation:
+                            phone: '5555555555'
+                            email: bob@bobbersinc.com
+                            preference: EMAIL
+                        orderOn: '2022-10-14T04:05:00Z'
+                        deliveries:
+                          - deliveryDate: '2022-10-16'
+                            estimatedDeliveryDate: '2022-10-16'
+                            lineItems: []
+                          - deliveryDate: '2022-10-19'
+                            estimatedDeliveryDate: '2022-10-19'
+                            lineItems:
+                              - variantId: 27
+                                quantity: 6
+                                priceInCents: 1295
+                              - variantId: 47
+                                quantity: 4
+                                priceInCents: 1395
+                        status: PENDING_PROCESSING
+                        customizeBy: '2022-10-14T00:00:00Z'
+                        ledger:
+                          subtotal: 2690
+                          tax: 0
+                          deliveryTotal: 795
+                          grandTotal: 3485
+      operationId: get-carts
+      description: Lists active carts matching the provided filters. Active carts are those that have neither been canceled nor been processed.
+      parameters:
+        - schema:
+            type: string
+            format: date
+            minItems: 1
+            example: '2022-10-16'
+          in: query
+          name: deliveryWeek
+          description: Should only be used for future delivery weeks. Past delivery weeks will have no active carts. Use the Order resources for past weeks.
+          required: true
+      x-stoplight:
+        id: qoj4nl512hcof
+  /cart:
+    post:
+      summary: Create Cart
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+              examples:
+                Example 1:
+                  value:
+                    uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
+                    deliveryWeek: '2022-10-16'
+                    recipient:
+                      name: Bob Bobbers
+                      addressLine1: 1 Apple St
+                      addressLine2: Apt 100
+                      city: New York City
+                      state: NY
+                      postalCode: '10001'
+                      deliveryNotes: The gate code is 345
+                      contactInformation:
+                        phone: '5555555555'
+                        email: bob@bobbersinc.com
+                        preference: EMAIL
+                    orderOn: '2022-10-14T04:05:00Z'
+                    deliveries:
+                      - deliveryDate: '2022-10-16'
+                        lineItems: []
+                      - deliveryDate: '2022-10-19'
+                        lineItems:
+                          - variantId: 27
+                            quantity: 6
+                            priceInCents: 1295
+                          - variantId: 47
+                            quantity: 4
+                            priceInCents: 1395
+                    status: PENDING_PROCESSING
+                    customizeBy: '2022-10-14T00:00:00Z'
+                    ledger:
+                      subtotal: 2690
+                      tax: 0
+                      deliveryTotal: 795
+                      grandTotal: 3485
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  statusCode:
+                    type: number
+                    description: HTTP status code
+                  message:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - error
+                  - statusCode
+              examples:
+                Invalid Line Item:
+                  value:
+                    statusCode: 400
+                    error: Bad Request
+                    message:
+                      - Delivery line item with variantId 63 not found on active catalog.
+                Invalid Delivery Week:
+                  value:
+                    statusCode: 400
+                    error: Bad Request
+                    message:
+                      - Invalid delivery week provided. Received 2022-11-13 but expected 2022-11-20
+                Unsupported Postal Code:
+                  value:
+                    statusCode: 400
+                    error: Bad Request
+                    message:
+                      - Postal code 200001 is not supported
+                Invalid Delivery Quantity:
+                  value:
+                    statusCode: 400
+                    error: Bad Request
+                    message:
+                      - Invalid number of deliveries provided. Received 3 but expected between 1 and 2. Validate delivery dates are 2022-11-06 and 2022-11-09.
+                Insufficient Total Line Item Quantity:
+                  value:
+                    statusCode: 400
+                    error: Bad Request
+                    message:
+                      - Cart must have at least one delivery with a total item quantity greater than 0.
+                Invalid Delivery Line Item Quantity:
+                  value:
+                    statusCode: 400
+                    error: Bad Request
+                    message:
+                      - 'Delivery 2 has invalid line item quantity. Each delivery must have 4, 6, or 8 items.'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      operationId: post-cart
+      description: Creates a cart with deliveries for a specified set of deliveries that correspond to catalog delivery dates that fall within the specificed `deliveryWeek`.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ../models/CreateCartInput.yaml
+            examples:
+              Example 1:
+                value:
+                  deliveryWeek: '2022-10-09'
+                  recipient:
+                    name: Bob Bobbers
+                    addressLine1: 1 Apple St
+                    addressLine2: Apt 100
+                    city: New York City
+                    state: NY
+                    postalCode: '20009'
+                    deliveryNotes: The gate code is 345
+                    contactInformation:
+                      phone: '5555555555'
+                      email: bob@bobbersinc.com
+                      preference: EMAIL
+                  deliveries:
+                    - lineItems:
+                        - variantId: 27
+                          quantity: 6
+                        - variantId: 47
+                          quantity: 4
+        description: ''
+      tags:
+        - Carts
+      x-stoplight:
+        id: dogojkl3rzbq6
+    delete:
+      summary: Cancel Cart
+      operationId: delete-cart
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                required:
+                  - error
+              examples:
+                Customization Deadline Passed:
+                  value:
+                    statusCode: 400
+                    error: Bad Request
+                    message:
+                      - 'Cart cannot be canceled. The cancellation deadline passed at 2022-11-11T05:00:00.000Z.'
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      description: Cancels a cart and prevents the cart from being processed
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: query
+          name: uuid
+          description: Cart UUID
+          required: true
+      tags:
+        - Carts
+      x-stoplight:
+        id: ku3kriz0cvo3k
+    get:
+      summary: Get Cart
+      operationId: get-cart
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: ../models/Cart.yaml
+        '404':
+          description: Not Found
+      description: Gets a cart by its UUID
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: query
+          name: uuid
+          description: Cart UUID
+          required: true
+      tags:
+        - Carts
+      x-stoplight:
+        id: zxv8ek98e9dbp
+  /catalogs:
+    get:
+      summary: List Catalogs
+      tags:
+        - Catalogs
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Catalog'
+              examples:
+                example-1:
+                  value:
+                    data:
+                      - deliveryWeek: '2022-11-20'
+                        deliveryDates:
+                          - '2022-11-21'
+                        sellableFrom: '2022-11-11T05:00:00.000Z'
+                        sellableTo: '2022-11-18T04:59:59.000Z'
+                        metroId: 0
+                        storeFrontId: 1
+                        items:
+                          - priceInCents: 1195
+                            variantId: 6
+                            gardenMealId: 45
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  statusCode:
+                    type: number
+                  message:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Invalid Delivery Week:
+                  value:
+                    statusCode: 400
+                    error: Bad Request
+                    message:
+                      - Invalid delivery week provided. Date must be a Sunday.
+      operationId: get-catalogs
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: deliveryWeek
+          description: The start date of the delivery week. This is always a Sunday.
+      description: |-
+        Lists catalogs for each delivery date and metro for the provided delivery week.
+
+        This endpoint does not return detailed variants. Complete variant objects can be obtained from the List Variants endpoint.
+      x-stoplight:
+        id: szynf4pnaaxhy
+  /variants:
+    get:
+      summary: List Variants
+      tags:
+        - Variants
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Variant'
+      operationId: get-variants
+      description: ''
+      parameters:
+        - schema:
+            type: array
+          in: query
+          name: ids
+          required: true
+          description: An array of variant ids
+      x-stoplight:
+        id: 59ugighxysjnb
+  /orders:
+    get:
+      summary: List Orders
+      tags:
+        - Orders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                required:
+                  - data
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      - uuid: abcfb603-6e45-4e11-b7d4-d014c84470fd
+                        cartUuid: aaafb603-6e45-4e11-b7d4-d014c84470fd
+                        deliveryWeek: '2022-12-04'
+                        recipient:
+                          name: Bob Bobbers
+                          addressLine1: 1 Apple St
+                          addressLine2: Apt 100
+                          city: New York City
+                          state: NY
+                          postalCode: '10001'
+                          deliveryNotes: The gate code is 345
+                          contactInformation:
+                            phone: '5555555555'
+                            email: bob@bobbersinc.com
+                            preference: EMAIL
+                        ledger:
+                          subtotal: 2000
+                          tax: 0
+                          deliveryTotal: 1000
+                          grandTotal: 3000
+                        deliveries:
+                          - deliveryDate: '2022-12-04'
+                            lineItems:
+                              - variantId: 500
+                                quantity: 4
+                                priceInCents: 500
+                            trackingInformation:
+                              packageId: P78B3724
+                              trackingId: 1Z0A33W70312720507
+                              trackingUrl: 'https://wwwapps.ups.com/WebTracking/track?HTMLVersion=5.0&loc=en_US&Requester=UPSHome&WBPM_lid=homepage%2Fct1.html_pnl_trk&track.x=Track&trackNums=1Z0A33W70312720507/'
+                              willReceiveDeliveryEvents: false
+                              will3PLSendNotification: true
+                        createdAt: '2022-12-02T05:05:00Z'
+      operationId: get-orders
+      description: Lists orders for the specified delivery week
+      parameters:
+        - schema:
+            type: string
+            format: date
+            example: '2022-12-04'
+          in: query
+          name: deliveryWeek
+          required: true
+      x-stoplight:
+        id: bld3citb6y0td
+  /order:
+    get:
+      summary: Get Order
+      tags:
+        - Orders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Not Found
+      operationId: get-order
+      description: Gets an order by its ID or its cart's UUID. Either the `orderId` or the `cartUuid` must be provided.
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: query
+          name: orderUuid
+        - schema:
+            type: string
+          in: query
+          name: cartUuid
+          description: The UUID of the cart that the order originated from
+      x-stoplight:
+        id: 36a0f68qn5e23
+  /delivery:
+    get:
+      summary: Find Delivery
+      tags:
+        - Orders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      orderUuid:
+                        type: string
+                        description: The UUID of the order to which the delivery belongs
+                    required:
+                      - orderUuid
+                  - $ref: '#/components/schemas/Delivery'
+              examples:
+                Example 1:
+                  value:
+                    orderUuid: 2981f793-5171-4b9c-8734-9b77cfe6a1c9
+                    deliveryDate: '2019-08-24'
+                    lineItems:
+                      - variantId: 5
+                        quantity: 6
+                        priceInCents: 1195
+                    trackingInformation:
+                      packageId: P78B3724
+                      trackingId: 1Z0A33W70312720507
+                      trackingUrl: 'https://wwwapps.ups.com/WebTracking/track?HTMLVersion=5.0&loc=en_US&Requester=UPSHome&WBPM_lid=homepage%2Fct1.html_pnl_trk&track.x=Track&trackNums=1Z0A33W70312720507/'
+                      willReceiveDeliveryEvents: false
+                      will3PLSendNotification: true
+        '404':
+          description: Not Found
+      operationId: get-fulfillment-information
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: orderUuid
+          description: 'If provided, `deliveryDate` must also be provided'
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: deliveryDate
+          description: 'If provided, `orderUuid` must also be provided'
+        - schema:
+            type: string
+          in: query
+          name: packageId
+          description: The ID on the package. This can be used instead of `deliveryDate` and `orderUuid`.
+      description: Returns a delivery. This resource can be used by providing either the ID found on the package or both the `orderUuid` and `deliveryDate`.
+      x-stoplight:
+        id: xm5g87f3sgcvx
+    parameters: []
+  /storefronts:
+    get:
+      summary: List Storefronts
+      tags:
+        - Geography
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Storefront'
+                required:
+                  - data
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      - id: 1
+                        name: DC
+                        validDeliveryLineItemQuantities:
+                          - 0
+                          - 4
+                          - 6
+                          - 8
+                          - 10
+                          - 12
+                        metros:
+                          - id: 3
+                            name: 'Richmond, VA'
+                            deliveryFeeInCents: 1295
+                            postalCodes:
+                              - '20001'
+      operationId: get-storefronts
+      description: Lists all storefronts and their associated metros
+      x-stoplight:
+        id: ycvnj3vi87mr9
+  /tax-rates:
+    get:
+      summary: List Tax Rates
+      tags:
+        - Geography
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  AL:
+                    type: number
+                    format: float
+                  AK:
+                    type: number
+                    format: float
+                  AZ:
+                    type: number
+                    format: float
+                  AR:
+                    type: number
+                    format: float
+                  CA:
+                    type: number
+                    format: float
+                  CO:
+                    type: number
+                    format: float
+                  CT:
+                    type: number
+                    format: float
+                  DC:
+                    type: number
+                    format: float
+                  DE:
+                    type: number
+                    format: float
+                  FL:
+                    type: number
+                    format: float
+                  GA:
+                    type: number
+                    format: float
+                  HI:
+                    type: number
+                    format: float
+                  IA:
+                    type: number
+                    format: float
+                  ID:
+                    type: number
+                    format: float
+                  IL:
+                    type: number
+                    format: float
+                  IN:
+                    type: number
+                    format: float
+                  KS:
+                    type: number
+                    format: float
+                  KY:
+                    type: number
+                    format: float
+                  LA:
+                    type: number
+                    format: float
+                  MA:
+                    type: number
+                    format: float
+                  MD:
+                    type: number
+                    format: float
+                  ME:
+                    type: number
+                    format: float
+                  MI:
+                    type: number
+                    format: float
+                  MN:
+                    type: number
+                    format: float
+                  MS:
+                    type: number
+                    format: float
+                  MO:
+                    type: number
+                    format: float
+                  MT:
+                    type: number
+                    format: float
+                  NC:
+                    type: number
+                    format: float
+                  ND:
+                    type: number
+                    format: float
+                  NE:
+                    type: number
+                    format: float
+                  NH:
+                    type: number
+                    format: float
+                  NM:
+                    type: number
+                    format: float
+                  NV:
+                    type: number
+                    format: float
+                  NY:
+                    type: number
+                    format: float
+                  OH:
+                    type: number
+                    format: float
+                  OK:
+                    type: number
+                    format: float
+                  OR:
+                    type: number
+                    format: float
+                  PA:
+                    type: number
+                    format: float
+                  RI:
+                    type: number
+                    format: float
+                  SC:
+                    type: number
+                    format: float
+                  SD:
+                    type: number
+                    format: float
+                  TN:
+                    type: number
+                    format: float
+                  TX:
+                    type: number
+                    format: float
+                  UT:
+                    type: number
+                    format: float
+                  VA:
+                    type: number
+                    format: float
+                  VT:
+                    type: number
+                    format: float
+                  WA:
+                    type: number
+                    format: float
+                  WI:
+                    type: number
+                    format: float
+                  WV:
+                    type: number
+                    format: float
+                  WY:
+                    type: number
+                    format: float
+                required:
+                  - AL
+                  - AK
+                  - AZ
+                  - AR
+                  - CA
+                  - CO
+                  - CT
+                  - DC
+                  - DE
+                  - FL
+                  - GA
+                  - HI
+                  - IA
+                  - ID
+                  - IL
+                  - IN
+                  - KS
+                  - KY
+                  - LA
+                  - MA
+                  - MD
+                  - ME
+                  - MI
+                  - MN
+                  - MS
+                  - MO
+                  - MT
+                  - NC
+                  - ND
+                  - NE
+                  - NH
+                  - NM
+                  - NV
+                  - NY
+                  - OH
+                  - OK
+                  - OR
+                  - PA
+                  - RI
+                  - SC
+                  - SD
+                  - TN
+                  - TX
+                  - UT
+                  - VA
+                  - VT
+                  - WA
+                  - WI
+                  - WV
+                  - WY
+              examples:
+                Example 1:
+                  value:
+                    AL: 0
+                    AK: 0
+                    AZ: 0
+                    AR: 0
+                    CA: 0
+                    CO: 0
+                    CT: 0
+                    DC: 0
+                    DE: 0
+                    FL: 0
+                    GA: 0
+                    HI: 0
+                    IA: 0
+                    ID: 0
+                    IL: 0
+                    IN: 0
+                    KS: 0
+                    KY: 0
+                    LA: 0
+                    MA: 0
+                    MD: 0
+                    ME: 0
+                    MI: 0
+                    MN: 0
+                    MS: 0
+                    MO: 0
+                    MT: 0
+                    NC: 0
+                    ND: 0
+                    NE: 0
+                    NH: 0
+                    NM: 0
+                    NV: 0
+                    NY: 0
+                    OH: 0
+                    OK: 0
+                    OR: 0
+                    PA: 0
+                    RI: 0
+                    SC: 0
+                    SD: 0
+                    TN: 0
+                    TX: 0
+                    UT: 0
+                    VA: 0.025
+                    VT: 0
+                    WA: 0
+                    WI: 0
+                    WV: 0
+                    WY: 0
+      operationId: get-tax-rates
+      description: Tax rates by state as decimals
+      x-stoplight:
+        id: b9d4kalsi70ai
+components:
+  securitySchemes:
+    API Key:
+      type: http
+      scheme: basic
+      description: The `username` should be empty and the `password` should be your API key.
+  schemas:
+    Storefront:
+      title: Storefront
+      x-stoplight:
+        id: 7hudmjvi4ngci
+      type: object
+      required:
+        - id
+        - name
+        - metros
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+          description: DC
+        metros:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metro'
+        validDeliveryLineItemQuantities:
+          type: array
+          x-stoplight:
+            id: cu9cgllvdlz1a
+          items:
+            x-stoplight:
+              id: ouxwmd85jodkf
+            type: integer
+      x-examples:
+        Example 1:
+          id: 1
+          name: DC
+          validDeliveryLineItemQuantities:
+            - 0
+            - 4
+            - 6
+            - 8
+            - 10
+            - 12
+          metros:
+            - id: 3
+              name: 'Richmond, VA'
+              deliveryFeeInCents: 1295
+              postalCodes:
+                - '20001'
+    Metro:
+      title: Metro
+      x-stoplight:
+        id: hshgpmn208fgx
+      type: object
+      properties:
+        id:
+          type: number
+          example: 3
+        name:
+          type: string
+          example: 'Richmond, VA'
+        deliveryFeeInCents:
+          type: integer
+          example: 1295
+        postalCodes:
+          type: array
+          description: A list of 5-digit ZIP Codes that fall within the metro's boundaries
+          items:
+            type: string
+            example: '20001'
+      required:
+        - id
+        - name
+        - deliveryFeeInCents
+        - postalCodes
+      x-examples:
+        Example 1:
+          id: 3
+          name: 'Richmond, VA'
+          deliveryFeeInCents: 1295
+          postalCodes:
+            - '20001'
+    Cart:
+      title: Cart
+      x-stoplight:
+        id: zchnnr6dhaxz3
+      type: object
+      description: 'A cart contains all information required to send a recipient food for a given delivery week. It contains recipient, product, and pricing information.'
+      x-tags:
+        - Carts
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: The cart's unique identifier
+        deliveryWeek:
+          type: string
+          format: date
+          description: A cart is a container for a single delivery week's deliveries. This delivery week dicatates the dates of the `deliveries`.
+        recipient:
+          $ref: '#/components/schemas/Recipient'
+        orderOn:
+          type: string
+          format: date-time
+          description: The time at which the cart will be processed and have an order created
+        deliveries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Delivery'
+        status:
+          type: string
+          enum:
+            - PENDING_PROCESSING
+            - PROCESSING
+            - PROCESSED
+          description: |-
+            Describes the state of the cart in the platform lifecycle:
+            - `PENDING_PROCESSING`: The cart is eligible for processing but has not yet been processed. Fulfillment artifacts have not been created.
+            - `PROCESSING`: The cart has been queued for processing and can no longer be modified.
+            - `PROCESSED`: The cart was successfully processed. Fulfillment artifacts have been generated.
+        customizeBy:
+          type: string
+          format: date-time
+          description: The date and time after which the cart can no longer be modified (includes cancellation).
+        ledger:
+          $ref: '#/components/schemas/Ledger'
+      required:
+        - uuid
+        - deliveryWeek
+        - recipient
+        - orderOn
+        - deliveries
+        - status
+        - customizeBy
+        - ledger
+      x-examples:
+        - uuid: 095be615-a8ad-4c33-8e9c-c7612fbf6c9f
+          deliveryWeek: '2022-10-16'
+          recipient:
+            name: Bob Bobbers
+            addressLine1: 1 Apple St
+            addressLine2: Apt 100
+            city: New York City
+            state: NY
+            postalCode: '10001'
+            deliveryNotes: The gate code is 345
+            contactInformation:
+              phone: '5555555555'
+              email: bob@bobbersinc.com
+              preference: EMAIL
+          orderOn: '2022-10-14T04:05:00Z'
+          deliveries:
+            - deliveryDate: '2022-10-16'
+              lineItems: []
+            - deliveryDate: '2022-10-19'
+              lineItems:
+                - variantId: 27
+                  quantity: 6
+                  priceInCents: 1295
+                - variantId: 47
+                  quantity: 4
+                  priceInCents: 1395
+          status: PENDING_PROCESSING
+          customizeBy: '2022-10-14T00:00:00Z'
+          ledger:
+            subtotal: 2690
+            tax: 0
+            deliveryTotal: 795
+            grandTotal: 3485
+    Delivery:
+      title: Delivery
+      x-stoplight:
+        id: gqrln0ktftzad
+      type: object
+      properties:
+        deliveryDate:
+          type: string
+          format: date
+        lineItems:
+          type: array
+          description: A line item is an object that contains the id and quantity of a particular product variant
+          items:
+            type: object
+            properties:
+              variantId:
+                type: integer
+              quantity:
+                type: integer
+                minimum: 0
+              priceInCents:
+                type: integer
+                minimum: 0
+            required:
+              - variantId
+              - quantity
+              - priceInCents
+        trackingInformation:
+          $ref: '#/components/schemas/TrackingInformation'
+        estimatedDeliveryDate:
+          type: string
+          x-stoplight:
+            id: 267nd4gb5xjfw
+          format: date
+          description: |-
+            This value is only relevant for Regional Shipping (RSE storefront) deliveries.
+
+            The "deliveryDate" field reflects the **expected** delivery date for most locations in the
+            Regional Shipping storefront. The "estimatedDeliveryDate" is the delivery date specific to the
+            recipient's address.
+        estimatedDaysInTransit:
+          type: integer
+          description: |-
+            This value is only relevant for Regional Shipping (RSE storefront) deliveries.
+
+            The estimated number of days that the package will take to be delivered
+            after the shipping provider has received the package. Packages are typically
+            handed off to the shipping provider on Mondays, but holidays can shift this later.
+
+            To calculate the estimated arrival date for a delivery, add this number of days
+            to the Monday of the delivery week.
+      required:
+        - deliveryDate
+        - estimatedDaysInTransit
+        - lineItems
+    TrackingInformation:
+      title: TrackingInformation
+      x-stoplight:
+        id: hy9vl2ilshj1h
+      type: object
+      description: Provides tracking information for a delivery. This artifact is generated shortly after a cart has been processed.
+      x-examples:
+        - packageId: '7893724'
+          trackingId: 1Z0A33W70312720507
+          trackingUrl: 'https://wwwapps.ups.com/WebTracking/track?HTMLVersion=5.0&loc=en_US&Requester=UPSHome&WBPM_lid=homepage%2Fct1.html_pnl_trk&track.x=Track&trackNums=1Z0A33W70312720507/'
+          willReceiveDeliveryEvents: true
+          will3PLSendNotification: false
+      properties:
+        packageId:
+          type: string
+          description: ID found on the package
+          example: P78B3724
+        trackingUrl:
+          type: string
+          description: This becomes available at different times depending on the delivery partner used.
+        trackingId:
+          type: string
+          description: The delivery partner's ID for the package. This becomes available at different times depending on the delivery partner used.
+        willReceiveDeliveryEvents:
+          type: boolean
+          description: Indicates if API clients should expect delivery events from the mealogic API.
+        will3PLSendNotification:
+          type: boolean
+          description: Indicates if the 3PL that Mealogic uses will send notifications to the consumer on the delivery date.
+      required:
+        - packageId
+        - willReceiveDeliveryEvents
+        - will3PLSendNotification
+    Catalog:
+      title: Catalog
+      x-stoplight:
+        id: x0gcbeubmhqui
+      type: object
+      x-examples:
+        - deliveryWeek: '2022-11-20'
+          deliveryDates:
+            - '2022-11-21'
+          sellableFrom: '2022-11-11T05:00:00.000Z'
+          sellableTo: '2022-11-18T04:59:59.000Z'
+          metroId: 0
+          storeFrontId: 0
+          items:
+            - priceInCents: 1195
+              variantId: 6
+              gardenMealId: 45
+      properties:
+        deliveryWeek:
+          type: string
+          description: The start date of the delivery week for which the catalog is valid. This is always a Sunday.
+          format: date
+        deliveryDates:
+          type: array
+          format: date
+          description: The eligible delivery dates for deliveries created with items from this catalog. Note that these dates are estimates. Actual delivery dates may vary by recipient.
+          items:
+            type: string
+            format: date
+        sellableFrom:
+          type: string
+          format: date-time
+          description: The beginning of the window during which the catalogs items can be added to carts
+        sellableTo:
+          type: string
+          format: date-time
+          description: The end of the window during which the catalogs items can be added to carts
+        metroId:
+          type: integer
+          description: The ID of the metro that the catalog serves
+        storeFrontId:
+          type: integer
+          description: The ID of the metro's store front. Note that catalogs can vary by metro.
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              priceInCents:
+                type: integer
+              variantId:
+                type: integer
+              gardenMealId:
+                type: integer
+                deprecated: true
+            required:
+              - priceInCents
+              - variantId
+      required:
+        - deliveryWeek
+        - deliveryDates
+        - sellableFrom
+        - sellableTo
+        - metroId
+        - storeFrontId
+        - items
+    ContactInformation:
+      title: ContactInformation
+      x-stoplight:
+        id: kfkp29r1xq9wh
+      type: object
+      description: These fields are provided to fulfillment logistic partners that require them in order to facilitate the delivery process when there are issues.
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          minLength: 10
+          maxLength: 10
+          example: '1112223333'
+          description: Must be 10 characters. Don't include the country code.
+        preference:
+          type: string
+          enum:
+            - EMAIL
+            - PHONE
+      required:
+        - email
+        - phone
+        - preference
+    CreateCartInput:
+      title: CreateCartInput
+      x-stoplight:
+        id: 6zu30pdkruiqe
+      type: object
+      description: Contains all fields required to create a cart.
+      x-examples:
+        - deliveryWeek: '2022-10-09'
+          recipient:
+            name: Bob Bobbers
+            addressLine1: 1 Apple St
+            addressLine2: Apt 100
+            city: New York City
+            state: NY
+            postalCode: '20009'
+            deliveryNotes: The gate code is 345
+            contactInformation:
+              phone: '5555555555'
+              email: bob@bobbersinc.com
+              preference: EMAIL
+          deliveries:
+            - lineItems:
+                - variantId: 27
+                  quantity: 6
+                - variantId: 47
+                  quantity: 4
+      x-tags:
+        - Carts
+      required:
+        - deliveryWeek
+        - recipient
+        - deliveries
+      properties:
+        deliveryWeek:
+          type: string
+          format: date
+          description: |-
+            A cart is a container for a single delivery week's deliveries. This delivery week dicatates the dates of the `deliveries` that get created.
+
+            Should always be a Sunday.
+        recipient:
+          $ref: '#/components/schemas/Recipient'
+          description: To whom and where the package(s) should be deliveried
+        deliveries:
+          type: array
+          description: |-
+            Each item in the array corresponds to a delivery day within the cart's `deliveryWeek`. Eligible delivery dates should be derived from sellable catalogs' `eligibleDeliveryDates`.
+
+            For example, if there are two sellable catalogs with `eligibleDeliveryDates` of “2022-10-16” and “2022-10-19”, respectively, for the delivery week of 2022-10-16, the first item in this array represents “2022-10-16” and the second represents “2022-10-19”. To skip the first delivery day, send an empty array for the first array item’s `lineItems`. To skip the second delivery, either send an empty array for the second array item’s `lineItems` or omit the item altogether.
+
+            Note that while eligible delivery days can be omitted, the API will create deliveries for them with a zero-length `lineItems` array.
+
+            At least one delivery must have line items with a total quantity greater than zero — though, this quantity is subject to additional quantity validations defined by your configuration. To "empty" a cart, use the DELETE operation to cancel the cart.
+          items:
+            type: object
+            required:
+              - lineItems
+            properties:
+              lineItems:
+                type: array
+                description: |-
+                  A line item is an object that contains the id and quantity of a particular product variant.
+
+                  If the same `variantId` appears in more than one line item, the line items will be consolidated into one line item that has a quantity representing the sum of the individual line items.
+                items:
+                  type: object
+                  required:
+                    - variantId
+                    - quantity
+                  properties:
+                    variantId:
+                      type: integer
+                      description: The ID of the Variant associated with the Catalog Item
+                    quantity:
+                      type: integer
+                      minimum: 0
+    Recipient:
+      title: Recipient
+      x-stoplight:
+        id: 4w82gbq2hssp7
+      type: object
+      required:
+        - name
+        - addressLine1
+        - city
+        - state
+        - postalCode
+        - contactInformation
+      properties:
+        name:
+          type: string
+          description: The name that appears on the package
+        addressLine1:
+          type: string
+        addressLine2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+          enum:
+            - AL
+            - AK
+            - AZ
+            - AR
+            - CA
+            - CO
+            - CT
+            - DE
+            - DC
+            - FL
+            - GA
+            - HI
+            - ID
+            - IL
+            - IN
+            - IA
+            - KS
+            - KY
+            - LA
+            - ME
+            - MD
+            - MA
+            - MI
+            - MN
+            - MS
+            - MO
+            - MT
+            - NE
+            - NV
+            - NH
+            - NJ
+            - NM
+            - NY
+            - NC
+            - ND
+            - OH
+            - OK
+            - OR
+            - PA
+            - RI
+            - SC
+            - SD
+            - TN
+            - TX
+            - UT
+            - VT
+            - VA
+            - WA
+            - WV
+            - WI
+            - WY
+        postalCode:
+          type: string
+          description: ZIP or postal code
+        deliveryNotes:
+          type: string
+          example: The gate code is 345. Leave box under the chair on the patio.
+          description: 'Additional information that is sent to delivery providers. Only used for local markets, not UPS shipped boxes.'
+        contactInformation:
+          $ref: '#/components/schemas/ContactInformation'
+    Ledger:
+      title: Ledger
+      x-stoplight:
+        id: vr8vn2qxe9akw
+      type: object
+      description: The ledger contains the grand total of the cart or order and the components that make up the grand total.
+      properties:
+        subtotal:
+          type: integer
+          description: The total cost of the deliveries' line items in cents
+        tax:
+          type: integer
+          description: The total tax for the cart in cents that Mealogic will collect and remit. Typically nothing as payments are collected buy the client of the API.
+        deliveryTotal:
+          type: integer
+          description: |
+            The total cost of delivery charges for all of the deliveries in cents
+        grandTotal:
+          type: integer
+          description: |
+            The sum of `subtotal`, `deliveryTotal`, and `tax` in cents. This is the amount that will be charged for the cart.
+      required:
+        - subtotal
+        - tax
+        - deliveryTotal
+        - grandTotal
+    Order:
+      title: Order
+      x-stoplight:
+        id: iqqnrfw3qq6ek
+      type: object
+      description: An order is generated after a cart processed
+      x-examples:
+        - uuid: ftjfb603-5e45-4r11-h7d4-d014c84470fd
+          cartUuid: aaafb603-6e45-4e11-b7d4-d014c84470fd
+          deliveryWeek: '2022-12-04'
+          recipient:
+            name: Bob Bobbers
+            addressLine1: 1 Apple St
+            addressLine2: Apt 100
+            city: New York City
+            state: NY
+            postalCode: '10001'
+            deliveryNotes: The gate code is 345
+            contactInformation:
+              phone: '5555555555'
+              email: bob@bobbersinc.com
+              preference: EMAIL
+          ledger:
+            subtotal: 2000
+            tax: 0
+            deliveryTotal: 1000
+            grandTotal: 3000
+          deliveries:
+            - deliveryDate: '2022-12-04'
+              lineItems:
+                - variantId: 500
+                  quantity: 4
+                  priceInCents: 500
+              trackingInformation:
+                $ref: '#/components/schemas/TrackingInformation'
+          createdAt: '2022-12-02T05:05:00Z'
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        cartUuid:
+          type: string
+          format: uuid
+          description: The unique identifer of the cart that the order originated from
+        deliveryWeek:
+          type: string
+          format: date
+          description: This is always a Sunday
+        ledger:
+          $ref: '#/components/schemas/Ledger'
+        deliveries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Delivery'
+        recipient:
+          $ref: '#/components/schemas/Recipient'
+        createdAt:
+          type: string
+          format: date-time
+          description: When the cart was processed and the order was created
+      required:
+        - uuid
+        - cartUuid
+        - deliveryWeek
+        - ledger
+        - deliveries
+        - recipient
+        - createdAt
+    Product:
+      title: Product
+      x-stoplight:
+        id: i4uwd1ns28rzq
+      type: object
+      x-examples:
+        - id: 0
+          gardenMealOverrideId: 0
+          title: Apple Roasted Chicken
+          subtitle: with Moroccan Cauliflower Rice
+          description: 'Juicy, slow roasted chicken cooked with apples and onions accompanied by Moroccan-spiced cauliflower rice with toasted almonds and mint. Served with a lemony Moroccan-spiced dressing on the side.'
+          imageUrl: 'https://territory-assets.s3.amazonaws.com/production-photography-meals/ImporterTool_1667412418567.jpeg'
+          designer:
+            name: string
+          category: A_LA_CARTE
+          numberOfServings: 4
+      properties:
+        id:
+          type: integer
+        gardenMealOverrideId:
+          type: integer
+          description: 'For products that appear in multiple storefronts, e.g. frozen meals, this ID will be set to meal ID that will be on the physical packaging.'
+        title:
+          type: string
+          example: Apple Roasted Chicken
+        subtitle:
+          type: string
+          example: with Moroccan Cauliflower Rice
+        description:
+          type: string
+          example: 'Juicy, slow roasted chicken cooked with apples and onions accompanied by Moroccan-spiced cauliflower rice with toasted almonds and mint. Served with a lemony Moroccan-spiced dressing on the side.'
+        imageUrl:
+          type: string
+          format: uri
+          example: 'https://territory-assets.s3.amazonaws.com/production-photography-meals/ImporterTool_1667412418567.jpeg'
+        designer:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+        category:
+          type: string
+          enum:
+            - A_LA_CARTE
+            - BREAKFAST
+            - LUNCH_DINNER
+        numberOfServings:
+          type: number
+          x-stoplight:
+            id: a4ro0ok2vry7n
+          x-example: '1'
+          format: float
+      required:
+        - id
+        - gardenMealOverrideId
+        - title
+        - description
+        - imageUrl
+        - designer
+        - category
+        - numberOfServings
+    Variant:
+      title: Variant
+      x-stoplight:
+        id: iza1orv7l7xdz
+      type: object
+      x-examples:
+        - id: 0
+          macroNutrients:
+            addedSugarInGrams: 0
+            calories: 0
+            cholesterolInMilligrams: 0
+            dietaryFiberInGrams: 0
+            netCarbsInGrams: 0
+            proteinInGrams: 0
+            saturatedFatInGrams: 0
+            servingSizeInGrams: 0
+            sodiumInMilligrams: 0
+            sugarsInGrams: 0
+            totalCarbsInGrams: 0
+            totalFatInGrams: 0
+          product:
+            id: 0
+            gardenMealOverrideId: 0
+            title: Apple Roasted Chicken
+            subtitle: Apple Roasted Chicken with Moroccan Cauliflower Rice
+            description: 'Juicy, slow roasted chicken cooked with apples and onions accompanied by Moroccan-spiced cauliflower rice with toasted almonds and mint. Served with a lemony Moroccan-spiced dressing on the side.'
+            imageUrl: 'https://territory-assets.s3.amazonaws.com/production-photography-meals/ImporterTool_1667412418567.jpeg'
+            designer:
+              name: Chef John
+            category: A_LA_CARTE
+            numberOfServings: 4
+          publicIngredients: 'Asparagus Scrambled Eggs (pastuerized eggs [eggs, citric acid], asparagus, olive oil, sun-dried tomatoes, green onion, black pepper, salt). Roasted Purple Potatoes (potatoes, olive oil, garlic, black pepper, salt). Pesto (olive oil, basil, lemon juice, walnuts, almond flour, garlic, salt). CONTAINS: EGGS, TREE NUTS (ALMONDS, WALNUTS)'
+          ingredientsToAvoid:
+            - id: 7
+              displayName: almonds
+              isAllergen: true
+              category:
+                id: 6
+                displayName: Nuts and Legumes
+          dietaryTemplates:
+            - id: 3
+              displayName: Vegetarian
+          tags:
+            - value: new
+              displayName: New
+              category: STATUS
+          nutritionCaveat: 'The nutrition for this meal includes the Ghost Pepper BBQ Sauce which contains 40 calories, 0g of fat, and 9g of carbs.'
+      properties:
+        id:
+          type: integer
+        macroNutrients:
+          type: object
+          required:
+            - addedSugarInGrams
+            - calories
+            - cholesterolInMilligrams
+            - dietaryFiberInGrams
+            - netCarbsInGrams
+            - proteinInGrams
+            - saturatedFatInGrams
+            - servingSizeInGrams
+            - sodiumInMilligrams
+            - sugarsInGrams
+            - totalCarbsInGrams
+            - totalFatInGrams
+          properties:
+            addedSugarInGrams:
+              type: integer
+            calories:
+              type: integer
+            cholesterolInMilligrams:
+              type: integer
+            dietaryFiberInGrams:
+              type: integer
+            netCarbsInGrams:
+              type: integer
+            proteinInGrams:
+              type: integer
+            saturatedFatInGrams:
+              type: integer
+            servingSizeInGrams:
+              type: integer
+            sodiumInMilligrams:
+              type: integer
+            sugarsInGrams:
+              type: integer
+            totalCarbsInGrams:
+              type: integer
+            totalFatInGrams:
+              type: integer
+        product:
+          $ref: '#/components/schemas/Product'
+        publicIngredients:
+          type: string
+          description: A public ingredient summary authored by our Culinary Managers that appears on meal labels
+          example: 'Asparagus Scrambled Eggs (pastuerized eggs [eggs, citric acid], asparagus, olive oil, sun-dried tomatoes, green onion, black pepper, salt). Roasted Purple Potatoes (potatoes, olive oil, garlic, black pepper, salt). Pesto (olive oil, basil, lemon juice, walnuts, almond flour, garlic, salt). CONTAINS: EGGS, TREE NUTS (ALMONDS, WALNUTS)'
+        nutritionCaveat:
+          type: string
+          description: 'A short description and macro nutrients summary of the meal add-ons (e.g sauces, dressings, etc.)'
+          example: 'The nutrition for this meal includes the Ghost Pepper BBQ Sauce which contains 40 calories, 0g of fat, and 9g of carbs.'
+        ingredientsToAvoid:
+          type: array
+          description: Commonly-avoided ingredients
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              displayName:
+                type: string
+                example: almonds
+              isAllergen:
+                type: boolean
+              category:
+                type: object
+                required:
+                  - id
+                  - displayName
+                properties:
+                  id:
+                    type: integer
+                  displayName:
+                    type: string
+                    example: Nuts and Legumes
+            required:
+              - id
+              - displayName
+              - isAllergen
+              - category
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              displayName:
+                type: string
+                example: Improved Recipe
+              category:
+                type: string
+                enum:
+                  - DIETARY_TEMPLATE
+                  - FLAVOR_PROFILE
+                  - FROZEN
+                  - PROMOTIONAL
+                  - SERVINGS
+                  - SOURCING_STANDARD
+                  - STATUS
+            required:
+              - id
+              - displayName
+              - category
+      required:
+        - id
+        - macroNutrients
+        - product
+        - publicIngredients
+        - ingredientsToAvoid
+        - tags
+security:
+  - API Key: []
